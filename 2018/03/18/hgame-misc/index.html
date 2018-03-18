@@ -353,12 +353,17 @@ height:50vh;
 <h2 id="图片隐写"><a href="#图片隐写" class="headerlink" title="图片隐写"></a>图片隐写</h2><p>最基本的图片隐写：<br><img src="https://miao.su/images/2018/03/18/1808c1.png" alt="1808c1.png"><br>直接在linux下使用binwalk就可以发现一般的隐写数据。<br>还有高级一点的图片隐写：<br><img src="https://miao.su/images/2018/03/18/262d79.png" alt="262d79.png"><br>使用binwalk看不出任何东西，有可能是LSB最低位隐写。<br><img src="https://miao.su/images/2018/03/18/30d7ca.png" alt="30d7ca.png"><br>可以发现压缩包藏在最低位。<br><br>当然还有图片盲水印，一般来说两张图片在一起有可能是盲水印。<br><img src="https://miao.su/images/2018/03/18/4f6a48.png" alt="4f6a48.png"></p>
 <h2 id="音频隐写"><a href="#音频隐写" class="headerlink" title="音频隐写"></a>音频隐写</h2><p>基本的音频隐写和图片类似，把文件拖到binwalk就可以看到信息了。</p>
 <p>音频lsb，和图片lsb类似，使用工具便可以将数据导出。常用的工具有：mp3stego，wavsteg.</p>
-<h1 id="取证类"><a href="#取证类" class="headerlink" title="取证类"></a>取证类</h1><p>通常这类题目是给你一个流量包，让你分析其中和flag有关的信息。<br>最简单的取证题：<br><img src="https://miao.su/images/2018/03/18/5d91ca.png" alt="5d91ca.png"><br>使用wirewhark打开流量包简单查看便可以拿到flag。<br>流量包中与隐写，加密相关：<br>这类题目通常让你从流量包中抓住关键数据，保存文件进行分析，取证，例如：<br><img src="https://miao.su/images/2018/03/18/6aae5b.png" alt="6aae5b.png"><br>查看流量包看到一个压缩包和一张图片，随即下载压缩包和图片，发现压缩包加密，但压缩包中有一张同名的图片，随即进行明文攻击。（有空来写写有关压缩包的文章）<br><br><br>当然misc杂项并不止这些，只是现在的我能理解的就只有这么点而已。学习之路漫长而又艰辛，只有不断学习前进才能有所收获。虽然现在不会，但并不代表以后不会，不是吗？<br>因为心中存有信念，便无惧所有的挫折和苦难。</p>
+<h1 id="取证类"><a href="#取证类" class="headerlink" title="取证类"></a>取证类</h1><p>通常这类题目是给你一个流量包，让你分析其中和flag有关的信息。<br>最简单的取证题：<br><img src="https://miao.su/images/2018/03/18/5d91ca.png" alt="5d91ca.png"><br>使用wirewhark打开流量包简单查看便可以拿到flag。<br><br>流量包中与隐写，加密相关：<br>这类题目通常让你从流量包中抓住关键数据，保存文件进行分析，取证，例如：<br><img src="https://miao.su/images/2018/03/18/6aae5b.png" alt="6aae5b.png"><br>查看流量包看到一个压缩包和一张图片，随即下载压缩包和图片，发现压缩包加密，但压缩包中有一张同名的图片，随即进行明文攻击。（有空来写写有关压缩包的文章）<br><br><br>当然misc杂项并不止这些，只是现在的我能理解的就只有这么点而已。学习之路漫长而又艰辛，只有不断学习前进才能有所收获。虽然现在不会，但并不代表以后不会，不是吗？<br>因为心中存有信念，便无惧所有的挫折和苦难。</p>
 
     </article>
     <!-- 前后页  -->
     <ul class="post-paginator">
         <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2018/03/18/later/" title= To be finished >
+                    <div class="nextTitle">To be finished</div>
+                </a>
             
         </li>
         <li class="previous">
@@ -538,12 +543,7 @@ top:50vh;
     
     
     
-    
-    
-    
-    
-    
-    <div class="total-archive"> Total : 6 </div>
+    <div class="total-archive"> Total : 7 </div>
     
     <div class="post-archive">
     
@@ -552,6 +552,11 @@ top:50vh;
     
     <div class="archive-year"> 2018 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2018/03/18/later/" >To be finished</a>
+        </li>
     
     
         <li class="archive-post-item">
