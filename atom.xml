@@ -82,9 +82,9 @@
     </summary>
     
     
-      <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
-    
       <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
+    
+      <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
     
   </entry>
   
@@ -107,9 +107,9 @@
     </summary>
     
     
-      <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
-    
       <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
+    
+      <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
     
   </entry>
   
@@ -155,9 +155,9 @@
     </summary>
     
     
-      <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
-    
       <category term="misc" scheme="http://zcluslloye.cn/tags/misc/"/>
+    
+      <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
     
   </entry>
   
@@ -166,9 +166,9 @@
     <link href="http://zcluslloye.cn/2018/03/14/shuffle/"/>
     <id>http://zcluslloye.cn/2018/03/14/shuffle/</id>
     <published>2018-03-14T12:40:34.000Z</published>
-    <updated>2018-03-16T13:26:49.860Z</updated>
+    <updated>2018-04-25T07:45:31.906Z</updated>
     
-    <content type="html"><![CDATA[<p>学了半年多编程，多多少少也见过好几种排序方法，选择排序，插入排序，冒泡排序等等。<br>而洗牌算法的目的就是将有序的数组打乱。那么，怎么样洗牌才能使所有可能性概率都是一致的呢？<br>我认为要等概论打乱n张牌，那么就得使某一种打乱的方法出现的可能性为1/n！。<br>那么怎么实现呢？我的第一想法是利用伪随机数来进行打乱。例如，我们要打乱10张牌，那么从第一张牌开始打乱，从1-10的随机数中选取一个数进行交换，以后每个数字都是如此。<br>那么问题来了，这样是等概论吗？这种打乱使已经进行过交换的数字又可能再一次进行交换，导致重复交换，概率肯定是不确定的。<br>既然如此，我们已经可以基本上知道如何使概率为1/n!了。先从最后一个数n开始，选取1——n间的随机数，进行交换；而之后开始打乱第n-1个数，选取1——(n-1)的随机数进行交换。如此反复，便可以得到真正等概率的洗牌算法。</p><h1 id="代码部分"><a href="#代码部分" class="headerlink" title="代码部分"></a>代码部分</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//这里我们打乱52个数</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">shuffle</span><span class="params">(<span class="keyword">int</span> *a,<span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i,temp,number;</span><br><span class="line">    srand((<span class="keyword">unsigned</span>)time(<span class="literal">NULL</span>));</span><br><span class="line">    <span class="keyword">for</span>(i = n<span class="number">-1</span> ; i &gt; <span class="number">0</span> ; i--)</span><br><span class="line">    &#123;</span><br><span class="line">        number = rand() % (i+<span class="number">1</span>);</span><br><span class="line">        temp = a[i];</span><br><span class="line">        a[i] = a[number];</span><br><span class="line">        a[number] = temp;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> a[<span class="number">52</span>],i;</span><br><span class="line">    <span class="keyword">int</span> n = <span class="keyword">sizeof</span>(a)/<span class="keyword">sizeof</span>(<span class="keyword">int</span>);</span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span>;i &lt; n;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        a[i] = i+<span class="number">1</span>;</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"洗牌后为：\n"</span>);</span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span>;i &lt; n;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d\n"</span>,a[i]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+    <content type="html"><![CDATA[<p>学了半年多编程，多多少少也见过好几种排序方法，选择排序，插入排序，冒泡排序等等。<br>而洗牌算法的目的就是将有序的数组打乱。那么，怎么样洗牌才能使所有可能性概率都是一致的呢？<br>我认为要等概论打乱n张牌，那么就得使某一种打乱的方法出现的可能性为1/n！。<br>那么怎么实现呢？我的第一想法是利用伪随机数来进行打乱。例如，我们要打乱10张牌，那么从第一张牌开始打乱，从1-10的随机数中选取一个数进行交换，以后每个数字都是如此。<br>那么问题来了，这样是等概论吗？这种打乱使已经进行过交换的数字又可能再一次进行交换，导致重复交换，概率肯定是不确定的。<br>既然如此，我们已经可以基本上知道如何使概率为1/n!了。先从最后一个数n开始，选取1-n间的随机数，进行交换；而之后开始打乱第n-1个数，选取1-(n-1)的随机数进行交换。如此反复，便可以得到真正等概率的洗牌算法。</p><h1 id="代码部分"><a href="#代码部分" class="headerlink" title="代码部分"></a>代码部分</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//这里我们打乱52个数</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">shuffle</span><span class="params">(<span class="keyword">int</span> *a,<span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i,temp,number;</span><br><span class="line">    srand((<span class="keyword">unsigned</span>)time(<span class="literal">NULL</span>));</span><br><span class="line">    <span class="keyword">for</span>(i = n<span class="number">-1</span> ; i &gt; <span class="number">0</span> ; i--)</span><br><span class="line">    &#123;</span><br><span class="line">        number = rand() % (i+<span class="number">1</span>);</span><br><span class="line">        temp = a[i];</span><br><span class="line">        a[i] = a[number];</span><br><span class="line">        a[number] = temp;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> a[<span class="number">52</span>],i;</span><br><span class="line">    <span class="keyword">int</span> n = <span class="keyword">sizeof</span>(a)/<span class="keyword">sizeof</span>(<span class="keyword">int</span>);</span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span>;i &lt; n;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        a[i] = i+<span class="number">1</span>;</span><br><span class="line">    &#125; </span><br><span class="line">    shuffle(a,n);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"洗牌后为：\n"</span>);</span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span>;i &lt; n;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d\n"</span>,a[i]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
     
     <summary type="html">
     
@@ -203,9 +203,9 @@
     </summary>
     
     
-      <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
-    
       <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
+    
+      <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
     
   </entry>
   
