@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://zcluslloye.cn/"/>
-  <updated>2018-04-25T07:17:35.834Z</updated>
+  <updated>2018-05-18T16:33:45.471Z</updated>
   <id>http://zcluslloye.cn/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>经典算法之选择排序</title>
+    <link href="http://zcluslloye.cn/2018/05/11/selectsort/"/>
+    <id>http://zcluslloye.cn/2018/05/11/selectsort/</id>
+    <published>2018-05-11T11:20:28.000Z</published>
+    <updated>2018-05-18T16:33:45.471Z</updated>
+    
+    <content type="html"><![CDATA[<p>最近都没时间写文章，想想还是得偶尔空出点时间来写文章学习点东西。<br>讲讲选择排序。<br>选择排序和冒泡排序都是比较基本的排序算法，下面就来简单说说选择排序的实现方法。<br>设数组的下标为[0…n-1]，i=0。刚开始整个数组都处于无序状态，在无序区中找到一个最小的数放在第i个位置，则现在[0..i]处于有序区，i++并重复步骤，直到i==n-1，则排序完成。</p><h2 id="源码部分"><a href="#源码部分" class="headerlink" title="源码部分"></a>源码部分</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">void selectsort(int a[],int n)</span><br><span class="line">&#123;</span><br><span class="line">    int i,j,MinIndex;</span><br><span class="line">    for(i=0;i&lt;n;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        MinIndex = i;</span><br><span class="line">        for(j=i+1;j&lt;n;k++)</span><br><span class="line">        &#123;</span><br><span class="line">            if(a[j]&lt;a[MinIndex])</span><br><span class="line">                MinIndex = j;</span><br><span class="line">        &#125;</span><br><span class="line">        Swap(a[i],a[MinIndex]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">//Swap的实现</span><br><span class="line">void Swap(int &amp;a, int &amp;b)  </span><br><span class="line">&#123;  </span><br><span class="line">    int c = a;  </span><br><span class="line">    a = b;  </span><br><span class="line">    b = c;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure><p>选择排序和冒泡排序的时间复杂度都是n^2,并且都是稳定的排序，但当数组长度过大时，效率反而低下。下次讲讲时间复杂度也是n^2的插入排序法。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;最近都没时间写文章，想想还是得偶尔空出点时间来写文章学习点东西。&lt;br&gt;讲讲选择排序。&lt;br&gt;选择排序和冒泡排序都是比较基本的排序算法，下面就来简单说说选择排序的实现方法。&lt;br&gt;设数组的下标为[0…n-1]，i=0。刚开始整个数组都处于无序状态，在无序区中找到一个最小的数
+      
+    
+    </summary>
+    
+    
+      <category term="算法" scheme="http://zcluslloye.cn/tags/%E7%AE%97%E6%B3%95/"/>
+    
+  </entry>
   
   <entry>
     <title>docker常用命令汇总</title>
@@ -82,9 +105,9 @@
     </summary>
     
     
-      <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
-    
       <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
+    
+      <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
     
   </entry>
   
@@ -107,9 +130,9 @@
     </summary>
     
     
-      <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
-    
       <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
+    
+      <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
     
   </entry>
   
@@ -155,9 +178,9 @@
     </summary>
     
     
-      <category term="misc" scheme="http://zcluslloye.cn/tags/misc/"/>
-    
       <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
+    
+      <category term="misc" scheme="http://zcluslloye.cn/tags/misc/"/>
     
   </entry>
   
@@ -203,9 +226,9 @@
     </summary>
     
     
-      <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
-    
       <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
+    
+      <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
     
   </entry>
   
