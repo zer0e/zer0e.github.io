@@ -349,7 +349,7 @@ height:50vh;
             <main class="main post-page">
     <article class="article-entry">
         <p>冒泡排序法应该是大家最初接触到的排序算法，冒泡排序法简单而且非常容易理解，下面我就以升序为例讲解。<br>设数组的长度为N，比较相邻的两个元素，把其中大的那个数交换放在后面。对第0个到第N-1个数进行遍历之后，最大的数已经“沉”到最后一个，接下来对第0个到第N-2个数进行遍历，直到排序完成。<br><br><br>很容易就写出源码。</p>
-<h2 id="源码部分"><a href="#源码部分" class="headerlink" title="源码部分"></a>源码部分</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">void BubbleSort(int a[], int n)  </span><br><span class="line">&#123;  </span><br><span class="line">       int i, j;  </span><br><span class="line">       for (i = 0; i &lt; n; i++)  </span><br><span class="line">              for (j = 1; j &lt; n - i; j++)  </span><br><span class="line">                     if (a[j - 1] &gt; a[j])  </span><br><span class="line">                            swap(a[j - 1], a[j]);  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+<h2 id="源码部分"><a href="#源码部分" class="headerlink" title="源码部分"></a>源码部分</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">BubbleSort</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> n)</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">       <span class="keyword">int</span> i, j;  </span><br><span class="line">       <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; n; i++)  </span><br><span class="line">              <span class="keyword">for</span> (j = <span class="number">1</span>; j &lt; n - i; j++)  </span><br><span class="line">                     <span class="keyword">if</span> (a[j - <span class="number">1</span>] &gt; a[j])  </span><br><span class="line">                            swap(a[j - <span class="number">1</span>], a[j]);  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
 <p>显然，冒泡排序法的时间复杂度为n*n，效率低下，对于大数组不建议使用冒泡排序法。当然<a href="https://blog.csdn.net/morewindows/article/details/6657829" target="_blank" rel="noopener">网上</a>也有许多对冒泡排序法的优化，这里我便不详讲。</p>
 
     </article>
@@ -722,11 +722,11 @@ top:50vh;
     
         <span class="sidebar-tag-name" data-tags="linux"><span class="iconfont-archer">&#xe606;</span>linux</span>
     
-        <span class="sidebar-tag-name" data-tags="misc"><span class="iconfont-archer">&#xe606;</span>misc</span>
+        <span class="sidebar-tag-name" data-tags="web"><span class="iconfont-archer">&#xe606;</span>web</span>
     
         <span class="sidebar-tag-name" data-tags="CTF"><span class="iconfont-archer">&#xe606;</span>CTF</span>
     
-        <span class="sidebar-tag-name" data-tags="web"><span class="iconfont-archer">&#xe606;</span>web</span>
+        <span class="sidebar-tag-name" data-tags="misc"><span class="iconfont-archer">&#xe606;</span>misc</span>
     
         <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
     
