@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://zcluslloye.cn/"/>
-  <updated>2018-06-03T07:03:16.522Z</updated>
+  <updated>2018-06-10T10:21:35.417Z</updated>
   <id>http://zcluslloye.cn/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>经典算法之归并排序</title>
+    <link href="http://zcluslloye.cn/2018/06/07/mergesort/"/>
+    <id>http://zcluslloye.cn/2018/06/07/mergesort/</id>
+    <published>2018-06-07T12:22:00.000Z</published>
+    <updated>2018-06-10T10:21:35.417Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>归并排序是种独立的排序，它通过分治法的思想的排序数组。将数组分治为有序的子序列，最后合并每个子序列，完成排序。<br>归并排序的时间复杂度同快速排序一致，为O(N*logN)，空间复杂度上归并排序则稳定为O(n)来存储临时数组。 </p><h1 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h1><p>要理解归并排序，需要先理解如何合并两个有序序列。<br>假设有以下有序序列：</p><p><table><tr><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td></tr><tr><td>3</td><td>34</td><td>54</td><td>14</td><td>23</td><td>41</td></tr></table><br>先将序列对半分，分为3，34，54和14，23，41两组有序序列，比较两组序列的第一个数，哪个小就将其放在临时数组中，这里3小于14，便将3放在临时数组中，现在变成了如下序列</p><p><table><tr><td>34</td><td>54</td></tr></table></p><p><table><tr><td>14</td><td>23</td><td>41</td></tr></table><br>接着比较34与14，将14放在临时数组中，以此类推，直到两个序列都放入了临时数组。<br>由此写出代码：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">MemeryArray</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> n, <span class="keyword">int</span> b[], <span class="keyword">int</span> m, <span class="keyword">int</span> c[])</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="keyword">int</span> i, j, k;  </span><br><span class="line">  </span><br><span class="line">    i = j = k = <span class="number">0</span>;  </span><br><span class="line">    <span class="keyword">while</span> (i &lt; n &amp;&amp; j &lt; m)  <span class="comment">//将小的数放入临时数组</span></span><br><span class="line">    &#123;  </span><br><span class="line">        <span class="keyword">if</span> (a[i] &lt; b[j])  </span><br><span class="line">            c[k++] = a[i++];  </span><br><span class="line">        <span class="keyword">else</span>  </span><br><span class="line">            c[k++] = b[j++];   </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">while</span> (i &lt; n)   <span class="comment">//若两个序列长度不同，则比较完成后直接将有序序列的数依次放入临时数组，下同</span></span><br><span class="line">        c[k++] = a[i++];  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">while</span> (j &lt; m)  </span><br><span class="line">        c[k++] = b[j++];  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure><br>那问题就来了，我们怎么得到两个有序序列来使它们合并呢？<br>我们可以将数组一直二分，直到序列中只有一个数，便可以得到一个数的有序序列。简而言之，先使用递归拆分序列，再合并序列。如此便实现了归并排序。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">MergeArray</span><span class="params">(<span class="keyword">int</span> a[],<span class="keyword">int</span> first,<span class="keyword">int</span> mid,<span class="keyword">int</span> last,<span class="keyword">int</span> temp[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i = first, j = mid + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">int</span> m = mid,   n = last;  </span><br><span class="line">    <span class="keyword">int</span> k = <span class="number">0</span>;  </span><br><span class="line">      </span><br><span class="line">    <span class="keyword">while</span> (i &lt;= m &amp;&amp; j &lt;= n)  </span><br><span class="line">    &#123;  </span><br><span class="line">        <span class="keyword">if</span> (a[i] &lt;= a[j])  </span><br><span class="line">            temp[k++] = a[i++];  </span><br><span class="line">        <span class="keyword">else</span>  </span><br><span class="line">            temp[k++] = a[j++];  </span><br><span class="line">    &#125;  </span><br><span class="line">      </span><br><span class="line">    <span class="keyword">while</span> (i &lt;= m)  </span><br><span class="line">        temp[k++] = a[i++];  </span><br><span class="line">      </span><br><span class="line">    <span class="keyword">while</span> (j &lt;= n)  </span><br><span class="line">        temp[k++] = a[j++];  </span><br><span class="line">      </span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; k; i++)  </span><br><span class="line">        a[first + i] = temp[i]; </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">MergeSort</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> first, <span class="keyword">int</span> last, <span class="keyword">int</span> temp[])</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="keyword">if</span> (first &lt; last)  </span><br><span class="line">    &#123;  </span><br><span class="line">        <span class="keyword">int</span> mid = (first + last) / <span class="number">2</span>;  </span><br><span class="line">        mergesort(a, first, mid, temp);  <span class="comment">//递归，使左边序列有序</span></span><br><span class="line">        mergesort(a, mid + <span class="number">1</span>, last, temp); <span class="comment">//使右边序列有序</span></span><br><span class="line">        mergearray(a, first, mid, last, temp); <span class="comment">//合并两个有序序列</span></span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>归并排序效率还是比较高的，但速度上快速排序仍比归并排序来的快。笔者在自己电脑上进行测试：<br>20000个随机数：<br><img src="http://p9oxvvk1b.bkt.clouddn.com/merge3.png" alt=""><br>50000个随机数：<br><img src="http://p9oxvvk1b.bkt.clouddn.com/merge5.png" alt=""><br>100000个随机数：<br><img src="http://p9oxvvk1b.bkt.clouddn.com/merge2.png" alt=""><br>500000个随机数：<br><img src="http://p9oxvvk1b.bkt.clouddn.com/merge4.png" alt=""></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;归并排序是种独立的排序，它通过分治法的思想的排序数组。将数组分治为有序的子序列，最后合并每个子序列，完成排序。&lt;br&gt;归并排序的时间复杂度同
+      
+    
+    </summary>
+    
+    
+      <category term="算法" scheme="http://zcluslloye.cn/tags/%E7%AE%97%E6%B3%95/"/>
+    
+  </entry>
   
   <entry>
     <title>经典算法之快速排序</title>
@@ -151,9 +174,9 @@
     </summary>
     
     
-      <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
-    
       <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
+    
+      <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
     
   </entry>
   
@@ -176,9 +199,9 @@
     </summary>
     
     
-      <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
-    
       <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
+    
+      <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
     
   </entry>
   
@@ -224,9 +247,9 @@
     </summary>
     
     
-      <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
-    
       <category term="misc" scheme="http://zcluslloye.cn/tags/misc/"/>
+    
+      <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
     
   </entry>
   
@@ -272,9 +295,9 @@
     </summary>
     
     
-      <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
-    
       <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
+    
+      <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
     
   </entry>
   
