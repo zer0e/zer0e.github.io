@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://zcluslloye.cn/"/>
-  <updated>2018-06-10T10:21:35.417Z</updated>
+  <updated>2018-07-30T09:07:26.891Z</updated>
   <id>http://zcluslloye.cn/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>浅谈CSP内容安全策略</title>
+    <link href="http://zcluslloye.cn/2018/07/12/csp/"/>
+    <id>http://zcluslloye.cn/2018/07/12/csp/</id>
+    <published>2018-07-12T14:20:28.000Z</published>
+    <updated>2018-07-30T09:07:26.891Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>CSP策略全称为Content Security Policy，是以白名单的机制对网站加载或者执行的资源起作用。CSP通常以HTTP头信息或者meta元素定义，可以较好的防御dom xss。</p><h1 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h1><p>1.使用meta标签，直接在页面中定义csp<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">"content-security-policy"</span> <span class="attr">content</span>=<span class="string">"策略"</span>&gt;</span></span><br></pre></td></tr></table></figure><br>这种方式较为简单，但需要每个页面都添加，较为繁琐。</p><p>2.使用HTTP头定义CSP<br>Apache :</p><p>Add the following to your httpd.conf in your VirtualHost or in an .htaccess file:</p><p>Header set Content-Security-Policy “default-src ‘self’;”</p><p>Nginx :</p><p>In your server {} block add:</p><p>add_header Content-Security-Policy “default-src ‘self’;”</p><p>也可使用PHP设置http头:<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">header(<span class="string">"Content-Security-Policy: default-src 'self'"</span>);</span><br></pre></td></tr></table></figure></p><h1 id="CSP的书写规则"><a href="#CSP的书写规则" class="headerlink" title="CSP的书写规则"></a>CSP的书写规则</h1><p>举个例子<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">//限制所有外部资源，所有资源只能从当前域名加载</span><br><span class="line">Content-Security-Policy: default-src 'self'</span><br><span class="line">//也可以指定资源网站</span><br><span class="line">Content-Security-Policy: default-src http://xxx.com</span><br></pre></td></tr></table></figure><br>default-src是CSP指令，多个指令用分号分隔，指令值用空格分隔，如：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Content-Security-Policy: default-src http://xxx.com; script-src http://aaa.com http://bbb.com</span><br></pre></td></tr></table></figure><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">//通过report-uri指令发送拦截报告到指定地址</span><br><span class="line">Content-Security-Policy: default-src &apos;self&apos;; report-uri /report-uri;</span><br><span class="line">//报告通常为：</span><br><span class="line">&#123;</span><br><span class="line">  &quot;csp-report&quot;: &#123;</span><br><span class="line">    &quot;document-uri&quot;: &quot;http://example.com/signup.html&quot;,</span><br><span class="line">    &quot;referrer&quot;: &quot;&quot;,</span><br><span class="line">    &quot;blocked-uri&quot;: &quot;http://example.com/css/style.css&quot;,</span><br><span class="line">    &quot;violated-directive&quot;: &quot;style-src cdn.example.com&quot;,</span><br><span class="line">    &quot;original-policy&quot;: &quot;default-src &apos;none&apos;; style-src cdn.example.com; report-uri /_/csp-reports&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p><h1 id="常用的CSP指令"><a href="#常用的CSP指令" class="headerlink" title="常用的CSP指令"></a>常用的CSP指令</h1><table><thead><tr><th>指令</th><th align="center">指令和指令值示例</th><th align="right">指令说明</th></tr></thead><tbody><tr><td>default-src</td><td align="center">‘self’ cdn.example.com</td><td align="right">默认加载策略</td></tr><tr><td>script-src</td><td align="center">‘self’ js.example.com</td><td align="right">对 JavaScript 的加载策略。</td></tr><tr><td>style-src</td><td align="center">‘self’ css.example.com</td><td align="right">对样式的加载策略。</td></tr><tr><td>img-src</td><td align="center">‘self’ img.example.com</td><td align="right">对图片的加载策略。</td></tr><tr><td>connect-src</td><td align="center">‘self’</td><td align="right">对 Ajax、WebSocket 等请求的加载策略。不允许的情况下，浏览器会模拟一个状态为 400 的响应。</td></tr><tr><td>font-src</td><td align="center">font.cdn.example.com</td><td align="right">针对 WebFont 的加载策略。</td></tr><tr><td>object-src</td><td align="center">‘self’</td><td align="right">针对 、 或  等标签引入的 flash 等插件的加载策略。</td></tr><tr><td>media-src</td><td align="center">media.cdn.example.com</td><td align="right">针对媒体引入的 HTML 多媒体的加载策略。</td></tr><tr><td>frame-src</td><td align="center">‘self’</td><td align="right">针对 frame 的加载策略。</td></tr><tr><td>report-uri</td><td align="center">/report-uri</td><td align="right">告诉浏览器如果请求的资源不被策略允许时，往哪个地址提交日志信息。 特别的：如果想让浏览器只汇报日志，不阻止任何内容，可以改用 Content-Security-Policy-Report-Only 头。</td></tr><tr><td>sandbox</td><td align="center"></td><td align="right">设置沙盒环境</td></tr><tr><td>child-src</td><td align="center"></td><td align="right">主要防御 <code>&lt;frame&gt;</code>,<code>&lt;iframe&gt;</code></td></tr><tr><td>form-action</td><td align="center"></td><td align="right">主要防御 <code>&lt;form&gt;</code></td></tr><tr><td>frame-ancestors</td><td align="center"></td><td align="right">主要防御 <code>&lt;frame&gt;</code>,<code>&lt;iframe&gt;</code>,<code>&lt;object&gt;</code>,<code>&lt;embed&gt;</code>,<code>&lt;applet&gt;</code></td></tr><tr><td>plugin-types</td><td align="center"></td><td align="right">主要防御 <code>&lt;object&gt;</code>,<code>&lt;embed&gt;</code>,<code>&lt;applet&gt;</code></td></tr></tbody></table><h1 id="CSP指令值"><a href="#CSP指令值" class="headerlink" title="CSP指令值"></a>CSP指令值</h1><table><thead><tr><th>指令值</th><th align="center">指令和指令值示例</th><th align="right">指令值说明</th></tr></thead><tbody><tr><td><em></em></td><td align="center">img-src </td><td align="right">允许任何内容。</td></tr><tr><td>‘none’</td><td align="center">img-src ‘none’</td><td align="right">不允许任何内容。</td></tr><tr><td>‘self’</td><td align="center">img-src ‘self’</td><td align="right">允许来自相同来源的内容（相同的协议、域名和端口）。</td></tr><tr><td>data:</td><td align="center">img-src data:</td><td align="right">允许 data: 协议（如 base64 编码的图片）。</td></tr><tr><td>example.com</td><td align="center">img-src img.example.com</td><td align="right">允许加载指定域名的资源。</td></tr><tr><td><em>.example.com</em></td><td align="center">img-src .example.com</td><td align="right">允许加载 example.com 任何子域的资源。</td></tr><tr><td>‘unsafe-inline’</td><td align="center">script-src ‘unsafe-inline’</td><td align="right">允许加载 inline 资源（例如常见的 style 属性，onclick，inline js 和 inline css 等等）。</td></tr><tr><td>‘unsafe-eval’</td><td align="center">script-src ‘unsafe-eval’</td><td align="right">允许加载动态 js 代码，例如 eval()。</td></tr></tbody></table><h1 id="演示"><a href="#演示" class="headerlink" title="演示"></a>演示</h1><p>定义CSP，图片资源只能从当前域名加载<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">header(<span class="string">"Content-Security-Policy: img-src 'self'"</span>);</span><br><span class="line">$a = $_GET[<span class="string">'a'</span>];</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"$a"</span>;</span><br></pre></td></tr></table></figure><br>输入<code>&lt;img src=1.jpeg &gt;</code>图片成功加载<br><img src="http://p9oxvvk1b.bkt.clouddn.com/_1275dae364fd1c66d25718c24aeaad02.png" alt=""><br>输入<code>&lt;img src=&quot;http://p9oxvvk1b.bkt.clouddn.com/_1275dae364fd1c66d25718c24aeaad02.png&quot; &gt;</code>图片加载被浏览器阻止，stasus显示为blocked:csp<br><img src="http://p9oxvvk1b.bkt.clouddn.com/_3db8ddd470f98b1abbe96224f8c26a2a.png" alt=""></p><h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>CSP策略虽然通过白名单限制了资源的加载，减少了XSS攻击，但也造成了：Eval及相关函数被禁用、内嵌的JavaScript代码将不会执行、只能通过白名单来加载远程脚本，并且需要浏览器支持CSP策略。如果使用CSP策略，开发者不得不使内嵌脚本和文档分离，但好在CSP使开发者减少了对XSS攻击的负担。<br>现在大多数浏览器都已支持CSP策略，大大减少了用户被广告骚扰和盗取cookie的风险。</p><h1 id="参见"><a href="#参见" class="headerlink" title="参见"></a>参见</h1><p><a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/CSP" target="_blank" rel="noopener">Content-Security-Policy</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;CSP策略全称为Content Security Policy，是以白名单的机制对网站加载或者执行的资源起作用。CSP通常以HTTP头信息或
+      
+    
+    </summary>
+    
+    
+      <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
+    
+  </entry>
   
   <entry>
     <title>经典算法之归并排序</title>
@@ -174,9 +197,9 @@
     </summary>
     
     
-      <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
-    
       <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
+    
+      <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
     
   </entry>
   
@@ -199,9 +222,9 @@
     </summary>
     
     
-      <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
-    
       <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
+    
+      <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
     
   </entry>
   
@@ -295,9 +318,9 @@
     </summary>
     
     
-      <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
-    
       <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
+    
+      <category term="CTF" scheme="http://zcluslloye.cn/tags/CTF/"/>
     
   </entry>
   
