@@ -9,7 +9,7 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
-    <title>经典算法之归并排序 · ZclusLLoye&#39;s Blog</title>
+    <title>ZclusLLoye&#39;s Blog</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -251,23 +251,12 @@
 </head>
 
     
-        <body class="post-body">
-    
     
 <header class="header">
 
     <div class="read-progress"></div>
     <div class="header-sidebar-menu">&#xe775;</div>
     <!-- post页的toggle banner  -->
-    
-    <div class="banner">
-            <div class="blog-title">
-                <a href="/" >ZclusLLoye&#39;s Blog</a>
-            </div>
-            <div class="post-title">
-                <a href="#" class="post-name">经典算法之归并排序</a>
-            </div>
-    </div>
     
     <a class="home-link" href=/>ZclusLLoye's Blog</a>
 </header>
@@ -279,114 +268,63 @@
 
 
 
-height:50vh;
+
 
 >
     
     <!-- 主页  -->
-    
-    
-    <!-- 404页  -->
             
-    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-img" style="background-image: url(/)"></div>
     <div class="site-intro-placeholder"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            经典算法之归并排序
-            <!-- 404 -->
-            
         </h1>
         <!-- 副标题 -->
         <p class="intro-subtitle">
             <!-- 主页副标题  -->
             
-            
-            <!-- 404 -->
-            
         </p>
         <!-- 文章页meta -->
-        
-            <!-- 文章页标签  -->
-            
-                <div class= post-intro-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = 算法>算法</a>
-    
-</div>
-            
-            <div class="post-intro-meta">
-                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
-                <span class="post-intro-time">2018/06/07</span>
-                
-                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
-                    <span class="iconfont-archer">&#xe602;</span>
-                    <span id="busuanzi_value_page_pv"></span>
-                </span>
-                
-                <span class="shareWrapper">
-                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
-                    <span class="shareText">Share</span>
-                    <ul class="shareList">
-                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
-                            <div class="share-qrcode"></div>
-                        </li>
-                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
-                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
-                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
-                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
-                    </ul>
-                </span>
-            </div>
         
     </div>
 </div>
         <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
 
         <div class="container container-unloaded">
-            <main class="main post-page">
-    <article class="article-entry">
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>归并排序是种独立的排序，它通过分治法的思想的排序数组。将数组分治为有序的子序列，最后合并每个子序列，完成排序。<br>归并排序的时间复杂度同快速排序一致，为O(N*logN)，空间复杂度上归并排序则稳定为O(n)来存储临时数组。 </p>
-<h1 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h1><p>要理解归并排序，需要先理解如何合并两个有序序列。<br>假设有以下有序序列：</p>
-<p><table><tr><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td></tr><tr><td>3</td><td>34</td><td>54</td><td>14</td><td>23</td><td>41</td></tr></table><br>先将序列对半分，分为3，34，54和14，23，41两组有序序列，比较两组序列的第一个数，哪个小就将其放在临时数组中，这里3小于14，便将3放在临时数组中，现在变成了如下序列</p>
-<p><table><tr><td>34</td><td>54</td></tr></table></p>
-<p><table><tr><td>14</td><td>23</td><td>41</td></tr></table><br>接着比较34与14，将14放在临时数组中，以此类推，直到两个序列都放入了临时数组。<br>由此写出代码：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">MemeryArray</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> n, <span class="keyword">int</span> b[], <span class="keyword">int</span> m, <span class="keyword">int</span> c[])</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="keyword">int</span> i, j, k;  </span><br><span class="line">  </span><br><span class="line">    i = j = k = <span class="number">0</span>;  </span><br><span class="line">    <span class="keyword">while</span> (i &lt; n &amp;&amp; j &lt; m)  <span class="comment">//将小的数放入临时数组</span></span><br><span class="line">    &#123;  </span><br><span class="line">        <span class="keyword">if</span> (a[i] &lt; b[j])  </span><br><span class="line">            c[k++] = a[i++];  </span><br><span class="line">        <span class="keyword">else</span>  </span><br><span class="line">            c[k++] = b[j++];   </span><br><span class="line">    &#125;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">while</span> (i &lt; n)   <span class="comment">//若两个序列长度不同，则比较完成后直接将有序序列的数依次放入临时数组，下同</span></span><br><span class="line">        c[k++] = a[i++];  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">while</span> (j &lt; m)  </span><br><span class="line">        c[k++] = b[j++];  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure><br>那问题就来了，我们怎么得到两个有序序列来使它们合并呢？<br>我们可以将数组一直二分，直到序列中只有一个数，便可以得到一个数的有序序列。简而言之，先使用递归拆分序列，再合并序列。如此便实现了归并排序。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">MergeArray</span><span class="params">(<span class="keyword">int</span> a[],<span class="keyword">int</span> first,<span class="keyword">int</span> mid,<span class="keyword">int</span> last,<span class="keyword">int</span> temp[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i = first, j = mid + <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">int</span> m = mid,   n = last;  </span><br><span class="line">    <span class="keyword">int</span> k = <span class="number">0</span>;  </span><br><span class="line">      </span><br><span class="line">    <span class="keyword">while</span> (i &lt;= m &amp;&amp; j &lt;= n)  </span><br><span class="line">    &#123;  </span><br><span class="line">        <span class="keyword">if</span> (a[i] &lt;= a[j])  </span><br><span class="line">            temp[k++] = a[i++];  </span><br><span class="line">        <span class="keyword">else</span>  </span><br><span class="line">            temp[k++] = a[j++];  </span><br><span class="line">    &#125;  </span><br><span class="line">      </span><br><span class="line">    <span class="keyword">while</span> (i &lt;= m)  </span><br><span class="line">        temp[k++] = a[i++];  </span><br><span class="line">      </span><br><span class="line">    <span class="keyword">while</span> (j &lt;= n)  </span><br><span class="line">        temp[k++] = a[j++];  </span><br><span class="line">      </span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; k; i++)  </span><br><span class="line">        a[first + i] = temp[i]; </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">MergeSort</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> first, <span class="keyword">int</span> last, <span class="keyword">int</span> temp[])</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="keyword">if</span> (first &lt; last)  </span><br><span class="line">    &#123;  </span><br><span class="line">        <span class="keyword">int</span> mid = (first + last) / <span class="number">2</span>;  </span><br><span class="line">        mergesort(a, first, mid, temp);  <span class="comment">//递归，使左边序列有序</span></span><br><span class="line">        mergesort(a, mid + <span class="number">1</span>, last, temp); <span class="comment">//使右边序列有序</span></span><br><span class="line">        mergearray(a, first, mid, last, temp); <span class="comment">//合并两个有序序列</span></span><br><span class="line">    &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>归并排序效率还是比较高的，但速度上快速排序仍比归并排序来的快。笔者在自己电脑上进行测试：<br>20000个随机数：<br><img src="http://p9oxvvk1b.bkt.clouddn.com/merge3.png" alt=""><br>50000个随机数：<br><img src="http://p9oxvvk1b.bkt.clouddn.com/merge5.png" alt=""><br>100000个随机数：<br><img src="http://p9oxvvk1b.bkt.clouddn.com/merge2.png" alt=""><br>500000个随机数：<br><img src="http://p9oxvvk1b.bkt.clouddn.com/merge4.png" alt=""></p>
-
-    </article>
-    <!-- 前后页  -->
-    <ul class="post-paginator">
-        <li class="next">
-            
-                <div class="nextSlogan">Next Post</div>
-                <a href= "/2018/07/12/csp/" title= 浅谈CSP内容安全策略 >
-                    <div class="nextTitle">浅谈CSP内容安全策略</div>
-                </a>
-            
-        </li>
-        <li class="previous">
-            
-                <div class="prevSlogan">Previous Post</div>
-                <a href= "/2018/06/02/quicksort/" title= 经典算法之快速排序 >
-                    <div class="prevTitle">经典算法之快速排序</div>
-                </a>
-            
-        </li>
-    </ul>
-    <!-- 评论插件 -->
-    <!-- 来必力City版安装代码 -->
-
-<!-- City版安装代码已完成 -->
+            <main class="main index-page">
     
     
-    <!--PC版-->
-
-    <!--PC版-->
-
-
     
-    <!-- 评论 -->
+        <article class="index-post">
+            <a class="abstract-title" href = "/2018/08/21/wdbweb/" >
+                
+                    <span>网鼎杯第一场web部分Writeup</span>
+            </a>
+            <div class="abstract-content">
+                昨天打了网鼎杯第一场，web部分总共就两道题目，中途题目下发还出了问题，怪不得说现在web狗已经在ctf中无法生存了(pwn才是爷爷)。总的来说，这场比赛还是学到了许多知识。
+fakebook打开页面，一共就两个功能，一个注册一个登陆。注册时blog处只能填url链接，不能填ip地址。并且查看时会加载blog页面，这里存在一个SSR...
+            </div>
+            <div class="abstract-post-meta">
+                <!-- date  -->
+                <div class="abstract-date">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/08/21</span>
+                </div>
+                <!-- tags  -->
+                
+                <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = web>web</a>
+    
+</div>
+                
+            </div>
+        </article>
+    
+    <!-- paginator  -->
+    
 </main>
             <!-- profile -->
             
@@ -472,22 +410,6 @@ height:50vh;
 </footer>
     </div>
     <!-- toc -->
-    
-    <div class="toc-wrapper" style=
-    
-
-
-
-
-
-top:50vh;
-
-    >
-        <div class="toc-catalog">
-            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
-        </div>
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#实现"><span class="toc-number">2.</span> <span class="toc-text">实现</span></a></li></ol>
-    </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
     <div class="sidebar sidebar-hide">
@@ -829,8 +751,6 @@ jsonContent:
     
     </div>
     <!-- async load share.js -->
-    
-        <script src="/scripts/share.js" async></script>    
     
     </body>
 </html>
