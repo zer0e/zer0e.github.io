@@ -348,7 +348,7 @@ height:50vh;
         <div class="container container-unloaded">
             <main class="main post-page">
     <article class="article-entry">
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>前一阵子开始研究了以下xssbot，在网上找了许多文章，但这些文章重点都放在bot代码部分，对其完整网站的实现并不是说的挺清楚，这篇文章总结了我从入门到编写一个完整xss demo的心得。</p>
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>前一阵子开始研究了一下xssbot，在网上找了许多文章，但这些文章重点都放在bot代码部分，对其完整网站的实现并不是说的挺清楚，这篇文章总结了我从入门到编写一个完整xss demo的心得。</p>
 <h1 id="bot原型"><a href="#bot原型" class="headerlink" title="bot原型"></a>bot原型</h1><h2 id="bot做些什么？"><a href="#bot做些什么？" class="headerlink" title="bot做些什么？"></a>bot做些什么？</h2><p>在我看来，bot就是代替管理员去点击页面，然后获取内容，执行js。所以对于bot来说，就是能够执行js。</p>
 <h2 id="bot准备"><a href="#bot准备" class="headerlink" title="bot准备"></a>bot准备</h2><p>一般来说现在的xssbot基本上是通过python或者java实现。这里我们采用python+selenium+webdriver。<br>而webdriver又有chrome webdriver，Firefox webdriver，phantomjs。</p>
 <h3 id="selenium"><a href="#selenium" class="headerlink" title="selenium"></a>selenium</h3><p>selenium是用来控制webdriver的，在python中直接使用pip安装之后便可导入。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> selenium</span><br><span class="line"><span class="keyword">from</span> selenium <span class="keyword">import</span> webdriver  </span><br><span class="line"><span class="keyword">from</span> selenium.common.exceptions <span class="keyword">import</span> WebDriverException</span><br></pre></td></tr></table></figure></p>
