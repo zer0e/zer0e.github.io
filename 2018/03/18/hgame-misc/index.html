@@ -405,10 +405,10 @@ height:50vh;
     <article class="article-entry">
         <p>随着hgame线下赛的结束，这一阶段也该告一段落。回想一个多月，既开心又迷茫。平常偶尔打打ctf其实也是蛮开心的，但是当自己面对不会的题目时又十分迷茫(可能这就是咸鱼的痛苦吧)。<br>借此篇文章，也把剩下的自己对于misc的入门知识总结一下。<br><br>misc，在ctf比赛中也称杂项，大多数为取证题和脑洞题。其中取证题也大多需要脑洞，因此最常见的就是取证题。<br>下面我讲讲几类最常见的题型。</p>
 <h1 id="隐写类"><a href="#隐写类" class="headerlink" title="隐写类"></a>隐写类</h1><p>隐写，通常是指在图片，音频，视频，文档中写入隐藏的数据，其中以图片隐写最为常见。</p>
-<h2 id="图片隐写"><a href="#图片隐写" class="headerlink" title="图片隐写"></a>图片隐写</h2><p>最基本的图片隐写：<br><img src="http://p9oxvvk1b.bkt.clouddn.com/_2035fa6c238dd0e15ef769fbfd2ea291.png" alt=""><br>直接在linux下使用binwalk就可以发现一般的隐写数据。<br>还有高级一点的图片隐写：<br><img src="http://p9oxvvk1b.bkt.clouddn.com/_d09edd840b7b77a5e8adfec75233fb82.png" alt=""><br>使用binwalk看不出任何东西，有可能是LSB最低位隐写。<br><img src="http://p9oxvvk1b.bkt.clouddn.com/_87d817156d7ae724f3caf2c7e56fc2e3.png" alt=""><br>可以发现压缩包藏在最低位。<br><br>当然还有图片盲水印，一般来说两张图片在一起有可能是盲水印。<br><img src="http://p9oxvvk1b.bkt.clouddn.com/_7f6001ef53cbc17bf6af9f9ba3163889.png" alt=""></p>
+<h2 id="图片隐写"><a href="#图片隐写" class="headerlink" title="图片隐写"></a>图片隐写</h2><p>最基本的图片隐写：<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/hgame-misc/01.png" alt=""><br>直接在linux下使用binwalk就可以发现一般的隐写数据。<br>还有高级一点的图片隐写：<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/hgame-misc/02.png" alt=""><br>使用binwalk看不出任何东西，有可能是LSB最低位隐写。<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/hgame-misc/03.png" alt=""><br>可以发现压缩包藏在最低位。<br><br>当然还有图片盲水印，一般来说两张图片在一起有可能是盲水印。<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/hgame-misc/04.png" alt=""></p>
 <h2 id="音频隐写"><a href="#音频隐写" class="headerlink" title="音频隐写"></a>音频隐写</h2><p>基本的音频隐写和图片类似，把文件拖到binwalk就可以看到信息了。</p>
 <p>音频lsb，和图片lsb类似，使用工具便可以将数据导出。常用的工具有：mp3stego，wavsteg.</p>
-<h1 id="取证类"><a href="#取证类" class="headerlink" title="取证类"></a>取证类</h1><p>通常这类题目是给你一个流量包，让你分析其中和flag有关的信息。<br>最简单的取证题：<br><img src="http://p9oxvvk1b.bkt.clouddn.com/_5a494017a6cba870c2c07750885af087.png" alt=""><br>使用wirewhark打开流量包简单查看便可以拿到flag。<br><br>流量包中与隐写，加密相关：<br>这类题目通常让你从流量包中抓住关键数据，保存文件进行分析，取证，例如：<br><img src="http://p9oxvvk1b.bkt.clouddn.com/_3089dcd9a2a4c2987fb7caf1ae95d21d.png" alt=""><br>查看流量包看到一个压缩包和一张图片，随即下载压缩包和图片，发现压缩包加密，但压缩包中有一张同名的图片，随即进行明文攻击。（有空来写写有关压缩包的文章）<br><br><br>当然misc杂项并不止这些，只是现在的我能理解的就只有这么点而已。学习之路漫长而又艰辛，只有不断学习前进才能有所收获。虽然现在不会，但并不代表以后不会，不是吗？<br>因为心中存有信念，便无惧所有的挫折和苦难。</p>
+<h1 id="取证类"><a href="#取证类" class="headerlink" title="取证类"></a>取证类</h1><p>通常这类题目是给你一个流量包，让你分析其中和flag有关的信息。<br>最简单的取证题：<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/hgame-misc/05.png" alt=""><br>使用wirewhark打开流量包简单查看便可以拿到flag。<br><br>流量包中与隐写，加密相关：<br>这类题目通常让你从流量包中抓住关键数据，保存文件进行分析，取证，例如：<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/hgame-misc/06.png" alt=""><br>查看流量包看到一个压缩包和一张图片，随即下载压缩包和图片，发现压缩包加密，但压缩包中有一张同名的图片，随即进行明文攻击。（有空来写写有关压缩包的文章）<br><br><br>当然misc杂项并不止这些，只是现在的我能理解的就只有这么点而已。学习之路漫长而又艰辛，只有不断学习前进才能有所收获。虽然现在不会，但并不代表以后不会，不是吗？<br>因为心中存有信念，便无惧所有的挫折和苦难。</p>
 
     </article>
     <!-- license  -->
@@ -417,7 +417,7 @@ height:50vh;
             <p>原文作者：<a href="http://zcluslloye.cn">Zer0</a>
             <p>原文链接：<a href="http://zcluslloye.cn/2018/03/18/hgame-misc/">http://zcluslloye.cn/2018/03/18/hgame-misc/</a>
             <p>发表日期：<a href="http://zcluslloye.cn/2018/03/18/hgame-misc/">March 18th 2018, 3:20:28 pm</a>
-            <p>更新日期：<a href="http://zcluslloye.cn/2018/03/18/hgame-misc/">July 30th 2018, 5:26:48 pm</a>
+            <p>更新日期：<a href="http://zcluslloye.cn/2018/03/18/hgame-misc/">November 14th 2018, 5:34:41 pm</a>
             <p>版权声明：本文采用<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -835,15 +835,15 @@ top:50vh;
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
-        <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
-    
-        <span class="sidebar-tag-name" data-tags="web"><span class="iconfont-archer">&#xe606;</span>web</span>
-    
         <span class="sidebar-tag-name" data-tags="linux"><span class="iconfont-archer">&#xe606;</span>linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
     
         <span class="sidebar-tag-name" data-tags="misc"><span class="iconfont-archer">&#xe606;</span>misc</span>
     
         <span class="sidebar-tag-name" data-tags="CTF"><span class="iconfont-archer">&#xe606;</span>CTF</span>
+    
+        <span class="sidebar-tag-name" data-tags="web"><span class="iconfont-archer">&#xe606;</span>web</span>
     
         <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
     
