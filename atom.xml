@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://zcluslloye.cn/"/>
-  <updated>2018-11-14T09:20:19.476Z</updated>
+  <updated>2019-04-03T09:42:36.725Z</updated>
   <id>http://zcluslloye.cn/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>使用ngrok实现内网远程桌面</title>
+    <link href="http://zcluslloye.cn/2019/04/01/ngrok/"/>
+    <id>http://zcluslloye.cn/2019/04/01/ngrok/</id>
+    <published>2019-04-01T14:20:28.000Z</published>
+    <updated>2019-04-03T09:42:36.725Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>最近打算在机房里面用自己的电脑，笔记本太重不想背在身上，就决定使用远程控制。之前一直在用teamviewer，这几天在想为什么不用远程桌面呢，于是我便开始研究如何内网穿透使笔记本的3389端口暴露到公网上。<br>网上找了几种方法，无非就是那几个在国内比较有名的产品，花生壳和nat123。当然他们也不都是免费的，免费的也有种种限制，后来找到了ngrok来进行内网穿透，ngrok1.x是开源的，我便想使用ngrok来完成想法。</p><h1 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h1><ol><li>一台有公网ip的vps服务器</li><li>一个任意域名</li></ol><h1 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h1><h2 id="服务器环境"><a href="#服务器环境" class="headerlink" title="服务器环境"></a>服务器环境</h2><p>由于ngrok使用go语言编写的，需要先安装go环境。<br>先到golang官网下载<a href="https://dl.google.com/go/go1.12.1.linux-amd64.tar.gz" target="_blank" rel="noopener">linux安装包</a><br>执行<code>sudo tar zxvf go1.12.1.linux-amd64.tar.gz -C /usr/local</code><br>之后配置环境变量<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">vim ~/.bashrc</span><br><span class="line">//添加</span><br><span class="line"><span class="built_in">export</span> GOROOT=/usr/<span class="built_in">local</span>/go</span><br><span class="line"><span class="built_in">export</span> GOPATH=/home/root/program_develop/go_demo</span><br><span class="line"><span class="built_in">export</span> PATH=<span class="variable">$PATH</span>:<span class="variable">$GOPATH</span>:/usr/<span class="built_in">local</span>/go/bin</span><br><span class="line">//使环境变量生效</span><br><span class="line"><span class="built_in">source</span> ~/.bashrc</span><br></pre></td></tr></table></figure><br>执行<code>go version</code>出现版本就安装成功了。</p><h2 id="域名DNS解析设置"><a href="#域名DNS解析设置" class="headerlink" title="域名DNS解析设置"></a>域名DNS解析设置</h2><p>首先将一个子域名解析到自己的服务器上，例如我将remote.xxxxx.com 解析到自己的服务器ip上（A记录）.随后将 *.remote.xxxxx.com 解析到remote.xxxxx.com上（CNAME类型）。<br>至此DNS设置告一段落。</p><h2 id="安装ngrok"><a href="#安装ngrok" class="headerlink" title="安装ngrok"></a>安装ngrok</h2><h3 id="下载ngrok"><a href="#下载ngrok" class="headerlink" title="下载ngrok"></a>下载ngrok</h3><p>先下载ngrok源码，然后切换到目录<br><code>git clone https://github.com/inconshreveable/ngrok.git</code><br><code>cd ngrok</code></p><h3 id="生成证书与替换证书"><a href="#生成证书与替换证书" class="headerlink" title="生成证书与替换证书"></a>生成证书与替换证书</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">//生成</span><br><span class="line"><span class="built_in">export</span> NGROK_DOMAIN=<span class="string">"remote.xxxxx.com"</span></span><br><span class="line">openssl genrsa -out rootCA.key 2048</span><br><span class="line">openssl req -x509 -new -nodes -key rootCA.key -subj <span class="string">"/CN=<span class="variable">$NGROK_DOMAIN</span>"</span> -days 5000 -out rootCA.pem</span><br><span class="line">openssl genrsa -out device.key 2048</span><br><span class="line">openssl req -new -key device.key -subj <span class="string">"/CN=<span class="variable">$NGROK_DOMAIN</span>"</span> -out device.csr</span><br><span class="line">openssl x509 -req -<span class="keyword">in</span> device.csr -CA rootCA.pem -CAkey rootCA.key -CAcreateserial -out device.crt -days 5000</span><br><span class="line"></span><br><span class="line">//替换</span><br><span class="line">cp rootCA.pem assets/client/tls/ngrokroot.crt</span><br><span class="line">cp device.crt assets/server/tls/snakeoil.crt</span><br><span class="line">cp device.key assets/server/tls/snakeoil.key</span><br></pre></td></tr></table></figure><h3 id="编译linux服务端"><a href="#编译linux服务端" class="headerlink" title="编译linux服务端"></a>编译linux服务端</h3><p><code>GOOS=linux GOARCH=amd64 make release-server</code></p><h3 id="编译windows客户端"><a href="#编译windows客户端" class="headerlink" title="编译windows客户端"></a>编译windows客户端</h3><p><code>GOOS=windows GOARCH=amd64 make release-client</code><br>无论是编译客户端还是服务端，都会在ngrok/bin目录下生成可执行文件。</p><h2 id="运行与使用"><a href="#运行与使用" class="headerlink" title="运行与使用"></a>运行与使用</h2><h3 id="在服务器上"><a href="#在服务器上" class="headerlink" title="在服务器上"></a>在服务器上</h3><p>进入ngrok/bin目录，执行<code>./ngrokd -domain=&quot;remote.xxxxx.com&quot; -httpAddr=&quot;:8001&quot; -httpsAddr=&quot;:4443&quot; -tunnelAddr=&quot;:8083&quot;</code><br>这里由于服务器的80和443端口被占用，就换了任意一个端口来侦听http和https，当然我们用不到这个。其次我使用了一个端口来侦听客户端的服务，客户端也是通过这个端口来使用ngrok。<br>还有，如果是想后台运行，建议使用screen或者nohub命令来实现。<br>然后到云服务器的安全组中放行这些端口（不要忘记3389），以保证服务正常运行。</p><h3 id="在个人电脑上"><a href="#在个人电脑上" class="headerlink" title="在个人电脑上"></a>在个人电脑上</h3><p>首先先开启本机的远程桌面服务（好像是要win10专业版才能使用远程桌面，具体请参照微软官网。）<br>然后防火墙放行3389端口。<br>将服务器上的ngrok/bin/windows_amd64/ngrok.exe拷贝到个人电脑上，然后在同目录下创建<br>ngrok.cfg和ngrok.bat两个文件。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//ngrok.cfg</span><br><span class="line">server_addr: &quot;remote.xxxxx.com:8083&quot;</span><br><span class="line">trust_host_root_certs: false</span><br><span class="line">tunnels:</span><br><span class="line">  mstsc:</span><br><span class="line">    remote_port: 3389</span><br><span class="line">    proto:</span><br><span class="line">      tcp: &quot;127.0.0.1:3389&quot;</span><br><span class="line"></span><br><span class="line">//ngrok.bat</span><br><span class="line">ngrok.exe -config=ngrok.cfg start mstsc</span><br></pre></td></tr></table></figure><br>双击ngrok.bat文件，显示状态为online就成功了，在远程桌面连接中输入remote.xxxxx.com便可以开始使用远程桌面了。</p><h1 id="后话"><a href="#后话" class="headerlink" title="后话"></a>后话</h1><p>虽然实现了远程桌面，但其实效果并不是特别好，其主要原因还是vps限制了速率，毕竟学生机只有1M的带宽，如果有4M以上的带宽也许能顺畅一点，不过1M的速率简单使用也就已经足够了。<br>后来我又将本机的FTP服务穿透到公网，在由于IIS无法设置主被动模式，导致无法正常使用IIS自带的FTP服务，也只好作罢。理论上使用可以设置端口的其他软件搭建的FTP服务，就能成功穿透，但速度也是堪忧。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;最近打算在机房里面用自己的电脑，笔记本太重不想背在身上，就决定使用远程控制。之前一直在用teamviewer，这几天在想为什么不用远程桌面呢
+      
+    
+    </summary>
+    
+    
+      <category term="web" scheme="http://zcluslloye.cn/tags/web/"/>
+    
+  </entry>
   
   <entry>
     <title>HCTF2018 web部分Writeup</title>
