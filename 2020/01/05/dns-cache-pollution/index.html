@@ -22,7 +22,7 @@
     <meta name="description" content="">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-    <title>Zer0&#39;s Blog</title>
+    <title>DNS投毒分析 · Zer0&#39;s Blog</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -203,12 +203,23 @@
 </head>
 
     
+        <body class="post-body">
+    
     
 <header class="header">
 
     <div class="read-progress"></div>
     <div class="header-sidebar-menu">&#xe775;</div>
     <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Zer0&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">DNS投毒分析</a>
+            </div>
+    </div>
     
     <a class="home-link" href=/>Zer0's Blog</a>
 </header>
@@ -220,24 +231,74 @@
 
 
 
+
+height:50vh;
 ">
     
     <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
             
     <div class="site-intro-placeholder"></div>
-    <div class="site-intro-img" style="background-image: url(/)"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
+            
+            DNS投毒分析
+            <!-- 404 -->
             
         </h1>
         <!-- 副标题 -->
         <p class="intro-subtitle">
             <!-- 主页副标题  -->
             
+            
+            <!-- 404 -->
+            
         </p>
         <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "web">web</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">851</span>Reading time: <span class="post-count reading-time">3 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2020/01/05</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
         
     </div>
 </div>
@@ -338,68 +399,52 @@
 </script>        
         <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
         <div class="container container-unloaded">
-            <main class="main index-page">
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2019/11/12/2019-11-12/" >
-            
-                <span>谈一谈最近</span>
-        </a>
-        <div class="abstract-content">
-            几个月没写文章，谈一谈最近一年都在干些啥事吧。从18年末开始，我就很少参加CTF比赛，不管大的小的，虽然没有参加，但还是有在业余的时候看看一些大型比赛的解题思路和漏洞报告。这一年来，也是学了不少东西，主要是使用python写了两个脚本，一个抢课脚本，一个群体签到软件，主要是感觉挺好玩的。18年末到19年1月左右，主要是深入学习了计算...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/11/12</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "随笔">随笔</a>
-    
-</div>
-            
-        </div>
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>最近因为研究了下DNSsec技术突然想起来著名的DNS投毒，就是DNS缓存污染，今天趁着有点时间研究下某知名防火墙对DNS是怎么进行污染的。</p>
+<h1 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h1><p>由于DNS采用UDP协议来进行查询和应答，由于UDP是无连接的，所以当我们发送一个DNS请求时，如果有多个DNS响应包时，操作系统一般是以最先收到的响应包为准，这就使得了如果攻击者在正规DNS服务器的响应包到达之前伪造了一份DNS响应，便可将用户导向不一致的IP地址，如此便实现的DNS污染。</p>
+<h1 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h1><p>在中国大陆的运营商DNS服务器（尤其是移动），一般情况下都会对某些域名进行屏蔽，即当你向该服务器请求DNS解析时(例如google)，服务器会响应一个ip地址为0.0.0.0的地址。我们以我本地移动的DNS为例：<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/dns/3.png" alt=""><br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/dns/5.png" alt=""><br>当我们对google主域名进行DNS查询时，我们可以发现移动的dns解析只返回了0.0.0.0的ip地址。<br>而尝试114dns与阿里DNS，<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/dns/2.png" alt=""><br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/dns/4.png" alt=""><br>除了会返回一个0.0.0.0的地址外，还会有另一个响应包，地址为69.172.225.13和31.13.71.23，这两个地址都不是指向google的，而是指向了其他地区，有法国的，有美国的，经过多次测试，这个ip地址并不是固定的，而是随机指向一个ip地址。<br>因此我猜测这个dns响应应该是防火墙所返回的。<br>进一步测试谷歌的DNS服务器。<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/dns/7.png" alt=""><br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/dns/6.png" alt=""><br>我们收到了多个DNS响应。我进行了多次测试，无论是8.8.8.8还是8.8.4.4，有时候会返回三个响应，有时候会返回四个响应，我猜测应该是多个出国网关都部署了防火墙，才会有此结果。<br>猜测可能是关键字匹配，我们接着测试不存在的域名会如何返回。<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/dns/9.png" alt=""><br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/dns/8.png" alt=""><br>我们可以发现8.8.4.4竟然还是返回了两个ip地址！<br>使用美国的服务器的进行dns查询，只会得到NXDOMAIN即域名不存在的结果。<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/dns/10.png" alt=""><br>而在我进行重复测试时发现，无论是8.8.8.8还是8.8.4.4，有时候会有正常结果返回，而有时候却只有错误的ip地址，甚至连域名不存在都无法返回。这也是防火墙高明所在。  </p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>有一点要说明的是，在使用google dns进行正常域名解析时，是正常的。无论是8.8.8.8还是8.8.4.4。<br>那基本可以得出结论<br>1.运营商网络的DNS会将屏蔽域名解析为0.0.0.0<br>2.google的dns虽然在中国大陆可以使用，但防火墙制造了一种假象，使得每个人认为它返回域名都是正常，在对某些被屏蔽域名进行解析时，它并不会都返回正确的结果，我猜测正确结果会不时地被防火墙所拦截，从而营造出是DNS服务器自身的问题。而如果正确结果没被拦截，响应也通常会在最后到达，但这时候通常已经不管用了。</p>
+
     </article>
+    <!-- license  -->
     
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2019/04/01/ngrok/" >
-            
-                <span>使用ngrok实现内网远程桌面</span>
-        </a>
-        <div class="abstract-content">
-            前言最近打算在机房里面用自己的电脑，笔记本太重不想背在身上，就决定使用远程控制。之前一直在用teamviewer，这几天在想为什么不用远程桌面呢，于是我便开始研究如何内网穿透使笔记本的3389端口暴露到公网上。网上找了几种方法，无非就是那几个在国内比较有名的产品，花生壳和nat123。当然他们也不都是免费的，免费的也有种种限制，后来...
+        <div class="license-wrapper">
+            <p>Author：<a href="http://re0.top">Zer0</a>
+            <p>原文链接：<a href="http://re0.top/2020/01/05/dns-cache-pollution/">http://re0.top/2020/01/05/dns-cache-pollution/</a>
+            <p>发表日期：<a href="http://re0.top/2020/01/05/dns-cache-pollution/">一月 5日 2020, 10:20:28 晚上</a>
+            <p>更新日期：<a href="http://re0.top/2020/01/05/dns-cache-pollution/">January 5th 2020, 11:31:58 pm</a>
+            <p>版权声明：本文采用<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/04/01</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "web">web</a>
-    
-</div>
-            
-        </div>
-    </article>
     
     <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2019/11/12/2019-11-12/" title= "谈一谈最近">
+                    <div class="prevTitle">谈一谈最近</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
     
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
 </main>
             <!-- profile -->
             
@@ -486,6 +531,24 @@
 </footer>
     </div>
     <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#原理"><span class="toc-number">2.</span> <span class="toc-text">原理</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#实践"><span class="toc-number">3.</span> <span class="toc-text">实践</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#总结"><span class="toc-number">4.</span> <span class="toc-text">总结</span></a></li></ol>
+    </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
     <div class="sidebar sidebar-hide">
@@ -879,6 +942,8 @@ jsonContent:
     
     </div>
     <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
      
     </body>
 </html>

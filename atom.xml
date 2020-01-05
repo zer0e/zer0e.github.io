@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://re0.top/"/>
-  <updated>2019-11-16T13:57:12.635Z</updated>
+  <updated>2020-01-05T15:31:58.134Z</updated>
   <id>http://re0.top/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>DNS投毒分析</title>
+    <link href="http://re0.top/2020/01/05/dns-cache-pollution/"/>
+    <id>http://re0.top/2020/01/05/dns-cache-pollution/</id>
+    <published>2020-01-05T14:20:28.000Z</published>
+    <updated>2020-01-05T15:31:58.134Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>最近因为研究了下DNSsec技术突然想起来著名的DNS投毒，就是DNS缓存污染，今天趁着有点时间研究下某知名防火墙对DNS是怎么进行污染的。</p><h1 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h1><p>由于DNS采用UDP协议来进行查询和应答，由于UDP是无连接的，所以当我们发送一个DNS请求时，如果有多个DNS响应包时，操作系统一般是以最先收到的响应包为准，这就使得了如果攻击者在正规DNS服务器的响应包到达之前伪造了一份DNS响应，便可将用户导向不一致的IP地址，如此便实现的DNS污染。</p><h1 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h1><p>在中国大陆的运营商DNS服务器（尤其是移动），一般情况下都会对某些域名进行屏蔽，即当你向该服务器请求DNS解析时(例如google)，服务器会响应一个ip地址为0.0.0.0的地址。我们以我本地移动的DNS为例：<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/dns/3.png" alt=""><br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/dns/5.png" alt=""><br>当我们对google主域名进行DNS查询时，我们可以发现移动的dns解析只返回了0.0.0.0的ip地址。<br>而尝试114dns与阿里DNS，<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/dns/2.png" alt=""><br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/dns/4.png" alt=""><br>除了会返回一个0.0.0.0的地址外，还会有另一个响应包，地址为69.172.225.13和31.13.71.23，这两个地址都不是指向google的，而是指向了其他地区，有法国的，有美国的，经过多次测试，这个ip地址并不是固定的，而是随机指向一个ip地址。<br>因此我猜测这个dns响应应该是防火墙所返回的。<br>进一步测试谷歌的DNS服务器。<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/dns/7.png" alt=""><br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/dns/6.png" alt=""><br>我们收到了多个DNS响应。我进行了多次测试，无论是8.8.8.8还是8.8.4.4，有时候会返回三个响应，有时候会返回四个响应，我猜测应该是多个出国网关都部署了防火墙，才会有此结果。<br>猜测可能是关键字匹配，我们接着测试不存在的域名会如何返回。<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/dns/9.png" alt=""><br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/dns/8.png" alt=""><br>我们可以发现8.8.4.4竟然还是返回了两个ip地址！<br>使用美国的服务器的进行dns查询，只会得到NXDOMAIN即域名不存在的结果。<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/dns/10.png" alt=""><br>而在我进行重复测试时发现，无论是8.8.8.8还是8.8.4.4，有时候会有正常结果返回，而有时候却只有错误的ip地址，甚至连域名不存在都无法返回。这也是防火墙高明所在。  </p><h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>有一点要说明的是，在使用google dns进行正常域名解析时，是正常的。无论是8.8.8.8还是8.8.4.4。<br>那基本可以得出结论<br>1.运营商网络的DNS会将屏蔽域名解析为0.0.0.0<br>2.google的dns虽然在中国大陆可以使用，但防火墙制造了一种假象，使得每个人认为它返回域名都是正常，在对某些被屏蔽域名进行解析时，它并不会都返回正确的结果，我猜测正确结果会不时地被防火墙所拦截，从而营造出是DNS服务器自身的问题。而如果正确结果没被拦截，响应也通常会在最后到达，但这时候通常已经不管用了。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;最近因为研究了下DNSsec技术突然想起来著名的DNS投毒，就是DNS缓存污染，今天趁着有点时间研究下某知名防火墙对DNS是怎么进行污染的。
+      
+    
+    </summary>
+    
+    
+      <category term="web" scheme="http://re0.top/tags/web/"/>
+    
+  </entry>
   
   <entry>
     <title>谈一谈最近</title>

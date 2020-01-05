@@ -346,46 +346,18 @@
     
     
     <article class="index-post">
-        <a class="abstract-title" href = "/2019/11/12/2019-11-12/" >
+        <a class="abstract-title" href = "/2020/01/05/dns-cache-pollution/" >
             
-                <span>谈一谈最近</span>
+                <span>DNS投毒分析</span>
         </a>
         <div class="abstract-content">
-            几个月没写文章，谈一谈最近一年都在干些啥事吧。从18年末开始，我就很少参加CTF比赛，不管大的小的，虽然没有参加，但还是有在业余的时候看看一些大型比赛的解题思路和漏洞报告。这一年来，也是学了不少东西，主要是使用python写了两个脚本，一个抢课脚本，一个群体签到软件，主要是感觉挺好玩的。18年末到19年1月左右，主要是深入学习了计算...
+            前言最近因为研究了下DNSsec技术突然想起来著名的DNS投毒，就是DNS缓存污染，今天趁着有点时间研究下某知名防火墙对DNS是怎么进行污染的。
+原理由于DNS采用UDP协议来进行查询和应答，由于UDP是无连接的，所以当我们发送一个DNS请求时，如果有多个DNS响应包时，操作系统一般是以最先收到的响应包为准，这就使得了如果攻击者在正...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
             <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/11/12</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "随笔">随笔</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2019/04/01/ngrok/" >
-            
-                <span>使用ngrok实现内网远程桌面</span>
-        </a>
-        <div class="abstract-content">
-            前言最近打算在机房里面用自己的电脑，笔记本太重不想背在身上，就决定使用远程控制。之前一直在用teamviewer，这几天在想为什么不用远程桌面呢，于是我便开始研究如何内网穿透使笔记本的3389端口暴露到公网上。网上找了几种方法，无非就是那几个在国内比较有名的产品，花生壳和nat123。当然他们也不都是免费的，免费的也有种种限制，后来...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/04/01</span>
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/01/05</span>
             </div>
             <!-- tags  -->
             
