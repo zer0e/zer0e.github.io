@@ -3,7 +3,7 @@
   <title>Zer0&#39;s Blog</title>
   
   
-  <link href="/blog/atom.xml" rel="self"/>
+  <link href="/atom.xml" rel="self"/>
   
   <link href="http://re0.top/"/>
   <updated>2020-02-11T04:52:26.290Z</updated>
@@ -409,9 +409,9 @@
     </summary>
     
     
-      <category term="misc" scheme="http://re0.top/tags/misc/"/>
-    
       <category term="CTF" scheme="http://re0.top/tags/CTF/"/>
+    
+      <category term="misc" scheme="http://re0.top/tags/misc/"/>
     
   </entry>
   
