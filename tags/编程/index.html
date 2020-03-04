@@ -22,7 +22,7 @@
     <meta name="description" content="">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-    <title>About Me · Zer0&#39;s Blog</title>
+    <title>Zer0&#39;s Blog</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -203,8 +203,6 @@
 </head>
 
     
-        <body class="about-body">
-    
     
 <header class="header">
 
@@ -222,22 +220,16 @@
 
 
 
-
-height:50vh;
 ">
     
     <!-- 主页  -->
-    
-    
             
     <div class="site-intro-placeholder"></div>
-    <div class="site-intro-img" style="background-image: url(/intro/about-bg.jpg)"></div>
+    <div class="site-intro-img" style="background-image: url(/)"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
-            
-            About Me
             
         </h1>
         <!-- 副标题 -->
@@ -346,12 +338,39 @@ height:50vh;
 </script>        
         <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
         <div class="container container-unloaded">
-            <!-- 不可以删除，否则会调用post的layout  -->
-<main class="main about-page">
-    <article class="article-entry">
-        <p><span style="font-size:20px"><br><strong> 关于我：</strong><br><strong> · 耿直的现实主义者</strong><br><strong> · 热爱安全的web狗</strong><br><strong> · 喜欢探索的技术宅</strong><br><strong> · <del>咸鱼</del></strong><br></span><span style="font-size:20px"><br><strong> 熟悉的语言与框架：</strong><br><strong> · Python</strong><br><strong> · Java(Android)</strong><br><strong> · PHP(laravel)</strong><br><strong> · Vue.js</strong><br><strong> · TensorFlow(Python)</strong><br></span></p>
-
+            <main class="main index-page">
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2020/03/04/python-copy/" >
+            
+                <span>浅谈python中的引用与拷贝</span>
+        </a>
+        <div class="abstract-content">
+            前言最近在爬取某游戏攻略的时候，发现写入到json的文件中全是重复的字典，但是数据库中的数据却是正常的，在寻找了一段时间的bug后，想起来python中对赋值操作本质上是对象的引用，而不是复制对象，所以将字典”复制”后append到list中，只要这个字典发生变化，整个list中的字典都是一样的值。心血来潮，重新学习一下引用与拷贝。...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/03/04</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+</div>
+            
+        </div>
     </article>
+    
+    <!-- paginator  -->
+    
 </main>
             <!-- profile -->
             

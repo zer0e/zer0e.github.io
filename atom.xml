@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://re0.top/"/>
-  <updated>2020-02-11T04:52:26.290Z</updated>
+  <updated>2020-03-04T08:19:56.977Z</updated>
   <id>http://re0.top/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>浅谈python中的引用与拷贝</title>
+    <link href="http://re0.top/2020/03/04/python-copy/"/>
+    <id>http://re0.top/2020/03/04/python-copy/</id>
+    <published>2020-03-04T06:20:00.000Z</published>
+    <updated>2020-03-04T08:19:56.977Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>最近在爬取某游戏攻略的时候，发现写入到json的文件中全是重复的字典，但是数据库中的数据却是正常的，在寻找了一段时间的bug后，想起来python中对赋值操作本质上是对象的引用，而不是复制对象，所以将字典”复制”后append到list中，只要这个字典发生变化，整个list中的字典都是一样的值。心血来潮，重新学习一下引用与拷贝。</p><h1 id="问题复现"><a href="#问题复现" class="headerlink" title="问题复现"></a>问题复现</h1><p>类似代码如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">dict1 = &#123;&apos;type_a&apos;:&apos;&apos;,&apos;type_b&apos;:&apos;&apos;&#125;</span><br><span class="line">all_list = []</span><br><span class="line">for i in range(2):</span><br><span class="line">    new_dict = dict1</span><br><span class="line">    new_dict[&apos;type_a&apos;] = i</span><br><span class="line">    new_dict[&apos;type_b&apos;] = i+10</span><br><span class="line">    all_list.append(new_dict)</span><br><span class="line">print(all_list) #[&#123;&apos;type_a&apos;: 1, &apos;type_b&apos;: 11&#125;, &#123;&apos;type_a&apos;: 1, &apos;type_b&apos;: 11&#125;]</span><br></pre></td></tr></table></figure><br>为什么会出现这样的问题，原因在于new_dict引用了dict1的内存地址，本质上两个变量指向的是同一个内存地址，并且list的append本质上也是对对象的引用。<br>使用id函数查看变量指向的内存地址<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">print(id(dict1)) #1584039349560</span><br><span class="line">print(id(new_dict)) #1584039349560</span><br></pre></td></tr></table></figure><br>可以发现两个字典的内存地址相同，那么解决办法很简单，<br>1.直接让new_dict = {},相当于建立的一个新的字典，这样两个变量之间就没有关系。<br>2.使用dict中的copy方法或者使用标准库中copy.copy，将dict1的对象复制过来(不是引用)。这两种办法都可以解决对象重复的问题，我刚开始之所以那么写，主要原因是字典的属性直观一点，java代码写多了，就不自觉的想要new一个对象，哈哈。</p><h1 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h1><p>虽然解决了问题，但是学习还没完，那么python中的引用究竟是怎么一回事？在python中，无论什么数据类型，都是按照引用进行赋值的。变量名和变量的真实值是分开保存的，变量名中保存的是真实值的一个指针，对变量赋值时，也是将这个指针赋值给新变量。<br>在python中有三类不可变型，数值型，字符串型，元祖，其他的都属于可变型，如字典，列表。<br>所谓不可变型，就是我们无法在内存中修改这个变量，如果尝试修改，则会断开对前一个对象的引用，重新分配内存地址。而可变型则是不会断开前一个对象的引用。例如<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">a = 10</span><br><span class="line">print(id(a)) #1825271552</span><br><span class="line">a += 1</span><br><span class="line">print(id(a)) #1825271584</span><br><span class="line"></span><br><span class="line">list1 = [1,2,3]</span><br><span class="line">print(id(list1)) #1853070359112</span><br><span class="line">list1.append(a)</span><br><span class="line">print(id(list1)) #1853070359112</span><br></pre></td></tr></table></figure></p><p>python解释器在运行时，会根据是否为可变类型决定是在原来内存地址上修改还是进行重新引用。<br>而如果将参数传入函数时，刚开始形参与实参指向的是同一内存地址，而如果函数内部对参数进行修改的话，会根据是否为可变类型决定是否断开对原来对象的引用。<br>python中内置了引用计数器，每当进行一次引用时，该对象的引用计数器+1，而取消一次引用时，则-1，如果归0，则销毁这个对象，这也是python的垃圾回收机制之一。<br>结合文初的问题，new_dict其实引用的是dict1的内存地址(相当于C/C++中的指针)，而由于字典属于可变类型，所以进行修改时不会改变其内存对象。而append方法实际上追加的是该对象的引用。所以对该字典修改后则列表中的所有元素也会跟着修改。</p><h1 id="浅拷贝与深拷贝"><a href="#浅拷贝与深拷贝" class="headerlink" title="浅拷贝与深拷贝"></a>浅拷贝与深拷贝</h1><p>那标准库中的copy包又是怎么一回事呢。copy与deepcopy的差别又是什么？我们查看官方文档<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Python 中赋值语句不复制对象，而是在目标和对象之间创建绑定 (bindings) 关系。</span><br><span class="line">浅层复制和深层复制之间的区别仅与复合对象 (即包含其他对象的对象，如列表或类的实例) 相关:</span><br><span class="line">一个 浅层复制 会构造一个新的复合对象，然后（在可能的范围内）将原对象中找到的 引用 插入其中。</span><br><span class="line">一个 深层复制 会构造一个新的复合对象，然后递归地将原始对象中所找到的对象的 副本 插入。</span><br></pre></td></tr></table></figure></p><p>通过官方文档我们可以知道：<br>copy是复制表层对象，如果对象中还存在对象，则内部对象依旧进行引用。字典可以使用dict.copy进行浅拷贝，而list则可以通过切片操作[:]进行浅拷贝。<br>而deepcopy则会递归复制对象中的对象。<br>例如<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">list1 = [1,2,3]</span><br><span class="line">a = &#123;&apos;1&apos;:&apos;&apos;,&apos;2&apos;:list1&#125;</span><br><span class="line">all_list = []</span><br><span class="line">for i in range(2):</span><br><span class="line">    new = copy.copy(a)</span><br><span class="line">    new[&apos;1&apos;] = i</span><br><span class="line">    all_list.append(new)</span><br><span class="line">print(all_list) #[&#123;&apos;1&apos;: 0, &apos;2&apos;: [1, 2, 3]&#125;, &#123;&apos;1&apos;: 1, &apos;2&apos;: [1, 2, 3]&#125;]</span><br><span class="line">list1[0] = 0</span><br><span class="line">print(all_list) #[&#123;&apos;1&apos;: 0, &apos;2&apos;: [0, 2, 3]&#125;, &#123;&apos;1&apos;: 1, &apos;2&apos;: [0, 2, 3]&#125;]</span><br></pre></td></tr></table></figure><br>可以发现内部对象依旧是进行引用，而使用深拷贝后修改list1中的元素也不会改变字典中的元素。</p><h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>今天重新学习了一下python的引用，即使之前就学过，但重新学习写文章后依旧收获颇丰。引用是python中最常接触的操作，引用相当于指针，但又与指针不同，当修改数据时python会根据类型是否可变来选择是否修改内存地址，还是直接在内存地址中修改数据。<br>而拷贝往往是因为需要对象的副本来进行操作。当然一不注意就会掉入陷阱，直接赋值导致引用了同一对象，当一处修改则所有值改变。而copy与deepcopy就是为了解决这个问题，而两者的区别就是在于是否对子对象进行拷贝。当然在使用deepcopy时要注意递归循环。而对象的拷贝也可以通过定义 __copy__() 和 __deepcopy__()来实现。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;最近在爬取某游戏攻略的时候，发现写入到json的文件中全是重复的字典，但是数据库中的数据却是正常的，在寻找了一段时间的bug后，想起来pyt
+      
+    
+    </summary>
+    
+    
+      <category term="编程" scheme="http://re0.top/tags/%E7%BC%96%E7%A8%8B/"/>
+    
+  </entry>
   
   <entry>
     <title>Springboot常用注解</title>
