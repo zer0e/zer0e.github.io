@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Zer0">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Zer0">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>初探celery任务队列 · Zer0&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Zer0&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">初探celery任务队列</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Zer0's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            初探celery任务队列
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "python">python</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">2.7k</span>阅读时长: <span class="post-count reading-time">11 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2020/03/24</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>之前讲过，在自己开发的公众号后台中有一个比较费时的请求操作，由于微信限制5秒内返回，无法立即返回结果，因此我开始寻找解决办法，最终决定使用<strong>任务队列</strong>来进行实现。</p>
+<h1 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h1><p>有些文章认为任务队列=消息队列，是一种解决方案，但我认为消息队列是任务队列的一部分，<strong>任务队列需要消息队列作支持</strong>。完整的任务队列不仅需要消息中间件（即消息队列），还需要生产者，消费者来提出任务与解决任务。<br>任务队列在架构中十分常见，常见的使用场景有</p>
+<ul>
+<li>费时操作交由任务队列系统异步执行，提高响应时间与吞吐量。</li>
+<li>将请求的部分操作转交给任务队列执行，加快操作，如推送消息，发送验证码/邮件等。</li>
+<li>定时任务。在生产环境下会有许多定时任务，如定时清理，定时备份等等，如果定时任务太多，又或者服务器数量过多，定时任务的管理就十分困难，此时任务队列就可以帮助管理员管理定时任务。</li>
+</ul>
+<p>市面上也有许多消息中间件供开发者使用，如rabbitMQ，rocketMQ等等，当然也可以使用redis作为消息中间件。<br>当然光有消息中间件是无法实现一个任务队列的，接下来我们手动实现一个任务队列。</p>
+<h2 id="任务队列雏形"><a href="#任务队列雏形" class="headerlink" title="任务队列雏形"></a>任务队列雏形</h2><p>我们采用redis做消息中间件，利用redis的list数据结构，我们可以直接将list当作消息队列，作为消息存放处。同时redis还有lpush与rpop，生产者使用lpush将任务消息存放在list中，而消费者使用rpop或者使用阻塞的brpop来获取任务消息，并处理消息，之后将处理结果存在redis中，当需要结果时，从redis中取出结果。如此我们便实现了一个简单的任务队列。<br>我们假设生产者产生了一串数字，而消费者则是将数字进行简单hash处理。<br>我们可以实现一下代码<br>生产者：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> redis,random,time</span><br><span class="line">r = redis.Redis(host=<span class="string">'localhost'</span>, port=<span class="number">6379</span>, decode_responses=<span class="keyword">True</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">producer</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">"producer开始工作"</span>)</span><br><span class="line">    <span class="keyword">while</span> <span class="keyword">True</span>:</span><br><span class="line">        random_num = random.randint(<span class="number">1</span>,<span class="number">10000</span>)</span><br><span class="line">        print(random_num)</span><br><span class="line">        r.lpush(<span class="string">"task_list"</span>,random_num)</span><br><span class="line">        time.sleep(<span class="number">10</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    producer()</span><br></pre></td></tr></table></figure><br>消费者：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> redis,random,time,hashlib</span><br><span class="line">r = redis.Redis(host=<span class="string">'localhost'</span>, port=<span class="number">6379</span>, decode_responses=<span class="keyword">True</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_md5</span><span class="params">(str1)</span>:</span></span><br><span class="line">    str1 = str(str1)</span><br><span class="line">    h = hashlib.md5()</span><br><span class="line">    h.update(str1.encode(encoding=<span class="string">'utf-8'</span>))</span><br><span class="line">    <span class="keyword">return</span> h.hexdigest()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">worker</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">"worker开始工作"</span>)</span><br><span class="line">    <span class="keyword">while</span> <span class="keyword">True</span>:</span><br><span class="line">        random_num = r.brpop(<span class="string">"task_list"</span>)[<span class="number">1</span>]</span><br><span class="line">        num_md5 = get_md5(random_num)</span><br><span class="line">        r.set(random_num,num_md5)</span><br><span class="line">        print(<span class="string">"&#123;&#125; hash is: &#123;&#125;"</span>.format(random_num,r.get(random_num)))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    worker()</span><br></pre></td></tr></table></figure><br>如此我们简单实现一个最原始的任务队列，接下来就是让生产者从redis中取出结果，实现方法很简单，将每个任务分配任务id，根据任务id去获取结果。我们改进代码，让producer将任务id整合进任务中。<strong>这里我们使用json将序列化对象存入list中，然后结果也是用json数据存储。</strong><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">producer</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">"producer开始工作"</span>)</span><br><span class="line">    task_id = <span class="number">0</span> <span class="comment">#初始化任务id</span></span><br><span class="line">    task = &#123;<span class="string">'task_id'</span>:task_id,<span class="string">'random_num'</span>:<span class="number">0</span>&#125; <span class="comment">#定义task结构</span></span><br><span class="line">    <span class="keyword">while</span> <span class="keyword">True</span>:</span><br><span class="line">        random_num = random.randint(<span class="number">1</span>,<span class="number">10000</span>)</span><br><span class="line">        new_task = copy.copy(task)</span><br><span class="line">        new_task[<span class="string">'task_id'</span>] = (task_id+=<span class="number">1</span>)</span><br><span class="line">        new_task[<span class="string">'random_num'</span>] = random_num</span><br><span class="line">        print(new_task)</span><br><span class="line">        r.lpush(<span class="string">"task_list"</span>,json.dumps(new_task))</span><br><span class="line">        time.sleep(<span class="number">10</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">worker</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">"worker开始工作"</span>)</span><br><span class="line">    <span class="keyword">while</span> <span class="keyword">True</span>:</span><br><span class="line">        task = json.loads(r.brpop(<span class="string">"task_list"</span>)[<span class="number">1</span>])</span><br><span class="line">        print(task)</span><br><span class="line">        task_id = task[<span class="string">'task_id'</span>]</span><br><span class="line">        random_num = task[<span class="string">'random_num'</span>]</span><br><span class="line">        num_md5 = get_md5(random_num)</span><br><span class="line">        result = &#123;<span class="string">'task_id'</span>:task_id,<span class="string">'result'</span>:num_md5&#125;</span><br><span class="line">        r.set(task_id,json.dumps(result))</span><br><span class="line"></span><br><span class="line">        get_result = json.loads(r.get(task_id))[<span class="string">'result'</span>]</span><br><span class="line">        print(<span class="string">"&#123;&#125; hash is: &#123;&#125;"</span>.format(random_num,get_result))</span><br></pre></td></tr></table></figure><br>如此我们就可以根据任务id获取任务处理结果。</p>
+<h2 id="Celery"><a href="#Celery" class="headerlink" title="Celery"></a>Celery</h2><p>上面讲了很多，是时候谈谈本篇文章的重点，celery。它是一个由python语言实现分布式的任务队列，其中包括以下几个组成部分</p>
+<ul>
+<li>Task。即用户定义的任务部分。</li>
+<li>Broker。即上文所讲的消息中间件，一般采用redis或者rabbitMQ。</li>
+<li>Worker。任务消费者，实时监控任务队列并处理。</li>
+<li>Beat。定时任务调度器，将定时任务发送至broker，等待worker进行处理。</li>
+<li>Backend。即任务执行的结果，worker将任务处理完成后将结果存放于此。</li>
+</ul>
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>我们采用pip安装，并采用redis作为消息中间件<br><code>pip install -U &quot;celery[redis]&quot;</code></p>
+<h3 id="第一个celery实例"><a href="#第一个celery实例" class="headerlink" title="第一个celery实例"></a>第一个celery实例</h3><p>这里我们假设要向某api请求搜索数据，这个操作耗时需要10秒以上。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> celery <span class="keyword">import</span> Celery</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">broker = <span class="string">'redis://localhost:6379/0'</span></span><br><span class="line">celery_app = Celery(<span class="string">'main'</span>,broker=broker)</span><br><span class="line"></span><br><span class="line"><span class="meta">@celery_app.task</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_result_from_remote</span><span class="params">(keyword)</span>:</span></span><br><span class="line">    print(<span class="string">"正在搜索关键字为&#123;&#125;的数据"</span>.format(keyword))</span><br><span class="line">    time.sleep(<span class="number">10</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"success"</span></span><br></pre></td></tr></table></figure><br>注意创建celery实例时，第一个参数表示celery app所在的脚本名称，即入口点。<br>接下来我们同样在这个脚本中定义需要调用此任务的函数。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">search_from_remote</span><span class="params">()</span>:</span></span><br><span class="line">    keyword = input(<span class="string">"请输入关键字:"</span>)</span><br><span class="line">    start = time.time()</span><br><span class="line">    get_result_from_remote.delay(keyword)</span><br><span class="line">    print(<span class="string">"一共耗时&#123;&#125;秒"</span>.format(time.time()-start))</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    search_from_remote()</span><br></pre></td></tr></table></figure> </p>
+<h3 id="worker"><a href="#worker" class="headerlink" title="worker"></a>worker</h3><p>此时我们就可以启动worker监听是否有任务存在于broker中。<br><code>celery worker -A main --loglevel=info</code><br>-A 参数表示celery的任务在哪个脚本当中，然后定义了日志级别。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"> -------------- celery@ubuntu v4.4.2 (cliffs)</span><br><span class="line">--- ***** ----- </span><br><span class="line">-- ******* ---- Linux-4.4.0-105-generic-x86_64-with-Ubuntu-16.04-xenial 2020-03-24 21:02:29</span><br><span class="line">- *** --- * --- </span><br><span class="line">- ** ---------- [config]</span><br><span class="line">- ** ---------- .&gt; app:         tasks:0x7f5ba09f8ef0</span><br><span class="line">- ** ---------- .&gt; transport:   redis://localhost:6379/0</span><br><span class="line">- ** ---------- .&gt; results:     disabled://</span><br><span class="line">- *** --- * --- .&gt; concurrency: 1 (prefork)</span><br><span class="line">-- ******* ---- .&gt; task events: OFF (<span class="built_in">enable</span> -E to monitor tasks <span class="keyword">in</span> this worker)</span><br><span class="line">--- ***** ----- </span><br><span class="line"> -------------- [queues]</span><br><span class="line">                .&gt; celery           exchange=celery(direct) key=celery</span><br><span class="line">                </span><br><span class="line"></span><br><span class="line">[tasks]</span><br><span class="line">  . main.get_result_from_remote</span><br><span class="line"></span><br><span class="line">[2020-03-24 21:16:24,764: INFO/MainProcess] Connected to redis://localhost:6379/0</span><br><span class="line">[2020-03-24 21:16:24,804: INFO/MainProcess] mingle: searching <span class="keyword">for</span> neighbors</span><br><span class="line">[2020-03-24 21:16:25,865: INFO/MainProcess] mingle: all alone</span><br><span class="line">[2020-03-24 21:16:25,954: INFO/MainProcess] celery@ubuntu ready.</span><br></pre></td></tr></table></figure><br>由于还没启动生产者，所以worker不进行工作。或者说worker没有工作可做。<br>接着我们运行这个脚本<br><code>python3 main.py</code><br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">请输入关键字:123</span><br><span class="line">一共耗时0.3693723678588867秒</span><br></pre></td></tr></table></figure><br>可以发现定义在任务中延时并不会影响主线程运行，再看看worker的日志<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[2020-03-24 21:16:33,985: INFO/MainProcess] Received task: main.get_result_from_remote[1d4196cf-12e2-49be-acf1-0163b1b0d522]  </span><br><span class="line">[2020-03-24 21:16:33,990: WARNING/ForkPoolWorker-1] 正在搜索关键字为123的数据</span><br><span class="line">[2020-03-24 21:16:44,005: INFO/ForkPoolWorker-1] Task main.get_result_from_remote[1d4196cf-12e2-49be-acf1-0163b1b0d522] succeeded <span class="keyword">in</span> 10.015596589073539s: <span class="string">'success'</span></span><br></pre></td></tr></table></figure><br>十分完美，我们成功使用了celery做任务队列来处理耗时操作。</p>
+<h3 id="获取返回结果"><a href="#获取返回结果" class="headerlink" title="获取返回结果"></a>获取返回结果</h3><p>接着我们看看在主线程中，任务的返回值究竟是什么。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">search_from_remote</span><span class="params">()</span>:</span></span><br><span class="line">    keyword = input(<span class="string">"请输入关键字:"</span>)</span><br><span class="line">    start = time.time()</span><br><span class="line">    result = get_result_from_remote.delay(keyword)</span><br><span class="line">    print(result)</span><br><span class="line">    print(<span class="string">"一共耗时&#123;&#125;秒"</span>.format(time.time()-start))</span><br><span class="line"></span><br></pre></td></tr></table></figure><br>发现返回了一串类似于任务id的数据.<code>f75232b5-e3be-4a6f-a077-0b7bf9bd8111</code><br>通过查看官方文档，我找到了使用方法<br>第一种办法是通过任务的AsyncResult方法来获取结果：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">task_id = <span class="string">"f75232b5-e3be-4a6f-a077-0b7bf9bd8111"</span></span><br><span class="line">print(get_result_from_remote.AsyncResult(task_id).get())</span><br></pre></td></tr></table></figure><br>另一种方式是通过celery.result的AsyncResult方法：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">task_id = <span class="string">"f75232b5-e3be-4a6f-a077-0b7bf9bd8111"</span></span><br><span class="line"><span class="keyword">from</span> celery.result <span class="keyword">import</span> AsyncResult</span><br><span class="line">AsyncResult(task_id).get()</span><br></pre></td></tr></table></figure> </p>
+<h3 id="添加backend"><a href="#添加backend" class="headerlink" title="添加backend"></a>添加backend</h3><p>但是由于我们没有启动backend，所以无法获取结果。我们依旧把redis当作backend。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">redis_server = <span class="string">'redis://localhost:6379/0'</span></span><br><span class="line">celery_app = Celery(<span class="string">'main'</span>,broker=redis_server,backend=redis_server)</span><br></pre></td></tr></table></figure><br>我们重启worker，运行脚本之后获取任务id的结果<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">task_id = <span class="string">"ed9e6f8a-913f-49a5-a3b6-99444003352a"</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">"result:"</span> + get_result_from_remote.AsyncResult(task_id).get())</span><br><span class="line">from celery.result import AsyncResult</span><br><span class="line"><span class="built_in">print</span>(<span class="string">"result:"</span> + AsyncResult(task_id).get())</span><br><span class="line"><span class="comment">#result:success</span></span><br><span class="line"><span class="comment">#result:success</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="beat"><a href="#beat" class="headerlink" title="beat"></a>beat</h3><p>celery的几个组件就剩下beat。beat组件可以配置自动任务。我们另起一个新脚本。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># mybeat.py</span></span><br><span class="line"><span class="keyword">from</span> celery <span class="keyword">import</span> Celery</span><br><span class="line"><span class="keyword">import</span> datetime</span><br><span class="line"></span><br><span class="line">redis_server = <span class="string">'redis://localhost:6379/0'</span></span><br><span class="line">celery_app = Celery(<span class="string">'beat'</span>,broker=redis_server,backend=redis_server)</span><br><span class="line"></span><br><span class="line">celery_app.conf.beat_schedule = &#123;</span><br><span class="line">    <span class="string">'task-10-seconds'</span>: &#123;</span><br><span class="line">        <span class="string">'task'</span>: <span class="string">'test'</span>,</span><br><span class="line">        <span class="string">'schedule'</span>: datetime.timedelta(seconds=<span class="number">10</span>),</span><br><span class="line">        <span class="string">'args'</span>: (<span class="number">1</span>, <span class="number">1</span>),</span><br><span class="line">    &#125;,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@celery_app.task(name='test')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">(x, y)</span>:</span></span><br><span class="line">    print(<span class="string">'定时任务开始运行'</span>)</span><br><span class="line">    <span class="keyword">return</span> x + y</span><br></pre></td></tr></table></figure></p>
+<p>我们先启动worker进程<code>celery worker -A mybeat -l info</code><br>然后启动beat程序<code>celery beat -A mybeat</code><br>之后每10秒worker就会计算一遍1+1的结果并将结果缓存。</p>
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>尽管我们初步学习了celery的使用，但其实在项目中celery的配置是较为复杂的，在网上找了几篇文章，celery项目结构普遍为<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">├── __init__.py</span><br><span class="line">├── celeryconfig.py</span><br><span class="line">├── celery.py</span><br><span class="line">└── tasks.py</span><br></pre></td></tr></table></figure>  </p>
+<p>其中celery.py为主程序，作为整个celery的入口点，celeryconfig为配置存放处，而tasks则是各种任务。<br>在本篇文章的代码中，我只是设置了一个任务队列，celery支持多个任务队列，通过设置queue与route，并且制定任务名称，根据名称匹配路由，路由再将任务送至响应的queue中，实现不同类型的任务有不同的任务队列来处理。这里需要使用kombu对queue进行处理。简单给出代码<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> celery <span class="keyword">import</span> Celery</span><br><span class="line"><span class="keyword">from</span> kombu <span class="keyword">import</span> Exchange, Queue</span><br><span class="line"><span class="comment">#broker 与 backend可以使用不同的redis数据库，如0和1</span></span><br><span class="line">redis_server = <span class="string">'redis://localhost:6379/0'</span></span><br><span class="line">celery_app = Celery(<span class="string">'celery'</span>,broker=redis_server,backend=redis_server)</span><br><span class="line"></span><br><span class="line"><span class="string">'''使用redis做broker可以无需配置exchange'''</span></span><br><span class="line">queue = (</span><br><span class="line">    Queue(<span class="string">'default'</span>, exchange=Exchange(<span class="string">'default'</span>, type=<span class="string">'direct'</span>), routing_key=<span class="string">'default'</span>),</span><br><span class="line">    Queue(<span class="string">'task1'</span>, exchange=Exchange(<span class="string">'task1'</span>, type=<span class="string">'direct'</span>), routing_key=<span class="string">'task1'</span>),</span><br><span class="line">    Queue(<span class="string">'task2'</span>, exchange=Exchange(<span class="string">'task2'</span>, type=<span class="string">'direct'</span>), routing_key=<span class="string">'task2'</span>),</span><br><span class="line">)</span><br><span class="line">route = &#123;</span><br><span class="line">    <span class="string">'task*'</span>: &#123;<span class="string">'queue'</span>: <span class="string">'task1'</span>, <span class="string">'routing_key'</span>: <span class="string">'task1'</span>&#125;,</span><br><span class="line"></span><br><span class="line">    <span class="string">'task2'</span>: &#123;<span class="string">'queue'</span>: <span class="string">'task2'</span>, <span class="string">'routing_key'</span>: <span class="string">'task2'</span>&#125;,</span><br><span class="line">    <span class="string">'*'</span>: &#123;<span class="string">'queue'</span>: <span class="string">'default'</span>, <span class="string">'routing_key'</span>: <span class="string">'default'</span>&#125;,</span><br><span class="line">&#125;</span><br><span class="line">app.conf.update(</span><br><span class="line">    task_serializer=<span class="string">'json'</span>,</span><br><span class="line">    accept_content=[<span class="string">'json'</span>],</span><br><span class="line">    result_serializer=<span class="string">'json'</span>,</span><br><span class="line">    timezone=<span class="string">'Asia/Shanghai'</span>,</span><br><span class="line">    enable_utc=<span class="keyword">False</span>,</span><br><span class="line">    <span class="comment"># 任务过期时间(超时时间)</span></span><br><span class="line">    <span class="comment"># result_expires=3600,</span></span><br><span class="line">    <span class="comment">#  Number of CPU cores.</span></span><br><span class="line">    <span class="comment"># worker_concurrency=4,</span></span><br><span class="line">    task_queues=queue,</span><br><span class="line">    task_routes=route,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">#tasks.py</span></span><br><span class="line"><span class="meta">@app.task(name="task2")</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">task2</span><span class="params">(arg)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">"celery_task2,执行结果为:&#123;&#125;"</span>.format(arg)</span><br></pre></td></tr></table></figure>  </p>
+<p>通过指定任务的name，celery选择合适的任务队列，如果需要worker配合，则需要使用-Q参数 指定队列的名称<code>celery worker -A tasks -l info -Q task1</code>此时这个worker只会处理这个队列中的任务。<br>但就一个小项目而言，则无需配置queue，将项目简单化，上面的代码就已经够用。</p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>至此我们成功完成了一个celery任务队列的模板，包括设置celery实例，添加了消息中间件与消息结果件，并且成功让worker执行。之后设置了beat定时任务，定时执行某些任务。<br>有没有发现，celery与我们所写的任务队列雏形十分相像？如果设置celery的任务与结果序列化方式为json的话，核心逻辑就是我们所写的demo。<br>另外这里需要注意的是，celery4.x在win10存在不兼容问题，所以我采用Ubuntu作为测试环境。</p>
+<h1 id="后话"><a href="#后话" class="headerlink" title="后话"></a>后话</h1><p>这次学习了celery的基本使用方法，这篇文章的知识在简单和中型开发中已然够用。<br>celery虽然在python中很火，但是却无法使用在其他语言中，也限制了它的流行度，官网中的文档只有入门例子才有中文。网上的文章很多讲述地又不是很清楚，因此我总结了这篇文章，希望能更好地了解开发，不仅是代码，更是对架构的理解。</p>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>原文作者：<a href="http://re0.top">Zer0</a>
+            <p>原文链接：<a href="http://re0.top/2020/03/24/celery/">http://re0.top/2020/03/24/celery/</a>
+            <p>发表日期：<a href="http://re0.top/2020/03/24/celery/">三月 24日 2020, 4:10:00 下午</a>
+            <p>更新日期：<a href="http://re0.top/2020/03/24/celery/">March 25th 2020, 1:14:53 am</a>
+            <p>版权声明：本文采用<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2020/03/22/java-reflection/" title= "理解Java反射">
+                    <div class="prevTitle">理解Java反射</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:zcluslloye@gmail.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/zer0e" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+            
+                <a href="https://t.me/zer009" class="iconfont-archer telegram" target="_blank" title=telegram></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+	<div class="copyright">
+		<span id="hexo-power">Hosted by <a href="https://pages.coding.me" target="_blank">Coding Pages</a></span>
+	</div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#实践"><span class="toc-number">2.</span> <span class="toc-text">实践</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#任务队列雏形"><span class="toc-number">2.1.</span> <span class="toc-text">任务队列雏形</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Celery"><span class="toc-number">2.2.</span> <span class="toc-text">Celery</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#安装"><span class="toc-number">2.2.1.</span> <span class="toc-text">安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#第一个celery实例"><span class="toc-number">2.2.2.</span> <span class="toc-text">第一个celery实例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#worker"><span class="toc-number">2.2.3.</span> <span class="toc-text">worker</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#获取返回结果"><span class="toc-number">2.2.4.</span> <span class="toc-text">获取返回结果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#添加backend"><span class="toc-number">2.2.5.</span> <span class="toc-text">添加backend</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#beat"><span class="toc-number">2.2.6.</span> <span class="toc-text">beat</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#其他"><span class="toc-number">2.2.7.</span> <span class="toc-text">其他</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#小结"><span class="toc-number">2.2.8.</span> <span class="toc-text">小结</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#后话"><span class="toc-number">3.</span> <span class="toc-text">后话</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 23
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/24</span><a class="archive-post-title" href= "/2020/03/24/celery/" >初探celery任务队列</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/22</span><a class="archive-post-title" href= "/2020/03/22/java-reflection/" >理解Java反射</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span><a class="archive-post-title" href= "/2020/03/11/python-sync/" >浅谈python异步编程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/04</span><a class="archive-post-title" href= "/2020/03/04/python-copy/" >浅谈python中的引用与拷贝</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span><a class="archive-post-title" href= "/2020/02/10/spring-annotation/" >Springboot常用注解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/05</span><a class="archive-post-title" href= "/2020/01/05/dns-cache-pollution/" >DNS投毒分析</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href= "/2019/11/12/2019-11-12/" >谈一谈最近</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2019/04/01/ngrok/" >使用ngrok实现内网远程桌面</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href= "/2018/11/12/hctf2018wp/" >HCTF2018 web部分Writeup</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2018/11/02/js-prototype/" >浅谈JavaScript中的原型链</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2018/10/10/xssbot1/" >从零开始完成xssbot</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/12</span><a class="archive-post-title" href= "/2018/07/12/csp/" >浅谈CSP内容安全策略</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/07</span><a class="archive-post-title" href= "/2018/06/07/mergesort/" >经典算法之归并排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/02</span><a class="archive-post-title" href= "/2018/06/02/quicksort/" >经典算法之快速排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/28</span><a class="archive-post-title" href= "/2018/05/28/linux-shell/" >Linux下反弹shell的几种方式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/11</span><a class="archive-post-title" href= "/2018/05/11/selectsort/" >经典算法之选择排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2018/04/24/docker/" >docker常用命令汇总</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/11</span><a class="archive-post-title" href= "/2018/04/11/bubblesort/" >经典算法之冒泡排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2018/03/30/php-weak1/" >PHP弱类型总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/29</span><a class="archive-post-title" href= "/2018/03/29/second-sqli/" >记一次有趣的二次注入</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2018/03/18/hgame-misc/" >misc入门总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/hgame-web/" >CTF入门(坑)总结——web篇</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span><a class="archive-post-title" href= "/2018/03/10/talk-about-blog/" >谈一谈博客</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
+    
+        <span class="sidebar-tag-name" data-tags="web"><span class="iconfont-archer">&#xe606;</span>web</span>
+    
+        <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
+    
+        <span class="sidebar-tag-name" data-tags="linux"><span class="iconfont-archer">&#xe606;</span>linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="CTF"><span class="iconfont-archer">&#xe606;</span>CTF</span>
+    
+        <span class="sidebar-tag-name" data-tags="misc"><span class="iconfont-archer">&#xe606;</span>misc</span>
+    
+        <span class="sidebar-tag-name" data-tags="编程"><span class="iconfont-archer">&#xe606;</span>编程</span>
+    
+        <span class="sidebar-tag-name" data-tags="python"><span class="iconfont-archer">&#xe606;</span>python</span>
+    
+        <span class="sidebar-tag-name" data-tags="java"><span class="iconfont-archer">&#xe606;</span>java</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Zer0"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
