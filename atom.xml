@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://re0.top/"/>
-  <updated>2020-06-13T15:03:03.127Z</updated>
+  <updated>2020-06-14T08:34:52.358Z</updated>
   <id>http://re0.top/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>浅谈高并发引起的问题</title>
+    <link href="http://re0.top/2020/06/14/high_concurrency/"/>
+    <id>http://re0.top/2020/06/14/high_concurrency/</id>
+    <published>2020-06-14T05:10:00.000Z</published>
+    <updated>2020-06-14T08:34:52.358Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>其实在学生时代，基本上是遇不到高并发的架构，真正遇到高并发的问题，往往是在工作之后，我在学生时代所写的很多项目其实跟高并发是一点边都沾不上，但是我依旧学习了许多高并发的知识，希望以后能派上用场。<br>当然，其实脱离了实际去讲述高并发并不是正确的，因为不同的系统架构是不一致的，分析高并发与高可用性需要先分析整体架构再来定夺。<br>本篇文章就是整理在高并发架构下会产生哪些问题，以及部分解决方案，当然也可能将解决方案单独用一篇文章来讲述。</p><h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><h2 id="何为高并发"><a href="#何为高并发" class="headerlink" title="何为高并发"></a>何为高并发</h2><p>高并发（High Concurrency）是系统设计的一个重要概念，它的目的是让系统能够同时<strong>并行</strong>处理多个请求。<br>同时与高并发相关的还有许多名词，如每秒请求数(QPS(Query Per Second))，响应时间(Response Time)，吞吐量(Throughput)等等。   </p><h2 id="高并发所带来的问题"><a href="#高并发所带来的问题" class="headerlink" title="高并发所带来的问题"></a>高并发所带来的问题</h2><p>其实我个人认为高并发带来的问题可以简单分为两个部分，一个是服务故障，另一个是数据的不一致。当然如果数据库服务故障也可能导致数据的不一致性，这里我就简单这么分类。</p><h3 id="服务单点故障"><a href="#服务单点故障" class="headerlink" title="服务单点故障"></a>服务单点故障</h3><p>这个问题是许多架构在遇到高并发请求时所遇到的最基础的问题，如何在如此高的请求量之下保证服务不被击穿。<br>其实解决这个问题的最好办法是将一个系统拆分成多个系统，再配合负载均衡来实现。简单来说，负载均衡器根据每个系统的性能高低分配请求，如果一个系统故障，另一个系统也可以正常提供服务。<br>也就是说要避免单点，而是将单点拓展成多个子系统。<br>这种方案称作服务器集群，一方面是可扩展性强，可以动态添加服务器，另一方面则是可用性较高，缺点就是根据添加的服务器数量，价格也会逐步上升。<br>这个负载均衡架构，之后会单独整理。  </p><h3 id="数据的不一致与不完整"><a href="#数据的不一致与不完整" class="headerlink" title="数据的不一致与不完整"></a>数据的不一致与不完整</h3><p>这个问题是本文的重点，也是为什么整理这篇文章的原因。<br>前些日子，某游戏公司因为访问人数过多导致充值数据不一致，只能进行回档处理。这一事情引发了我的思考，为什么会导致数据不一致呢？其实这里的数据不一致不单单是同时操作数据库中的数据而导致出现问题，也可能是缓存与数据库中数据不一致。<br>举一个例子：<br>存库量不仅在数据库中，也在缓存中加快访问速度，当需要更新操作时，先行修改了数据库，再去删除缓存，如果删除缓存失败了，那么缓存中就是旧数据，而数据库则是新数据，这就导致了一种数据不一致的情况。<br>那这种情况解决方案很简单，就是无论如何先删除缓存，再修改数据库，如果删除缓存成功，修改数据库失败，那么尽管数据库数据是旧的，但是缓存为空，从数据库读取数据，不会出现不一致情况；如果删除缓存失败就不用去修改数据库。如此一来便不会出现数据库与缓存不一致的情况。  </p><p>这里需要说的是，<strong>为什么是删除缓存，而不是更新缓存？</strong><br>原因很简单，在许多复杂的缓存场景中，更新缓存的代价是极高的，例如每次更新完数据库后，是不是要同时更新缓存？但如果频繁修改了一个与缓存相关的表，缓存也会频繁更新，但问题在于缓存是否会被频繁访问？<br>这就是一种懒加载的思想，只有需要缓存的时候我们再去获得缓存。</p><p>接着上一个问题，如果问题更加复杂一下：<br>假设需要修改库存量，我们先删除了缓存，然后更新数据库，如果在更新数据库的同时又来了一个新的请求读取缓存，此时缓存为空则读取数据库，但是查询到的是修改前的旧数据，并且放入了缓存中，此时更新数据库操作完成，但是缓存中是旧数据，而数据库中是新数据，那么怎么解决这个问题？<br>其实很容易想到，就是让读操作永远在写操作后面。比如我们可以使用一个队列，当读取缓存为空时，那么就可以将这个请求加入队列当中，然后队列按顺序执行操作，便可以等到缓存更新后再去读取，保证了数据的一致性。<br>但这种方案也存在一定问题。例如，读操作可能会导致超时，为什么？因为队列中可能会有多个数据的更新操作，如果更新次数过多，会导致读请求长时间阻塞。<br>还有一个问题就是短时间的大量数据库操作，缓存如果在同一个时间失效的话，会导致多个请求同时访问数据库，需要注意数据库的QPS，并且保证缓存不会在同一时间失效。  </p><p>上面是讲数据库与缓存的一致性问题，现在讲讲数据库自身的数据一致性。<br>我们也举一个简单例子：<br>假设我们没有缓存，还是库存量的问题，我们在更新库存时同时来了多个请求更新库存量，这时候该如何保证数据的一致性？<br>其实用上文所讲的队列也可以实现，这里不再赘述。主要要讲的是数据库事务与更新锁。数据库事务是一个整体，要嘛全部执行，要嘛全部不执行，失败了就进行回滚。而在事务中，我们通过更新锁(WITH (UPDLOCK))保证其他线程只能等这个事务结束之后才可进行更新操作。<br>当然锁的引入会导致性能的下降。但这些代价不可避免，为了解决数据一致性，需要牺牲一些性能。  </p><h1 id="后话"><a href="#后话" class="headerlink" title="后话"></a>后话</h1><p>前面说到游戏公司充值数据不一致的问题，据我的猜测，有可能是因为从支付宝或者苹果接口回调的时候发生了问题，由于高并发导致了服务宕机。另一种可能就是更新玩家充值数据时，由于使用数据库集群时，在进行数据库切换时，主从数据不一致，当然这也是我个人猜测。<br>这篇文章整理了高并发下会引发的问题，并且给了部分解决方案，之后会更新一系列文章，分别是负载均衡分析，数据库集群实现等等文章，来对这篇文章进行补充。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;其实在学生时代，基本上是遇不到高并发的架构，真正遇到高并发的问题，往往是在工作之后，我在学生时代所写的很多项目其实跟高并发是一点边都沾不上，
+      
+    
+    </summary>
+    
+    
+      <category term="架构" scheme="http://re0.top/tags/%E6%9E%B6%E6%9E%84/"/>
+    
+  </entry>
   
   <entry>
     <title>浅谈动态规划Ⅱ</title>
@@ -466,29 +489,6 @@
       
       
         &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;归并排序是种独立的排序，它通过分治法的思想的排序数组。将数组分治为有序的子序列，最后合并每个子序列，完成排序。&lt;br&gt;归并排序的时间复杂度同
-      
-    
-    </summary>
-    
-    
-      <category term="算法" scheme="http://re0.top/tags/%E7%AE%97%E6%B3%95/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>经典算法之快速排序</title>
-    <link href="http://re0.top/2018/06/02/quicksort/"/>
-    <id>http://re0.top/2018/06/02/quicksort/</id>
-    <published>2018-06-02T11:20:28.000Z</published>
-    <updated>2018-06-03T07:03:16.522Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>快速排序法在众多时间复杂度为N*logN的排序方法中效率极高，因此经常被使用。例如java中的Arrays.sort()还有python中的sort()都是采用优化过后的快速排序法。<br>要直接写出快速排序法并不简单，因此我写了这篇文章来谈谈对快速排序法的理解。</p><h1 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h1><p>快速排序是由C. A. R. Hoare在1962年提出的，是对冒泡排序法的一种改进。它的基本思想是：<br>1.从数组中取出一个数作为比较数。(一般为区间第一个数)<br>2.分区。将比这个数大的数放在它的右边，小于等于它的数放在左边。<br>3.再对左右两个分区进行第二步，知道各个分区只有一个数。<br>举个小数组的例子：</p><p><table><tr><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td></tr><tr><td style="color:red;">67</td><td>3</td><td>54</td><td>23</td><td>41</td><td>78</td><td>12</td><td>73</td></tr></table><br>初始时，i=0,j=7,X=a[i]=67<br>由于X等于第一个数，相当于在a[0]上挖了一个坑，可以将其他位置的数填到这里。<br>接着从j开始向前找到一个比X小或相等的数。当j=6时，条件符合。将a[6]的值赋给a[0]。然后i++。这样又在a[6]上挖了一个坑。<br>之后再从i开始找到一个比X大的数，当i=5符合条件，将a[6]=a[5],j- -。<br>此时数组变为：</p><p><table><tr><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td></tr><tr><td style="color:Violet;">12</td><td>3</td><td>54</td><td>23</td><td>41</td><td>78</td><td style="color:red;">78</td><td>73</td></tr></table><br>i=5,j=5,X=72；<br>如果i与j不相等，则重复上面的步骤，先从后往前找，再从前往后找。<br>当i==j时退出。<br>此时可以发现，在a[5]之前的数都小于它，在a[5]之后的数都大于它。之后再对0–4和6–7两个子区间进行上述步骤即可。</p><h1 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h1><p>由此我们便可写出挖坑填数的代码：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">AdjustArray</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> left, <span class="keyword">int</span> right)</span> <span class="comment">//返回i==j时的数组下标</span></span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="keyword">int</span> i = left, j = right;  </span><br><span class="line">    <span class="keyword">int</span> x = a[left]; <span class="comment">//a[left]即为第一个数  </span></span><br><span class="line">    <span class="keyword">while</span> (i &lt; j)  </span><br><span class="line">    &#123;  </span><br><span class="line">        <span class="comment">// 从右向左找小于x的数来填a[i]  </span></span><br><span class="line">        <span class="keyword">while</span>(i &lt; j &amp;&amp; a[j] &gt;= x)   </span><br><span class="line">            j--;    </span><br><span class="line">        <span class="keyword">if</span>(i &lt; j)   </span><br><span class="line">        &#123;  </span><br><span class="line">            a[i] = a[j]; <span class="comment">//将a[j]填到a[i]中，a[j]就形成了一个新的坑</span></span><br><span class="line">            i++;  </span><br><span class="line">        &#125;  </span><br><span class="line">  </span><br><span class="line">        <span class="comment">// 从左向右找大于或等于x的数来填a[j]  </span></span><br><span class="line">        <span class="keyword">while</span>(i &lt; j &amp;&amp; a[i] &lt; x)  </span><br><span class="line">            i++;    </span><br><span class="line">        <span class="keyword">if</span>(i &lt; j)   </span><br><span class="line">        &#123;  </span><br><span class="line">            a[j] = a[i]; <span class="comment">//将a[i]填到a[j]中，a[i]就形成了一个新的坑  </span></span><br><span class="line">            j--;  </span><br><span class="line">        &#125;  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="comment">//退出时，i等于j。将x填到这个坑中。  </span></span><br><span class="line">    a[i] = x;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">return</span> i;  </span><br><span class="line">&#125; </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">quick_sort</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> left, <span class="keyword">int</span> right)</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="keyword">if</span> (left &lt; right)  </span><br><span class="line">    &#123;  </span><br><span class="line">        <span class="keyword">int</span> i = AdjustArray(a, left, right);<span class="comment">//先成挖坑填数法调整a[]  </span></span><br><span class="line">        quick_sort(a, left, i - <span class="number">1</span>); <span class="comment">// 递归调用   </span></span><br><span class="line">        quick_sort(a, i + <span class="number">1</span>, right);  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure><br>对代码优化之后即可得到简洁的快速排序法：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">quick_sort</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> left, <span class="keyword">int</span> right)</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="keyword">if</span> (left &lt; right)  </span><br><span class="line">    &#123;  </span><br><span class="line">        <span class="keyword">int</span> i = left, j = right, x = a[left];  </span><br><span class="line">        <span class="keyword">while</span> (i &lt; j)  </span><br><span class="line">        &#123;  </span><br><span class="line">            <span class="keyword">while</span>(i &lt; j &amp;&amp; a[j] &gt;= x) <span class="comment">// 从右向左找第一个小于x的数  </span></span><br><span class="line">                j--;    </span><br><span class="line">            <span class="keyword">if</span>(i &lt; j)   </span><br><span class="line">                a[i++] = a[j]; <span class="comment">//也可以不i++，无影响，下面j--同理</span></span><br><span class="line">              </span><br><span class="line">            <span class="keyword">while</span>(i &lt; j &amp;&amp; a[i] &lt; x) <span class="comment">// 从左向右找第一个大于等于x的数  </span></span><br><span class="line">                i++;    </span><br><span class="line">            <span class="keyword">if</span>(i &lt; j)   </span><br><span class="line">                a[j--] = a[i];  </span><br><span class="line">        &#125;  </span><br><span class="line">        a[i] = x;  </span><br><span class="line">        quick_sort(a, left, i - <span class="number">1</span>); <span class="comment">// 递归调用   </span></span><br><span class="line">        quick_sort(a, i + <span class="number">1</span>, right);  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure></p><p>快速排序法在理解上并不是很难，网上还有许多优化过的版本，这里不再细谈。</p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;快速排序法在众多时间复杂度为N*logN的排序方法中效率极高，因此经常被使用。例如java中的Arrays.sort()还有python中的
       
     
     </summary>
