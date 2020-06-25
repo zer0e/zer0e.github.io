@@ -346,6 +346,36 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href = "/2020/06/24/load_balancing_algorithm/" >
+            
+                <span>常见的负载均衡算法</span>
+        </a>
+        <div class="abstract-content">
+            前言上一篇文章讲了负载均衡的几种实现方式，这期就重点讲讲当请求到达负载均衡服务器时，服务器可以根据哪些算法来进行分配请求。 
+正文轮询法这种方法很简单，就是按照顺序轮流将请求分配到各个服务器上，对服务器的状态和负载情况并不关注。由于需要对pos变量进行操作，如果是高并发场景必须加写锁，并且会导致并发吞吐量的明显下降。以下代码实现了一...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/06/24</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href = "/2020/06/15/load_balancing/" >
             
                 <span>浅谈负载均衡</span>
@@ -719,9 +749,16 @@
     
     
     
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 31
+        Total : 32
         </div>
         <!-- search  -->
         
@@ -734,6 +771,11 @@
     
     <div class="archive-year"> 2020 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2020/06/24/load_balancing_algorithm/" >常见的负载均衡算法</a>
+        </li>
     
     
         <li class="archive-post-item">
