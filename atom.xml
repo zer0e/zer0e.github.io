@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://re0.top/"/>
-  <updated>2020-08-06T07:13:51.848Z</updated>
+  <updated>2020-08-06T15:18:29.063Z</updated>
   <id>http://re0.top/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>谈谈设计模式</title>
+    <link href="http://re0.top/2020/08/06/design_patterns/"/>
+    <id>http://re0.top/2020/08/06/design_patterns/</id>
+    <published>2020-08-06T13:10:00.000Z</published>
+    <updated>2020-08-06T15:18:29.063Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>设计模式是提高代码可读性的途径之一，面对不同的场景选择不同的设计模式，可以提高代码可读性，提高代码的可重用性还有可扩展性。接下来就讲讲什么是设计模式。  </p><h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><h2 id="何为设计模式"><a href="#何为设计模式" class="headerlink" title="何为设计模式"></a>何为设计模式</h2><p>设计模式是在面向对象语言中，思想都是一致的，而在面向过程语言，函数式编程的语言中讨论设计模式是没有意义的。所谓的设计模式，就是前面提到的，在面向对象编程中的一些”套路”，在面对不同需求场景时，可以选择不同的设计模式，来提高代码的可读性，重用性与扩展性。   </p><h2 id="设计模式分类"><a href="#设计模式分类" class="headerlink" title="设计模式分类"></a>设计模式分类</h2><p>在GoF设计模式书籍中，共有23种设计模式。<br>而这23种设计模式又可以分为三大类型:  </p><ul><li>创建型模式</li><li>结构型模式</li><li>行为型模式</li></ul><h3 id="创建型模式"><a href="#创建型模式" class="headerlink" title="创建型模式"></a>创建型模式</h3><p>这一类设计模式的目的是为了创建对象。其中包括：  </p><ol><li>抽象工厂模式</li><li>工厂方法模式</li><li>单例模式</li><li>原型模式</li><li>构建模式</li></ol><h3 id="结构型模式"><a href="#结构型模式" class="headerlink" title="结构型模式"></a>结构型模式</h3><p>这一类设计模式是为了优化不同类，对象，接口之间的结构关系。其中包括：  </p><ol><li>代理模式</li><li>装饰者模式</li><li>组合模式</li><li>桥接模式</li><li>适配器模式</li><li>外观模式</li><li>享元模式</li></ol><h3 id="行为型模式"><a href="#行为型模式" class="headerlink" title="行为型模式"></a>行为型模式</h3><p>这一类设计模式的目的是更好地实现类与类之间的交互还有算法的执行。包括：  </p><ol><li>策略模式</li><li>命令模式</li><li>状态模式</li><li>责任链模式</li><li>解释器模式</li><li>观察者模式</li><li>备忘录模式</li><li>迭代器模式</li><li>模板方法模式</li><li>访问者模式</li><li>中介者模式</li></ol><h1 id="后言"><a href="#后言" class="headerlink" title="后言"></a>后言</h1><p>以上就是全部设计的种类。因为随着不断进步，设计模式远不止这一些，但掌握这些设计模式在日常编程中就可以有效保证代码的健康。<br>算是挖了一个新的大坑吧，之后会陆陆续续写写这23种设计模式的理解与实现。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;设计模式是提高代码可读性的途径之一，面对不同的场景选择不同的设计模式，可以提高代码可读性，提高代码的可重用性还有可扩展性。接下来就讲讲什么是
+      
+    
+    </summary>
+    
+    
+      <category term="编程" scheme="http://re0.top/tags/%E7%BC%96%E7%A8%8B/"/>
+    
+      <category term="设计模式" scheme="http://re0.top/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"/>
+    
+  </entry>
   
   <entry>
     <title>谈谈Spring IoC</title>
@@ -482,29 +507,6 @@
     
     
       <category term="web" scheme="http://re0.top/tags/web/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>谈一谈最近</title>
-    <link href="http://re0.top/2019/11/12/2019-11-12/"/>
-    <id>http://re0.top/2019/11/12/2019-11-12/</id>
-    <published>2019-11-12T10:32:47.000Z</published>
-    <updated>2019-11-16T13:57:12.635Z</updated>
-    
-    <content type="html"><![CDATA[<p>几个月没写文章，谈一谈最近一年都在干些啥事吧。<br>从18年末开始，我就很少参加CTF比赛，不管大的小的，虽然没有参加，但还是有在业余的时候看看一些大型比赛的解题思路和漏洞报告。<br>这一年来，也是学了不少东西，主要是使用python写了两个脚本，一个抢课脚本，一个群体签到软件，主要是感觉挺好玩的。18年末到19年1月左右，主要是深入学习了计算机组成还有数据库，然后学习了Vue结合PHP写了个简单的图书管理系统。<br>19年寒假的时候开始学习php的laravel框架，正好寒假后回学校有一门课程也是使用php设计web应用。<br>然后下半学期开始学习TensorFlow，起因是为了验证码识别，然后接着学了keras后端，写了一个针对学校某系统的验证码识别。<br>接着是两个月的中心放在深入学习计算机网络，网络协议，还有操作系统上面，特别是操作系统，深入之后也有了自己的理解，收获还是蛮大的。<br>暑假学习了点spring框架，但没有使用spring写点东西。然后就是学习了下网站渗透的各种姿势。剩下时间基本上在练车考驾照。<br>这学期开始课内主要是学习网络安全相关知识和python的编程，但这些基本上大一就自学过了。大部分时间在完善群体签到软件，Android端也从5月份开始学习了挺多。然后就是基本上在重学数据结构与算法，深入理解再与实际开发相结合，主要是为了之后的面试做准备，收获颇丰。<br>接下来我还是比较迷茫的，是走安全路线还是开发路线也还没想好。不过我想，基础还是得先打好吧，所以重学了数据结构。走一步看一步吧，加油。</p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;p&gt;几个月没写文章，谈一谈最近一年都在干些啥事吧。&lt;br&gt;从18年末开始，我就很少参加CTF比赛，不管大的小的，虽然没有参加，但还是有在业余的时候看看一些大型比赛的解题思路和漏洞报告。&lt;br&gt;这一年来，也是学了不少东西，主要是使用python写了两个脚本，一个抢课脚本，一个群体
-      
-    
-    </summary>
-    
-    
-      <category term="随笔" scheme="http://re0.top/tags/%E9%9A%8F%E7%AC%94/"/>
     
   </entry>
   
