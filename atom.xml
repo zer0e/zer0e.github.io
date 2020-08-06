@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://re0.top/"/>
-  <updated>2020-07-24T10:05:42.686Z</updated>
+  <updated>2020-08-06T07:13:51.848Z</updated>
   <id>http://re0.top/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>谈谈Spring IoC</title>
+    <link href="http://re0.top/2020/08/06/spring_ioc/"/>
+    <id>http://re0.top/2020/08/06/spring_ioc/</id>
+    <published>2020-08-06T05:10:00.000Z</published>
+    <updated>2020-08-06T07:13:51.848Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>IoC本身来说并不是一种技术，而是一种思想。在spring开发中我们常常使用，但有时候想起来这个概念时，却不知道从何说起。本文就来谈谈spring中的核心概念——IoC。</p><h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><h2 id="IoC概念"><a href="#IoC概念" class="headerlink" title="IoC概念"></a>IoC概念</h2><p>IoC(Inversion of Control)中文名“控制反转”，它是一种设计的思想。Ioc代表着你将对象交给容器来控制，而不是自己控制对象本身。为什么是反转呢？举个例子：<br>我们在传统的开发中，通常是通过new关键字在对象内部使用另一个对象，是我们主动去创建依赖的对象。而Ioc则是有一个专门的容器来创建这些对象。我们通过自己主动控制生成对象的方式也叫做正转，而使用容器控制创建对象并注入的方式，就称作反转。</p><h2 id="IoC的作用"><a href="#IoC的作用" class="headerlink" title="IoC的作用"></a>IoC的作用</h2><p>IoC常常被用在大型框架上，由IoC容器去创建去查找依赖的对象，由容器去注入对象，使得对象之间是松耦合的，方便测试与功能的复用，也利于维护，让整体架构更加灵活。  </p><h2 id="DI"><a href="#DI" class="headerlink" title="DI"></a>DI</h2><p>前面提到了注入，也就是DI(Dependency Injection)，即“依赖注入”，是指组件之间的依赖关系由容器在运行期决定，即容器动态地将某个依赖关系注入到组件中。通过依赖注入，我们只需完成业务逻辑，无需关心资源的来源于由谁决定，一切都由容器帮忙注入依赖。</p><h2 id="IoC的技术实现"><a href="#IoC的技术实现" class="headerlink" title="IoC的技术实现"></a>IoC的技术实现</h2><p>既然已经清楚IoC的概念，那IoC容器又是怎么完成依赖注入呢？常见的方式有两种，构造器方法注入与setter注入。<br>构造器注入是指在对象创建时，所依赖的对象便以参数形式传入该对象中。假设在A类中需要B类：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">A</span><span class="params">(B b)</span></span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.b = b;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>而setter方法注入则是在需要的时候才执行注入。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setB</span><span class="params">(B b)</span></span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.b = b;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>而无论是哪种方法，IoC容器都帮你执行了，你无需关心注入的过程。  </p><h2 id="IoC容器"><a href="#IoC容器" class="headerlink" title="IoC容器"></a>IoC容器</h2><p>这里就简单介绍下IoC容器。<br>Spring 提供了两种IoC容器，BeanFactory和ApplicationContext，而ApplicationContext是BeanFactory的子类。BeanFactory 和 ApplicationContext 的区别有：<br>BeanFactory：是Spring中最底层的接口，只提供了最简单的IoC功能,负责配置，创建和管理bean。<br>在应用中，一般不使用 BeanFactory，而推荐使用ApplicationContext（应用上下文），原因如下。<br>ApplicationContext：</p><ol><li>继承了 BeanFactory，拥有了基本的 IoC 功能；</li><li>除此之外，ApplicationContext 还提供了以下功能：</li></ol><ul><li>支持国际化；</li><li>支持消息机制；</li><li>支持统一的资源加载；</li><li>支持AOP功能；</li></ul><h2 id="IoC容器初始化与依赖注入"><a href="#IoC容器初始化与依赖注入" class="headerlink" title="IoC容器初始化与依赖注入"></a>IoC容器初始化与依赖注入</h2><p>我们知道，IoC容器负责管理对象，而spring中最基本的一个对象就是Bean。<br>Bean的定义与初始化是两大步骤，Bean在定义后，IoC容器才将其初始化并注入到其他对象中。<br>Bean的定义有3步：  </p><ol><li>Resource 定位<br>Spring IoC 容器先根据开发者的配置，进行资源的定位，在 Spring 的开发中，通过 XML 或者注解方式查找资源。  </li><li>BeanDefinition 的载入<br>这个时候只是将 Resource 定位到的信息，保存到 Bean 定义（BeanDefinition）中，此时并不会创建 Bean 的实例</li><li>BeanDefinition 的注册<br>这个过程就是将 BeanDefinition 的信息发布到 Spring IoC 容器中。   </li></ol><p>但此时Bean并没有被初始化，只是在容器中被定义了。在Spring Bean的配置中，有个配置选项lazy-init，指定是否初始化Bean，默认值为false，即自动初始化，而设置为true则只有当使用getBean方法获取Bean时，才会进行Bean的初始化，完成依赖注入。  </p><h2 id="如何实现IoC容器？"><a href="#如何实现IoC容器？" class="headerlink" title="如何实现IoC容器？"></a>如何实现IoC容器？</h2><p>实现一个IoC容器有以下几个步骤。  </p><ol><li>通过注解或者配置文件，查看A类的依赖对象是哪个类，获取类名。  </li><li>使用反射API，将类名实例化成对象实例。  </li><li>将实例化对象通过构造函数或者setter方法，传递给A类。  </li></ol><p>其实Spring就是基于以上几个步骤实现IoC，IoC就是工厂模式的升级版。  </p><h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文基本上都是基础知识，重点讲了IoC的概念，并顺便谈了IoC的实现原理，之后有需要的话可能会深入spring源码了解更多IoC的细节，比如BeanFactory和ApplicationContext。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;IoC本身来说并不是一种技术，而是一种思想。在spring开发中我们常常使用，但有时候想起来这个概念时，却不知道从何说起。本文就来谈谈spr
+      
+    
+    </summary>
+    
+    
+      <category term="编程" scheme="http://re0.top/tags/%E7%BC%96%E7%A8%8B/"/>
+    
+      <category term="java" scheme="http://re0.top/tags/java/"/>
+    
+  </entry>
   
   <entry>
     <title>浅谈Java线程池</title>
@@ -480,29 +505,6 @@
     
     
       <category term="随笔" scheme="http://re0.top/tags/%E9%9A%8F%E7%AC%94/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>使用ngrok实现内网远程桌面</title>
-    <link href="http://re0.top/2019/04/01/ngrok/"/>
-    <id>http://re0.top/2019/04/01/ngrok/</id>
-    <published>2019-04-01T14:20:28.000Z</published>
-    <updated>2019-04-03T09:42:36.725Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>最近打算在机房里面用自己的电脑，笔记本太重不想背在身上，就决定使用远程控制。之前一直在用teamviewer，这几天在想为什么不用远程桌面呢，于是我便开始研究如何内网穿透使笔记本的3389端口暴露到公网上。<br>网上找了几种方法，无非就是那几个在国内比较有名的产品，花生壳和nat123。当然他们也不都是免费的，免费的也有种种限制，后来找到了ngrok来进行内网穿透，ngrok1.x是开源的，我便想使用ngrok来完成想法。</p><h1 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h1><ol><li>一台有公网ip的vps服务器</li><li>一个任意域名</li></ol><h1 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h1><h2 id="服务器环境"><a href="#服务器环境" class="headerlink" title="服务器环境"></a>服务器环境</h2><p>由于ngrok使用go语言编写的，需要先安装go环境。<br>先到golang官网下载<a href="https://dl.google.com/go/go1.12.1.linux-amd64.tar.gz" target="_blank" rel="noopener">linux安装包</a><br>执行<code>sudo tar zxvf go1.12.1.linux-amd64.tar.gz -C /usr/local</code><br>之后配置环境变量<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">vim ~/.bashrc</span><br><span class="line">//添加</span><br><span class="line"><span class="built_in">export</span> GOROOT=/usr/<span class="built_in">local</span>/go</span><br><span class="line"><span class="built_in">export</span> GOPATH=/home/root/program_develop/go_demo</span><br><span class="line"><span class="built_in">export</span> PATH=<span class="variable">$PATH</span>:<span class="variable">$GOPATH</span>:/usr/<span class="built_in">local</span>/go/bin</span><br><span class="line">//使环境变量生效</span><br><span class="line"><span class="built_in">source</span> ~/.bashrc</span><br></pre></td></tr></table></figure><br>执行<code>go version</code>出现版本就安装成功了。</p><h2 id="域名DNS解析设置"><a href="#域名DNS解析设置" class="headerlink" title="域名DNS解析设置"></a>域名DNS解析设置</h2><p>首先将一个子域名解析到自己的服务器上，例如我将remote.xxxxx.com 解析到自己的服务器ip上（A记录）.随后将 *.remote.xxxxx.com 解析到remote.xxxxx.com上（CNAME类型）。<br>至此DNS设置告一段落。</p><h2 id="安装ngrok"><a href="#安装ngrok" class="headerlink" title="安装ngrok"></a>安装ngrok</h2><h3 id="下载ngrok"><a href="#下载ngrok" class="headerlink" title="下载ngrok"></a>下载ngrok</h3><p>先下载ngrok源码，然后切换到目录<br><code>git clone https://github.com/inconshreveable/ngrok.git</code><br><code>cd ngrok</code></p><h3 id="生成证书与替换证书"><a href="#生成证书与替换证书" class="headerlink" title="生成证书与替换证书"></a>生成证书与替换证书</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">//生成</span><br><span class="line"><span class="built_in">export</span> NGROK_DOMAIN=<span class="string">"remote.xxxxx.com"</span></span><br><span class="line">openssl genrsa -out rootCA.key 2048</span><br><span class="line">openssl req -x509 -new -nodes -key rootCA.key -subj <span class="string">"/CN=<span class="variable">$NGROK_DOMAIN</span>"</span> -days 5000 -out rootCA.pem</span><br><span class="line">openssl genrsa -out device.key 2048</span><br><span class="line">openssl req -new -key device.key -subj <span class="string">"/CN=<span class="variable">$NGROK_DOMAIN</span>"</span> -out device.csr</span><br><span class="line">openssl x509 -req -<span class="keyword">in</span> device.csr -CA rootCA.pem -CAkey rootCA.key -CAcreateserial -out device.crt -days 5000</span><br><span class="line"></span><br><span class="line">//替换</span><br><span class="line">cp rootCA.pem assets/client/tls/ngrokroot.crt</span><br><span class="line">cp device.crt assets/server/tls/snakeoil.crt</span><br><span class="line">cp device.key assets/server/tls/snakeoil.key</span><br></pre></td></tr></table></figure><h3 id="编译linux服务端"><a href="#编译linux服务端" class="headerlink" title="编译linux服务端"></a>编译linux服务端</h3><p><code>GOOS=linux GOARCH=amd64 make release-server</code></p><h3 id="编译windows客户端"><a href="#编译windows客户端" class="headerlink" title="编译windows客户端"></a>编译windows客户端</h3><p><code>GOOS=windows GOARCH=amd64 make release-client</code><br>无论是编译客户端还是服务端，都会在ngrok/bin目录下生成可执行文件。</p><h2 id="运行与使用"><a href="#运行与使用" class="headerlink" title="运行与使用"></a>运行与使用</h2><h3 id="在服务器上"><a href="#在服务器上" class="headerlink" title="在服务器上"></a>在服务器上</h3><p>进入ngrok/bin目录，执行<code>./ngrokd -domain=&quot;remote.xxxxx.com&quot; -httpAddr=&quot;:8001&quot; -httpsAddr=&quot;:4443&quot; -tunnelAddr=&quot;:8083&quot;</code><br>这里由于服务器的80和443端口被占用，就换了任意一个端口来侦听http和https，当然我们用不到这个。其次我使用了一个端口来侦听客户端的服务，客户端也是通过这个端口来使用ngrok。<br>还有，如果是想后台运行，建议使用screen或者nohub命令来实现。<br>然后到云服务器的安全组中放行这些端口（不要忘记3389），以保证服务正常运行。</p><h3 id="在个人电脑上"><a href="#在个人电脑上" class="headerlink" title="在个人电脑上"></a>在个人电脑上</h3><p>首先先开启本机的远程桌面服务（好像是要win10专业版才能使用远程桌面，具体请参照微软官网。）<br>然后防火墙放行3389端口。<br>将服务器上的ngrok/bin/windows_amd64/ngrok.exe拷贝到个人电脑上，然后在同目录下创建<br>ngrok.cfg和ngrok.bat两个文件。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//ngrok.cfg</span><br><span class="line">server_addr: &quot;remote.xxxxx.com:8083&quot;</span><br><span class="line">trust_host_root_certs: false</span><br><span class="line">tunnels:</span><br><span class="line">  mstsc:</span><br><span class="line">    remote_port: 3389</span><br><span class="line">    proto:</span><br><span class="line">      tcp: &quot;127.0.0.1:3389&quot;</span><br><span class="line"></span><br><span class="line">//ngrok.bat</span><br><span class="line">ngrok.exe -config=ngrok.cfg start mstsc</span><br></pre></td></tr></table></figure><br>双击ngrok.bat文件，显示状态为online就成功了，在远程桌面连接中输入remote.xxxxx.com便可以开始使用远程桌面了。</p><h1 id="后话"><a href="#后话" class="headerlink" title="后话"></a>后话</h1><p>虽然实现了远程桌面，但其实效果并不是特别好，其主要原因还是vps限制了速率，毕竟学生机只有1M的带宽，如果有4M以上的带宽也许能顺畅一点，不过1M的速率简单使用也就已经足够了。<br>后来我又将本机的FTP服务穿透到公网，在由于IIS无法设置主被动模式，导致无法正常使用IIS自带的FTP服务，也只好作罢。理论上使用可以设置端口的其他软件搭建的FTP服务，就能成功穿透，但速度也是堪忧。</p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;最近打算在机房里面用自己的电脑，笔记本太重不想背在身上，就决定使用远程控制。之前一直在用teamviewer，这几天在想为什么不用远程桌面呢
-      
-    
-    </summary>
-    
-    
-      <category term="web" scheme="http://re0.top/tags/web/"/>
     
   </entry>
   
