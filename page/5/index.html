@@ -78,8 +78,6 @@
     <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
     <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
     
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -203,8 +201,10 @@
 </head>
 
     
+        <body class="home-body">
     
-<header class="header">
+    
+<header class="header index-header">
 
     <div class="read-progress"></div>
     <div class="header-sidebar-menu">&#xe775;</div>
@@ -220,21 +220,34 @@
 
 
 
+
+height:50vh;
 ">
     
     <!-- 主页  -->
+    
+    
+    <!-- 文章页  -->
             
     <div class="site-intro-placeholder"></div>
-    <div class="site-intro-img" style="background-image: url(/)"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/index-bg.jpg)"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
             
+            Zer0's Blog
+            <!-- 文章页  -->
+            
         </h1>
         <!-- 副标题 -->
         <p class="intro-subtitle">
             <!-- 主页副标题  -->
+            
+            
+                Facing the ideal and the reality.
+            
+            <!-- 文章页  -->
             
         </p>
         <!-- 文章页meta -->
@@ -346,25 +359,24 @@
     
     
     <article class="index-post">
-        <a class="abstract-title" href = "/2018/10/10/xssbot1/" >
+        <a class="abstract-title" href = "/2018/03/10/talk-about-blog/" >
             
-                <span>从零开始完成xssbot</span>
+                <span>谈一谈博客</span>
         </a>
         <div class="abstract-content">
-            前言前一阵子开始研究了一下xssbot，在网上找了许多文章，但这些文章重点都放在bot代码部分，对其完整网站的实现并不是说的挺清楚，这篇文章总结了我从入门到编写一个完整xss demo的心得。
-bot原型bot做些什么？在我看来，bot就是代替管理员去点击页面，然后获取内容，执行js。所以对于bot来说，就是能够执行js。
-bot准...
+            以前就想写博客很久了，理由有很多，不管是记录生活，还是学习上的知识，我觉得都有必要记录下来。身边很多朋友都写文章，但是我并不喜欢，也不习惯去写东西。
+然而，对于那些成堆的知识，我只能一点一点记忆下来。那时我萌生了写博客记录学习的想法，找了好几家博客但似乎都不符合我的要求，自己建站吧又嫌太麻烦。后来自己也得过且过，也没想过是时候该把自...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
             <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/10/10</span>
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/10</span>
             </div>
             <!-- tags  -->
             
             <div class= abstract-tags >
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "web">web</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags = "随笔">随笔</a>
     
 </div>
             
@@ -373,8 +385,89 @@ bot准...
     
     <!-- paginator  -->
     
+    <nav class="page-nav">
+        <a class="extend prev" rel="prev" href="/page/4/">&#60; PREV</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span>
+    </nav>
+    
 </main>
             <!-- profile -->
+            
+            <div class="profile">
+    <img class="profile-avatar" alt="avatar" src= /avatar/1.jpg >
+    <div class="profile-name">Zer0</div>
+    
+    <div class="profile-signature">
+        耿直的现实主义者/热爱安全的web狗
+    </div>
+    
+    
+    <div class="profile-social">
+        
+    
+        
+            
+                <a href="mailto:zcluslloye@gmail.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/zer0e" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+            
+                <a href="https://t.me/zer009" class="iconfont-archer telegram" target="_blank" title=telegram></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+    
+    
+        <div class="about-me">
+            <a href = "/about" >ABOUT ME</a>
+        </div>
+    
+</div>
             
         </div>
         <footer class="footer footer-unloaded">
