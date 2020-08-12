@@ -22,7 +22,7 @@
     <meta name="description" content="">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-    <title>File not found! · Zer0&#39;s Blog</title>
+    <title>设计模式之中介者模式 · Zer0&#39;s Blog</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -203,7 +203,7 @@
 </head>
 
     
-        <body class="four-zero-four-body">
+        <body class="post-body">
     
     
 <header class="header">
@@ -211,6 +211,15 @@
     <div class="read-progress"></div>
     <div class="header-sidebar-menu">&#xe775;</div>
     <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Zer0&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">设计模式之中介者模式</a>
+            </div>
+    </div>
     
     <a class="home-link" href=/>Zer0's Blog</a>
 </header>
@@ -222,32 +231,76 @@
 
 
 
+
+height:50vh;
 ">
     
     <!-- 主页  -->
     
     
-    <!-- about页 -->
+    <!-- 404页  -->
             
     <div class="site-intro-placeholder"></div>
-    <div class="site-intro-img" style="background-image: url(/intro/404-bg.jpg)"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            File not found!
-            <!-- about -->
+            设计模式之中介者模式
+            <!-- 404 -->
             
         </h1>
         <!-- 副标题 -->
         <p class="intro-subtitle">
             <!-- 主页副标题  -->
             
-                Maybe you should check the path :&#41;
+            
+            <!-- 404 -->
             
         </p>
         <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "设计模式">设计模式</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">1k</span>阅读时长: <span class="post-count reading-time">3 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2020/08/12</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
         
     </div>
 </div>
@@ -348,8 +401,64 @@
 </script>        
         <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
         <div class="container container-unloaded">
-            <!-- 不可以删除，否则会调用post的layout  -->
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>本文介绍中介者模式。</p>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><p>中介者模式属于行为型模式，是用在多个对象之间的通信，这种模式提供一个中介类，这个类处理不同类之间的通信，使代码松耦合易维护。<br>这个模式解决的问题是类与类之间关联性较大，系统呈网状结构，而这个模式就是将网状结构分离成星型结构，来减少类之间的依赖程度。<br>常用实例有：  </p>
+<ul>
+<li>网络通信，例如QQ群的通信。 </li>
+<li>MVC框架中C(Controller)就是M(Model)和V(View)之间的中介者。</li>
+</ul>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><p>就拿网络聊天来说，聊天室可以同时有多个人聊天，而这些聊天的人不必关心其他人是否能收到消息，而是只要将消息发往聊天室，而在线的人就可以从聊天室中看到其他人的消息。<br>我们就拿这个例子来看。<br>先创建一个聊天室类：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ChatRoom</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">showMsg</span><span class="params">(User user,String msg)</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="keyword">new</span> SimpleDateFormat(<span class="string">"yyyy-MM-dd HH:mm:ss"</span>).format(System.currentTimeMillis()) +</span><br><span class="line">                <span class="string">" \""</span> + user.getName() + <span class="string">"\" : "</span> + msg);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   </p>
+<p>这里我们设为静态方法，接收一个User对象，以及消息msg，为了方便，我直接打印在控制台中。不然应该是发送到其他对象中。   </p>
+<p>其次我们创建User类<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">User</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">User</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendMsg</span><span class="params">(String msg)</span></span>&#123;</span><br><span class="line">        ChatRoom.showMsg(<span class="keyword">this</span>,msg);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   </p>
+<p>我们直接在本地调用试试<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Client</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        User alice = <span class="keyword">new</span> User(<span class="string">"alice"</span>);</span><br><span class="line">        User bob = <span class="keyword">new</span> User(<span class="string">"bob"</span>);</span><br><span class="line">        alice.sendMsg(<span class="string">"hello, bob"</span>);</span><br><span class="line">        bob.sendMsg(<span class="string">"hi, alice"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">2020-08-12 21:51:33 "alice" : hello, bob</span></span><br><span class="line"><span class="comment">2020-08-12 21:51:33 "bob" : hi, alice</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>   </p>
+<p>如此我们实现了一个简单的中介者模式。</p>
+<h2 id="后续思考"><a href="#后续思考" class="headerlink" title="后续思考"></a>后续思考</h2><p>那其实真正的聊天室并不是这样，这里我谈谈自己的见解吧，不一定对，只是我个人的思考。  </p>
+<p>在服务端，我们需要初始化聊天室类，其中内部维护一个列表，列表中存放着在此聊天室的人员。<br>之后初始化用户后，加入这个聊天室，例如ChatRoom.join(user，roomId)，让这个用户加入这个聊天室。join方法可以是static的，因为需要网络通信，不可能在本地生成聊天室实例。之后返回是否成功加入，以及房间的具体信息。<br>加入之后调用user.sendMsg(msg,roomId)，然后通过ChatRoom类中的方法将消息发送到服务端，服务端接收到之后，将该条消息转发给除该用户以外的所有用户。<br>至于服务端实现，则可以设计一个总服务端，并维护一个map，map中存放所有存活的聊天室，然后不设计小服务端，而是收到消息后转发给聊天室实例，这种设计对服务端要求较高。<br>而另外一种服务端设计则是在加入房间时与总服务端通信，之后服务端返回聊天室的地址，转而向聊天室服务端进行通信，这种设计减少了中控的压力。<br>以上就是一个聊天室的流程，由于涉及网络io，这里就不写代码了，大概原理了解一下。<br>但不管如何，这个模型依旧是一个中介者模式的模型。</p>
+<h2 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h2><p>中介者模式降低类与类之间的耦合程度，并且由一对多关系转换成一对一关系。<br>而缺点在于中介者会很庞大，不利于维护，当中介者失效后，所有类则无法工作。  </p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文介绍了中介者模式，以及实现了一个简单例子，中介者模式与代理模式还有外观模式有点相似，其相同点与不同点就留到外观模式之后再讲吧。</p>
 
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>原文作者：<a href="http://re0.top">Zer0</a>
+            <p>原文链接：<a href="http://re0.top/2020/08/12/mediator_pattern/">http://re0.top/2020/08/12/mediator_pattern/</a>
+            <p>发表日期：<a href="http://re0.top/2020/08/12/mediator_pattern/">八月 12日 2020, 8:00:00 晚上</a>
+            <p>更新日期：<a href="http://re0.top/2020/08/12/mediator_pattern/">August 12th 2020, 10:20:12 pm</a>
+            <p>版权声明：本文采用<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2020/08/12/factory_pattern/" title= "设计模式之工厂模式">
+                    <div class="prevTitle">设计模式之工厂模式</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
             <!-- profile -->
             
         </div>
@@ -435,6 +544,24 @@
 </footer>
     </div>
     <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#正文"><span class="toc-number">2.</span> <span class="toc-text">正文</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#概念"><span class="toc-number">2.1.</span> <span class="toc-text">概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#实现"><span class="toc-number">2.2.</span> <span class="toc-text">实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#后续思考"><span class="toc-number">2.3.</span> <span class="toc-text">后续思考</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#优缺点"><span class="toc-number">2.4.</span> <span class="toc-text">优缺点</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#总结"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol>
+    </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
     <div class="sidebar sidebar-hide">
@@ -1094,6 +1221,8 @@ jsonContent:
     
     </div>
     <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
      
     </body>
 </html>
