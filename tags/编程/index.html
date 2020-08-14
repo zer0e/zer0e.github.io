@@ -346,6 +346,40 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href = "/2020/08/14/lock_class/" >
+            
+                <span>谈谈锁的种类</span>
+        </a>
+        <div class="abstract-content">
+            前言今天不谈设计模式，本来想写一篇从源码看hashmap，但是不传图片光靠文字要讲解清楚确实有点困难。那我们来聊聊常见的锁的种类，锁的思想在多线程开发中基本上都是互通的，而且在数据库中我们也会用到。那就开始这篇文章吧。    
+正文乐观锁与悲观锁乐观锁的乐观在于使用者认为每次读取数据别人都不会修改，所以不进行上锁操作，但是更新的时候...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/08/14</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Java">Java</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Mysql">Mysql</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href = "/2020/08/13/abstract_factory_pattern/" >
             
                 <span>设计模式之抽象工厂模式</span>
@@ -620,40 +654,6 @@ M...
             <!-- date  -->
             <div class="abstract-date">
                 <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/08/06</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "java">java</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2020/07/24/java_thread_pool/" >
-            
-                <span>浅谈Java线程池</span>
-        </a>
-        <div class="abstract-content">
-            前言本篇来讲讲Java中线程池的使用与分析。
-正文阿里巴巴Java开发手册中强调，线程资源必须通过线程池来提供，不允许显式创建线程。首先我们讲讲普通的线程创建方式。  
-Java线程创建方式在Java语言中，我们通过两种方式创建一个新线程，分别是继承Thread类或者实现Runnable接口。
-继承Thread类Thread类本质上...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/07/24</span>
             </div>
             <!-- tags  -->
             
@@ -1083,9 +1083,16 @@ Java线程创建方式在Java语言中，我们通过两种方式创建一个新
     
     
     
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 44
+        Total : 45
         </div>
         <!-- search  -->
         
@@ -1098,6 +1105,11 @@ Java线程创建方式在Java语言中，我们通过两种方式创建一个新
     
     <div class="archive-year"> 2020 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/14</span><a class="archive-post-title" href= "/2020/08/14/lock_class/" >谈谈锁的种类</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -1365,6 +1377,10 @@ Java线程创建方式在Java语言中，我们通过两种方式创建一个新
         <span class="sidebar-tag-name" data-tags="数据库"><span class="iconfont-archer">&#xe606;</span>数据库</span>
     
         <span class="sidebar-tag-name" data-tags="设计模式"><span class="iconfont-archer">&#xe606;</span>设计模式</span>
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>

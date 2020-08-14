@@ -346,149 +346,28 @@
     
     
     <article class="index-post">
-        <a class="abstract-title" href = "/2018/03/30/php-weak1/" >
+        <a class="abstract-title" href = "/2020/08/14/lock_class/" >
             
-                <span>PHP弱类型总结</span>
+                <span>谈谈锁的种类</span>
         </a>
         <div class="abstract-content">
-            前言最近强网杯还有其他比赛中，出现了许多php弱类型的题目。用这篇文章总结一下到目前学到的php弱类型。
-基础知识学过php的都知道，php中有两种比较符==和===。== 在进行比较的时候，会先将字符串类型转化成相同，再比较=== 在进行比较的时候，会先判断两种字符串的类型是否相等，再比较如果一个字符串和数字比较，则字符串会被转换...
+            前言今天不谈设计模式，本来想写一篇从源码看hashmap，但是不传图片光靠文字要讲解清楚确实有点困难。那我们来聊聊常见的锁的种类，锁的思想在多线程开发中基本上都是互通的，而且在数据库中我们也会用到。那就开始这篇文章吧。    
+正文乐观锁与悲观锁乐观锁的乐观在于使用者认为每次读取数据别人都不会修改，所以不进行上锁操作，但是更新的时候...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
             <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/30</span>
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/08/14</span>
             </div>
             <!-- tags  -->
             
             <div class= abstract-tags >
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "web">web</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "CTF">CTF</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Java">Java</a>
     
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2018/03/29/second-sqli/" >
-            
-                <span>记一次有趣的二次注入</span>
-        </a>
-        <div class="abstract-content">
-            上周强网杯和安恒杯结束了，一直没有时间整理比赛中学习的知识，其实会做的题也不多，但学习的确实挺多，今天就来聊聊强网杯的一道较为简单的注入题。题目是一道二次注入类型。二次注入是为了预防SQL注入攻击，而将输入到应用程序中的某些数据进行了“转义（escape）”，但是这些数据却又在“未被转义（Unescaped）”的查询窗体中重复使用。...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/29</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "web">web</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "CTF">CTF</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2018/03/18/hgame-misc/" >
-            
-                <span>misc入门总结</span>
-        </a>
-        <div class="abstract-content">
-            随着hgame线下赛的结束，这一阶段也该告一段落。回想一个多月，既开心又迷茫。平常偶尔打打ctf其实也是蛮开心的，但是当自己面对不会的题目时又十分迷茫(可能这就是咸鱼的痛苦吧)。借此篇文章，也把剩下的自己对于misc的入门知识总结一下。misc，在ctf比赛中也称杂项，大多数为取证题和脑洞题。其中取证题也大多需要脑洞，因此最常见的就...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/18</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "misc">misc</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "CTF">CTF</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2018/03/12/hgame-web/" >
-            
-                <span>CTF入门(坑)总结——web篇</span>
-        </a>
-        <div class="abstract-content">
-            为期一个月的hgame寒假训练赛终于结束了。每周都在做题，讲真这么用功学习还真是很少见。当然，一个月时间自己也学到了很多(虽然还是咸鱼)，这里感谢学长们花了很长时间出题目，也感谢几位学长耐心给我解答=。=这篇文章是对寒假学习知识的梳理，也仅代表本咸鱼的观点，如有错误请指出。另外，这边文章也以我在假期写的四篇wp作为参考，链接如下:h...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/12</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "web">web</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "CTF">CTF</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2018/03/10/talk-about-blog/" >
-            
-                <span>谈一谈博客</span>
-        </a>
-        <div class="abstract-content">
-            以前就想写博客很久了，理由有很多，不管是记录生活，还是学习上的知识，我觉得都有必要记录下来。身边很多朋友都写文章，但是我并不喜欢，也不习惯去写东西。
-然而，对于那些成堆的知识，我只能一点一点记忆下来。那时我萌生了写博客记录学习的想法，找了好几家博客但似乎都不符合我的要求，自己建站吧又嫌太麻烦。后来自己也得过且过，也没想过是时候该把自...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/10</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "随笔">随笔</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Mysql">Mysql</a>
     
 </div>
             
