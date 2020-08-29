@@ -427,7 +427,7 @@ height:50vh;
 <p>那这边ieda就会提示我是否转换为lambda表达式，我们转换一下<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Queue&lt;Integer&gt; queue = <span class="keyword">new</span> PriorityQueue&lt;&gt;((o1, o2) -&gt; o2 - o1);</span><br></pre></td></tr></table></figure>   </p>
 <p>我们代码更加直观了。当然这得益于jvm自动帮助我们判断参数类型。<br>那为什么可以简写呢？其实我们可以直接跟进源码看看，首先是new Thread，我们可以发现Thread有个构造函数可以传入Runnable对象，而Runnable是一个接口；接着我们看PriorityQueue，也可以发现有个构造函数可以传入Comparator对象，而Comparator也是个接口。<br>所以不难猜测，其实能使用lambda表达式是因为有相应的构造函数与接口的存在。那书写后编译时，自动帮我们匹配进相应的构造函数，自动判断类型，等等。这就是lambda表达式所帮我们做的。  </p>
 <h2 id="Java-lambda表达式深入"><a href="#Java-lambda表达式深入" class="headerlink" title="Java lambda表达式深入"></a>Java lambda表达式深入</h2><p>那通过以上我们可以知道，lambda表达式其实作为的是一种类似语法糖的存在，可以更直观的书写代码。lambda表达式似乎与匿名内部类可以相互替换。但事实并非如此。<br>当我们书写一个匿名内部类时，在编译阶段我们可以发现发现多出了一个class文件，但我们使用lambda表达式后，只有一个class文件。<br>继续查看使用lambda表达式后编译的class文件，我们可以发现lambda表达式其实是被封装成主类的一个私有静态方法。<br>还有一点是this的使用，在匿名内部类中，this指向的是自己，而lambda表达式中，this指向的是外部类。</p>
-<h2 id="Java-lambda表达式的性能问题"><a href="#Java-lambda表达式的性能问题" class="headerlink" title="Java lambda表达式的性能问题"></a>Java lambda表达式的性能问题</h2><p>这个问题其实困扰了我很久，在网上找了许多文章，有说性能有损失，有说没差多少。那在我测试后发现，lambda表达式确确实实有一点性能上的损失，但是并不大。那在我做LeetCode的其中一道题目中使用到的优先级队列，那使用匿名内部类与使用lambda表达式的时间分别是600-700ms与40-60ms(大概)，所以也就是说在某些用例上面，lambda确实是慢于匿名内部类的。<br>那关于这个问题，如果之后还有遇到会单独写写文章还有测试方法。</p>
+<h2 id="Java-lambda表达式的性能问题"><a href="#Java-lambda表达式的性能问题" class="headerlink" title="Java lambda表达式的性能问题"></a>Java lambda表达式的性能问题</h2><p>这个问题其实困扰了我很久，在网上找了许多文章，有说性能有损失，有说没差多少。那在我测试后发现，lambda表达式确确实实有一点性能上的损失，但是并不大。那在我做LeetCode的其中一道题目中使用到的优先级队列，那使用匿名内部类与使用lambda表达式的时间分别是40-60ms与600-700ms(大概)，所以也就是说在某些用例上面，lambda确实是慢于匿名内部类的。<br>那关于这个问题，如果之后还有遇到会单独写写文章还有测试方法。</p>
 <h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>这篇文章讲了什么是lambda表达式以及在python和java中的常用方法。那在python中，由于这门语言本身就追求简洁与方便，所以在大部分函数中传入lambda表达式本身就是十分省事的存在，并且不会把函数定义写入整个文件中，从而污染环境。<br>在java中，其实我个人倾向于把lambda表达式看做是一种语法糖，减少书写量，因为它能做到大部分匿名内部类的所能做的事，从代码简洁性来看肯定是更好的。<br>那函数式编程越加火热的今天，lambda表达式作为函数式编程的一份子，肯定是会有越来越多语言支持，甚至当成主要书写方式。</p>
 
     </article>
@@ -436,8 +436,8 @@ height:50vh;
         <div class="license-wrapper">
             <p>原文作者：<a href="http://re0.top">Zer0</a>
             <p>原文链接：<a href="http://re0.top/2020/08/29/lambda/">http://re0.top/2020/08/29/lambda/</a>
-            <p>发表日期：<a href="http://re0.top/2020/08/29/lambda/">八月 29日 2020, 3:00:00 下午</a>
-            <p>更新日期：<a href="http://re0.top/2020/08/29/lambda/">August 29th 2020, 3:58:59 pm</a>
+            <p>发表日期：<a href="http://re0.top/2020/08/29/lambda/">August 29th 2020, 3:00:00 pm</a>
+            <p>更新日期：<a href="http://re0.top/2020/08/29/lambda/">August 29th 2020, 4:04:15 pm</a>
             <p>版权声明：本文采用<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
