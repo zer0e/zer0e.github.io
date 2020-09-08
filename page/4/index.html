@@ -359,6 +359,65 @@ height:50vh;
     
     
     <article class="index-post">
+        <a class="abstract-title" href = "/2020/06/15/load_balancing/" >
+            
+                <span>浅谈负载均衡</span>
+        </a>
+        <div class="abstract-content">
+            前言面对大量的访问请求与海量的数据，我们可以通过加大单机的性能来实现服务的稳定，还可以考虑拆分系统来防止单机故障。负载均衡（Load Balance）是指将负载（例如访问请求，任务等等）进行平衡分摊到多个服务器或组件上执行，以提高性能，作为单点故障的解决方案。本文将讨论常见的负载均衡分类。
+负载均衡分类从实现方式不同，可以分为软件实...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/06/15</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2020/06/14/high_concurrency/" >
+            
+                <span>浅谈高并发引起的问题</span>
+        </a>
+        <div class="abstract-content">
+            前言其实在学生时代，基本上是遇不到高并发的架构，真正遇到高并发的问题，往往是在工作之后，我在学生时代所写的很多项目其实跟高并发是一点边都沾不上，但是我依旧学习了许多高并发的知识，希望以后能派上用场。当然，其实脱离了实际去讲述高并发并不是正确的，因为不同的系统架构是不一致的，分析高并发与高可用性需要先分析整体架构再来定夺。本篇文章就是...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/06/14</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href = "/2020/06/13/dp2/" >
             
                 <span>浅谈动态规划Ⅱ</span>
@@ -615,70 +674,10 @@ height:50vh;
         </div>
     </article>
     
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2020/03/11/python-sync/" >
-            
-                <span>浅谈python异步编程</span>
-        </a>
-        <div class="abstract-content">
-            前言最近开发的公众号后台需要有一个比较费时的检索操作，向某api接口请求数据，但接口返回时间不定，公众号又规定必须在5秒之内返回，不然会重发三次请求，还是无响应则显示公众号故障。由于公众号没有认证，无法主动给用户发送消息，所以我想了两天，想了几种解决方案：1.直接使用requests的timeout，超过4秒的请求直接返回无结果，但...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/03/11</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "python">python</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2020/03/04/python-copy/" >
-            
-                <span>浅谈python中的引用与拷贝</span>
-        </a>
-        <div class="abstract-content">
-            前言最近在爬取某游戏攻略的时候，发现写入到json的文件中全是重复的字典，但是数据库中的数据却是正常的，在寻找了一段时间的bug后，想起来python中对赋值操作本质上是对象的引用，而不是复制对象，所以将字典”复制”后append到list中，只要这个字典发生变化，整个list中的字典都是一样的值。心血来潮，重新学习一下引用与拷贝。...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/03/04</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
     <!-- paginator  -->
     
     <nav class="page-nav">
-        <a class="extend prev" rel="prev" href="/page/3/">&#60; PREV</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/5/">NEXT &#62;</a>
+        <a class="extend prev" rel="prev" href="/page/3/">&#60; PREV</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/5/">NEXT &#62;</a>
     </nav>
     
 </main>
@@ -1272,9 +1271,23 @@ height:50vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 59
+        Total : 61
         </div>
         <!-- search  -->
         
@@ -1287,6 +1300,16 @@ height:50vh;
     
     <div class="archive-year"> 2020 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2020/09/08/visitor_pattern/" >设计模式之访问者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2020/09/08/template_method_pattern/" >设计模式之模板方法模式</a>
+        </li>
     
     
         <li class="archive-post-item">
