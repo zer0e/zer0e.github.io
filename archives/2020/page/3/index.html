@@ -346,6 +346,76 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href = "/2020/08/12/mediator_pattern/" >
+            
+                <span>设计模式之中介者模式</span>
+        </a>
+        <div class="abstract-content">
+            前言本文介绍中介者模式。
+正文概念中介者模式属于行为型模式，是用在多个对象之间的通信，这种模式提供一个中介类，这个类处理不同类之间的通信，使代码松耦合易维护。这个模式解决的问题是类与类之间关联性较大，系统呈网状结构，而这个模式就是将网状结构分离成星型结构，来减少类之间的依赖程度。常用实例有：  
+
+网络通信，例如QQ群的通信。 
+M...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/08/12</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "设计模式">设计模式</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2020/08/12/factory_pattern/" >
+            
+                <span>设计模式之工厂模式</span>
+        </a>
+        <div class="abstract-content">
+            前言本文讲讲工厂模式。
+正文概念工厂模式是Java中常用的一种设计模式，它属于创建型模式的一种，又称为工厂方法模式，这种模式提供了创建对象的一种方法，对客户端隐藏生成对象的逻辑，使用一个接口来指向新的对象。常见的实例有：  
+
+工厂提供多种产品，你可以直接购买，无需关心如何制作。
+日志管理，可以使用多种方式记录，并且可以记录到本地，...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/08/12</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "设计模式">设计模式</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href = "/2020/08/10/spring_aop/" >
             
                 <span>浅谈Spring AOP</span>
@@ -593,67 +663,6 @@ Java线程创建方式在Java语言中，我们通过两种方式创建一个新
         <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags = "算法">算法</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2020/07/04/database_master_slave/" >
-            
-                <span>浅谈数据库主从复制</span>
-        </a>
-        <div class="abstract-content">
-            前言之前陆陆续续写了几篇高并发架构的文章，本篇文章是浅谈高并发架构系列的最后一篇。前面说过，单点故障是影响整个高并发系统的重要原因，在单点的服务出现故障时有可能影响整个系统的运行。而数据库作为数据存放的服务，是最底层的服务，使用的频率也是非常高的。因此有必要将单点数据库系统进行多节点复制，以至于在一个节点出现故障时，另一个节点能够提...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/07/04</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "数据库">数据库</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2020/06/24/load_balancing_algorithm/" >
-            
-                <span>常见的负载均衡算法</span>
-        </a>
-        <div class="abstract-content">
-            前言上一篇文章讲了负载均衡的几种实现方式，这期就重点讲讲当请求到达负载均衡服务器时，服务器可以根据哪些算法来进行分配请求。 
-正文轮询法这种方法很简单，就是按照顺序轮流将请求分配到各个服务器上，对服务器的状态和负载情况并不关注。由于需要对pos变量进行操作，如果是高并发场景必须加写锁，并且会导致并发吞吐量的明显下降。以下代码实现了一...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/06/24</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
     
 </div>
             
@@ -1194,9 +1203,23 @@ Java线程创建方式在Java语言中，我们通过两种方式创建一个新
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 61
+        Total : 63
         </div>
         <!-- search  -->
         
@@ -1209,6 +1232,16 @@ Java线程创建方式在Java语言中，我们通过两种方式创建一个新
     
     <div class="archive-year"> 2020 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2020/09/13/arraylist_resize/" >ArrayList扩容之后内存地址会发生改变吗？</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2020/09/13/jmm/" >浅谈Java内存模型</a>
+        </li>
     
     
         <li class="archive-post-item">
