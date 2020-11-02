@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Zer0">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Zer0">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>回顾数据库事务隔离级别 · Zer0&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Zer0&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">回顾数据库事务隔离级别</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Zer0's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            回顾数据库事务隔离级别
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Java">Java</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Mysql">Mysql</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">5.7k</span>阅读时长: <span class="post-count reading-time">21 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2020/11/01</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>对于数据库隔离级别，前前后后可能复习了好多遍，但是很经常就忘记，今天就简单整理下概念和实例，方便以后回顾。</p>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><h2 id="什么是事务"><a href="#什么是事务" class="headerlink" title="什么是事务"></a>什么是事务</h2><p>首先我们先明确事务是什么？为什么要有事务？<br>事务(Transaction)，其实就是一个操作序列，我们知道，操作数据库是什么一条条SQL语句来实现的，那么事务就是包含这些SQL操作的清单。<br>至于为什么要有事务，是因为事务是为了解决并发情况下如何保持数据一致性的问题。通过事务，我们能在并发情况下保持数据的一致性。    </p>
+<h2 id="事务的四大特性"><a href="#事务的四大特性" class="headerlink" title="事务的四大特性"></a>事务的四大特性</h2><p>事务的四大特性简称ACID，分别为原子性(Atomicity)，一致性(Consistency)，隔离性(Isolation)，持久性(Durability)。<br>所谓原子性，是指事务中包含的所有操作必须全部成功或者全部失败。<br>一致性，是指事务执行前后，数据的状态是一致的。一般来说，就是指数据不会凭空产生或消失。就拿库存和订单来说，商品的订单增加必定伴随着库存的减少，两者涉及的商品总量是一致的。<br>隔离性，是指多个事务并发执行时，彼此之间要相互隔离，简单来说就是事务感受不到其他事务的存在。这就是我之后要讲的隔离级别。<br>持久性，是指事务一旦提交，那么对于数据库中数据的改变是永久性的。  </p>
+<h2 id="使用事务"><a href="#使用事务" class="headerlink" title="使用事务"></a>使用事务</h2><h3 id="Mysql"><a href="#Mysql" class="headerlink" title="Mysql"></a>Mysql</h3><p>通常情况下，对mysql命令行的所有语句都是自动提交的，可以简单理解成每条SQL语句都是一个独立的事务，在我们写SQL之前就开启了事务，当我们回车之后自动帮我们提交给数据库。<br>那这只是单条SQL语句，如果在命令行中要执行多条SQL语句的事务，需要使用begin和commit命令来显示开启事务。在事务提交之前，所有的修改都不会应用到数据上。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from user;</span><br><span class="line">+----+------+</span><br><span class="line">| id | name |</span><br><span class="line">+----+------+</span><br><span class="line">|  1 | abc  |</span><br><span class="line">|  2 | asd  |</span><br><span class="line">+----+------+</span><br><span class="line">2 rows in set</span><br><span class="line"></span><br><span class="line">mysql&gt; begin;</span><br><span class="line">Query OK, 0 rows affected</span><br><span class="line"></span><br><span class="line">mysql&gt; insert into user values (3,&quot;aaa&quot;);</span><br><span class="line">Database changed</span><br><span class="line">mysql&gt; select * from user;</span><br><span class="line">+----+------+</span><br><span class="line">| id | name |</span><br><span class="line">+----+------+</span><br><span class="line">|  1 | abc  |</span><br><span class="line">|  2 | asd  |</span><br><span class="line">|  3 | aaa  |</span><br><span class="line">+----+------+</span><br><span class="line">3 rows in set</span><br><span class="line"></span><br><span class="line">mysql&gt; commit;</span><br><span class="line">Query OK, 0 rows affected</span><br></pre></td></tr></table></figure></p>
+<p>如果我们在commit之前打开另一个命令行进行查询，我们可以发现新插入的数据并没有在数据库中。  </p>
+<h3 id="Spring"><a href="#Spring" class="headerlink" title="Spring"></a>Spring</h3><p>那在Spring中我们要使用事务，简单来说就是使用@Transactional注解来实现，即在方法上标注注解就可以实现。简单写下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserService</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> UserDAO userDAO;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Transactional</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">addUser</span><span class="params">(User user)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> res = userDAO.insert(user);</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">true</span>)&#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">"显式抛出异常"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这里我们在addUser方法中手动抛出异常，如果@Transactional注解指定了触发回滚的异常类型，那么如果抛出了该种异常，就会自动回滚(rollback)，数据不会插入到数据库中。<br>那么关于spring中的事务管理与深入学习，就留到之后的文章再讨论吧。  </p>
+<h2 id="并发事务所出现的问题"><a href="#并发事务所出现的问题" class="headerlink" title="并发事务所出现的问题"></a>并发事务所出现的问题</h2><p>前面提到在并发事务时，事务是相互隔离的，但是隔离有性能代价的，隔离越彻底，那么性能就越差，所以数据库会提供不同级别的隔离策略，开发者需要考虑事务并发的安全性与性能上的差异，来选择合适的隔离级别。<br>那么事务并发会引发哪些数据上的不安全性呢？  </p>
+<h3 id="丢失更新"><a href="#丢失更新" class="headerlink" title="丢失更新"></a>丢失更新</h3><p>丢失更新分为两类，一般称为第一类丢失更新和第二类丢失更新。<br>第一类丢失更新是指，在A事务回滚后，把已经提交的B事务的数据给覆盖掉了。例如A事务是扣款100元，而B事务是增加100元，在A事务已经修改余额但是还未提交或回滚时，B事务已经增加了100元。这时候A事务回滚，变为原来的钱，此时B事务增加的100元就消失了。<br>第二类丢失更新，是指在A事务提交后，把已经提交的B事务的数据给覆盖掉了。与第一类丢失更新类似，区别在于第一类是回滚，而第二类是提交。<br>丢失更新本质上和<strong>可重复读</strong>是同一类并发的问题，多个数据查询同一数据，都是基于自己的查询来更新数据，会造成最后一个提交或回滚的事务覆盖掉其他已经提交的事务。  </p>
+<h3 id="脏读"><a href="#脏读" class="headerlink" title="脏读"></a>脏读</h3><p>脏读的定义是读到未提交的数据。<br>这个好理解，假设原来有100元，现在A事务增加100元，余额变成200元，但此时还未提交，这时B事务读取到了事务A修改后的数据，即读取到余额为200元，然后把200元扣款成0元，并提交了数据。但最后A事务却进行了回滚，把余额重新变为100元。这样就相当于无缘无故增加了200块钱。<br>在默认隔离级别下，避免了脏读操作。  </p>
+<h3 id="不可重复读"><a href="#不可重复读" class="headerlink" title="不可重复读"></a>不可重复读</h3><p>不可重复读是指读到了已经提交的更新数据，即一个事务中两次相同查询却返回了不同的<strong>更新数据</strong>。</p>
+<h3 id="幻读"><a href="#幻读" class="headerlink" title="幻读"></a>幻读</h3><p>幻读与不可重复读类似。幻读是指在一个事务中的两次相同查询却查到了另一个事务已提交的<strong>新插入数据</strong>。<br>两者区别是不可重复读是由数据修改产生的，而幻读是数据插入或者删除产生的。  </p>
+<h2 id="事务隔离级别"><a href="#事务隔离级别" class="headerlink" title="事务隔离级别"></a>事务隔离级别</h2><p>那么为了解决上述的事务并发问题，Mysql中定义了四种隔离级别，分别是读未提交，读已提交，可重复读，可串行化。  </p>
+<h3 id="读未提交-READ-UNCOMMITTED"><a href="#读未提交-READ-UNCOMMITTED" class="headerlink" title="读未提交(READ UNCOMMITTED)"></a>读未提交(READ UNCOMMITTED)</h3><p>在这种隔离级别下，事务A能读取到事务B修改但是未提交的数据，那么就会导致脏读，不可重复读和幻读问题。  </p>
+<h3 id="读已提交-READ-COMMITTED"><a href="#读已提交-READ-COMMITTED" class="headerlink" title="读已提交(READ COMMITTED)"></a>读已提交(READ COMMITTED)</h3><p>这种隔离级别下，事务A只能在事务B修改并且提交之后才能读取到修改后的数据。<br>它解决了脏读问题，但是会发生不可重复读和幻读问题。  </p>
+<h3 id="可重复读-REPEATABLE-READ"><a href="#可重复读-REPEATABLE-READ" class="headerlink" title="可重复读(REPEATABLE READ)"></a>可重复读(REPEATABLE READ)</h3><p>在这种隔离级别下，当事务B做出修改并提交后，只有事务A<strong>提交之后</strong>才能读到事务B修改的数据。<br>那可重复读解决了脏读和不可重复读问题，但是仍可能会发生幻读问题。<br>Q：Mysql中在update的时候会锁住当前行，但是为什么其他事务还能读到数据呢？<br>A：因为Mysql的innoDB有MVCC机制，可以使用快照读取数据，而不阻塞。那后面我会讲讲这个机制。  </p>
+<h3 id="可串行化-SERIALIZABLE"><a href="#可串行化-SERIALIZABLE" class="headerlink" title="可串行化(SERIALIZABLE)"></a>可串行化(SERIALIZABLE)</h3><p>在这种隔离级别下，如果两个事务都是对数据进行修改，那么事务将以串行化的方式顺序执行，保证数据的安全。以下分四种情况讨论，假设事务A先于事务B：  </p>
+<ul>
+<li>如果事务A与事务B都是读取同一个数据，那这种情况下事务不会阻塞。因为没有读数据进行修改。</li>
+<li>如果事务A先读取数据，这时事务B要修改这行数据，那么事务B会阻塞直到事务A提交。</li>
+<li>如果事务A先修改数据，事务B要读取数据，那么事务B会阻塞直到事务A提交。  </li>
+<li>如果事务A先修改数据，而事务B也要修改这行数据，那么事务B会等到事务A提交过后再进行修改。  </li>
+</ul>
+<p>那么综上所述，可串行化就是根据事务的先后顺序，来决定读取和修改数据的先后。可以简单理解成当前一个事务结束，后一个事务才开始，但是要注意的是，后一个事务其实早就开始了，只是被阻塞而已。<br>可串行化下，读取会获得<strong>表级的共享锁</strong>，因此读写相互就会阻塞。<br>那么在可串行化下，解决了脏读，不可重复读还有幻读问题，避免了并发事务中的读取与修改问题。  </p>
+<h3 id="查看和修改事务隔离级别"><a href="#查看和修改事务隔离级别" class="headerlink" title="查看和修改事务隔离级别"></a>查看和修改事务隔离级别</h3><p>分别为系统隔离级别和会话隔离级别。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select @@global.tx_isolation,@@tx_isolation;</span><br><span class="line">+-----------------------+-----------------+</span><br><span class="line">| @@global.tx_isolation | @@tx_isolation  |</span><br><span class="line">+-----------------------+-----------------+</span><br><span class="line">| REPEATABLE-READ       | REPEATABLE-READ |</span><br><span class="line">+-----------------------+-----------------+</span><br><span class="line">1 row in set</span><br><span class="line"></span><br><span class="line">mysql&gt; set global transaction isolation level Repeatable Read;</span><br><span class="line">Query OK, 0 rows affected</span><br><span class="line"></span><br><span class="line">mysql&gt; set session transaction isolation level Repeatable Read;</span><br><span class="line">Query OK, 0 rows affected</span><br></pre></td></tr></table></figure></p>
+<h2 id="mysql如何实现隔离级别"><a href="#mysql如何实现隔离级别" class="headerlink" title="mysql如何实现隔离级别"></a>mysql如何实现隔离级别</h2><h3 id="两段锁协议"><a href="#两段锁协议" class="headerlink" title="两段锁协议"></a>两段锁协议</h3><p>首先我们要明白数据库遵循的是两段锁协议，即事务分为两个阶段，加锁和解锁。<br>加锁阶段，就是在相应的操作前要申请对应的锁。如在读操作前要申请S锁(share共享锁)，此时其他事务可以继续添加S锁，但不能添加X锁；又如在写操作前要申请X锁(排他锁)，此时其他事务不能添加任何锁。如果加锁不成功那么事务会等待直到加锁成功。<br>解锁阶段，一般在事务的提交时，会同时释放这个事务所申请的所有锁。<br>那么两段锁协议无法避免死锁，但是能保证事务并发调度是串行化的(注意不是隔离级别)，在数据备份与恢复时十分重要。 </p>
+<h3 id="读已提交与可重复读的加锁方式"><a href="#读已提交与可重复读的加锁方式" class="headerlink" title="读已提交与可重复读的加锁方式"></a>读已提交与可重复读的加锁方式</h3><p>前面有提到过，mysql当中有表锁和行锁，表锁锁住的是整张表，例如可串行化下就是使用表锁，而行锁则是锁住有限的数据行。  </p>
+<h4 id="读已提交-RC"><a href="#读已提交-RC" class="headerlink" title="读已提交(RC)"></a>读已提交(RC)</h4><p>在读已提交这个隔离级别中，假设事务A与事务B都要修改同一条数据，但是事务A先于事务B，那么根据前面我们知道，读已提交就是事务B只能读到事务A已经修改的数据。那么当事务A修改数据后，但是并未提交时，根据两段锁协议，事务A会在修改之前申请X锁，在提交之后释放，那么事务A一直不commit，则会导致事务B一直拿不到锁，直到超时。  </p>
+<p>那么这里有一个值得注意的地方。那就是mysql如何确定要获取哪个行的行级锁呢？答案就是索引。假设id为索引，那么<code>update user set name = &quot;123&quot; where id = 1;</code>这条语句会根据id来找到相应的行，并获取这个行的行级锁。如果SQL语句的条件不是根据索引，那么此时mysql会给整个表的行加行级锁。<br>那么更有意思的出现了，mysql锁住所有行之后，会再次进行过滤，发现条件不满足时，会直接将该行的行级锁给释放，这违反了二段锁协议。这样确定了最后只有满足条件的行上加了锁。（详情见《高性能Mysql》）  </p>
+<h4 id="可重复读-RR"><a href="#可重复读-RR" class="headerlink" title="可重复读(RR)"></a>可重复读(RR)</h4><p>这个是Mysql中innodb默认的隔离级别。我们知道这个级别下，同一个事务中的相同查询只会查到相同的数据。假设事务A做了两次查询，但是事务B和事务C同时在两次查询中间修改了数据，但是却返回了相同的数据。<br>如果使用锁来实现，又是如何实现呢？很简单，既然不可重复读的重点是update和delete，那么我在读取数据时直接加X锁，其他事务无法修改这些数据，那么就可以实现可重复读了。但是幻读又是怎么解决的呢？前面也简单提到过，可串行化的隔离级别，本质上就是通过读锁和写锁实现，只不过读写锁互斥，这就解决了幻读问题。<br>上面所讲的，就是使用<strong>悲观锁</strong>来实现隔离级别的，但是mysql出于性能考虑，RR级别下是采用乐观锁为基础的MVCC协议来实现。  </p>
+<h3 id="MVCC协议"><a href="#MVCC协议" class="headerlink" title="MVCC协议"></a>MVCC协议</h3><h4 id="悲观锁与乐观锁"><a href="#悲观锁与乐观锁" class="headerlink" title="悲观锁与乐观锁"></a>悲观锁与乐观锁</h4><p>在谈这个协议之前，我们先来讲讲悲观锁和乐观锁。<br>前面的文章我也提到过，悲观锁是指认为所有数据随时都可能被修改，而乐观锁则是认为数据并不是随时会更新，所以它只会在更新时判断数据是否已经进行了更新。<br>那么乐观锁大多数是基于版本号来实现的。即在数据行中添加一个新的数据段version，通过这个version来判断读取的数据和当前数据库中的数据是否是同一个，也就是是否已经被修改过。  </p>
+<h4 id="innoDB中MVCC的实现"><a href="#innoDB中MVCC的实现" class="headerlink" title="innoDB中MVCC的实现"></a>innoDB中MVCC的实现</h4><p>MVCC，全称为Multi-Version Concurrency Control，即多版本并发控制。MVCC没有固定的规范，所以每个数据库的实现可能会不同，这里讲讲innoDB中的实现。<br>在innoDB当中，每行记录都会由两个隐藏的列，一个是创建版本号，另一个是删除版本号。创建版本号是指创建一个数据行的事务版本号(事务版本号：事务开始时的系统版本号；系统版本号：每开始一个事务，系统版本号就会递增)。(ps.搁着套娃呢)<br>删除版本号则是delete操作时的版本号。<br>在RR级别下，各种操作如下：</p>
+<ul>
+<li>insert操作时，记录当前事务版本号为当前行的创建版本号。</li>
+<li>delete操作时，记录当前事务版本号到删除版本号。</li>
+<li>update操作时，先记录当前事务版本号到删除版本号，再增加一条记录，保存当前事务版本号为创建版本号。  </li>
+<li>select操作时，读取创建版本号&lt;=当前事务版本号，删除版本号为空或者&gt;当前事务版本号。即创建操作早于当前事务，删除操作晚于当前事务。</li>
+</ul>
+<p>那么通过MVCC协议，虽然会增加额外的存储空间，但是可以减少锁的使用，读取数据时不用加锁。<br>那这里又有一个有趣的点，那就是不管从书上还是网上，基本上是说RR级别解决了不可重复读，无法解决幻读。但是在mysql当中却是另一种情况。<br>假设事务A两次读取中间我们使用事务B增加一条数据，理论上来说事务A第二次读会读取到事务B中增加的行。<br>那么实验出结果，先是事务A读取一次数据：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; begin;</span><br><span class="line">Query OK, 0 rows affected</span><br><span class="line"></span><br><span class="line">mysql&gt; select * from user;</span><br><span class="line">+----+------+</span><br><span class="line">| id | name |</span><br><span class="line">+----+------+</span><br><span class="line">|  1 | abc  |</span><br><span class="line">|  2 | asd  |</span><br><span class="line">|  3 | aaa  |</span><br><span class="line">+----+------+</span><br><span class="line">3 rows in set</span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<p>好，我们读取到三条数据。此时打开另一个命令行添加一条数据进去。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; insert into user values (4,&quot;aaa&quot;);</span><br><span class="line">Database changed</span><br><span class="line">mysql&gt; select * from user;</span><br><span class="line">+----+------+</span><br><span class="line">| id | name |</span><br><span class="line">+----+------+</span><br><span class="line">|  1 | abc  |</span><br><span class="line">|  2 | asd  |</span><br><span class="line">|  3 | aaa  |</span><br><span class="line">|  4 | aaa  |</span><br><span class="line">+----+------+</span><br><span class="line">4 rows in set</span><br></pre></td></tr></table></figure></p>
+<p>由于是自动提交，我没有开启新事务，这不要紧。接着我们返回事务A再次查询数据。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from user;</span><br><span class="line">+----+------+</span><br><span class="line">| id | name |</span><br><span class="line">+----+------+</span><br><span class="line">|  1 | abc  |</span><br><span class="line">|  2 | asd  |</span><br><span class="line">|  3 | aaa  |</span><br><span class="line">+----+------+</span><br><span class="line">3 rows in set</span><br></pre></td></tr></table></figure></p>
+<p>发现依旧是三条数据。那么就很神奇了，mysql的RR级别似乎真的解决了幻读问题？？<br>那么我们就继续实验，我们知道目前数据库中存在四条数据，但是事务A读取的确实三条，那么此时我在事务A中修改新添加的数据行应该是失败的。那么我们就将事务A中的所有数据行修改下，看看它是否会影响到第四条数据。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; update user set name = &quot;zer0e&quot;;</span><br><span class="line">Database changed</span><br><span class="line">Rows matched: 4  Changed: 4  Warnings: 0</span><br><span class="line">mysql&gt; select * from user;</span><br><span class="line">+----+-------+</span><br><span class="line">| id | name  |</span><br><span class="line">+----+-------+</span><br><span class="line">|  1 | zer0e |</span><br><span class="line">|  2 | zer0e |</span><br><span class="line">|  3 | zer0e |</span><br><span class="line">|  4 | zer0e |</span><br><span class="line">+----+-------+</span><br><span class="line">4 rows in set</span><br></pre></td></tr></table></figure>  </p>
+<p>那么很明显，mysql直接提示有四条数据被修改，之后再读取就变成了四条数据，很显然幻读问题并没有真正解决。  </p>
+<h4 id="快照读与当前读"><a href="#快照读与当前读" class="headerlink" title="快照读与当前读"></a>快照读与当前读</h4><p>那么到底为什么会出现上述情况？查阅资料后发现在RR级别下，通过MVCC协议，我们读取的数据变为可重复读，但是它可能是一个历史数据，那么我们称它为快照读，而读取到数据库最新数据的方式，我们称它为当前读。<br>select操作默认都是快照读，之后select都会返回这次快照读，因此实现了可重复读。<br>而对数据的更新操作(update,insert,delete)都是当前读，执行这几个操作会读取最新的记录，在事务中执行修改操作后会导致快照读变更。也就是我们所测试的那样。<br>如果我们要让select读取到当前读，我们可以手动进行加锁。<br>事务A先读取数据：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; begin;</span><br><span class="line">Query OK, 0 rows affected</span><br><span class="line"></span><br><span class="line">mysql&gt; select * from user;</span><br><span class="line">+----+-------+</span><br><span class="line">| id | name  |</span><br><span class="line">+----+-------+</span><br><span class="line">|  1 | zer0e |</span><br><span class="line">|  2 | zer0e |</span><br><span class="line">|  3 | zer0e |</span><br><span class="line">|  4 | zer0e |</span><br><span class="line">+----+-------+</span><br><span class="line">4 rows in set</span><br></pre></td></tr></table></figure> </p>
+<p>此时事务B新增一条记录(5,”aaa”)，这里我就不写了，我们来看看事务A再次读取的结果。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from user;</span><br><span class="line">+----+-------+</span><br><span class="line">| id | name  |</span><br><span class="line">+----+-------+</span><br><span class="line">|  1 | zer0e |</span><br><span class="line">|  2 | zer0e |</span><br><span class="line">|  3 | zer0e |</span><br><span class="line">|  4 | zer0e |</span><br><span class="line">+----+-------+</span><br><span class="line">4 rows in set</span><br><span class="line"></span><br><span class="line">mysql&gt; select * from user lock in share mode;</span><br><span class="line">+----+-------+</span><br><span class="line">| id | name  |</span><br><span class="line">+----+-------+</span><br><span class="line">|  1 | zer0e |</span><br><span class="line">|  2 | zer0e |</span><br><span class="line">|  3 | zer0e |</span><br><span class="line">|  4 | zer0e |</span><br><span class="line">|  5 | aaa   |</span><br><span class="line">+----+-------+</span><br><span class="line">5 rows in set</span><br><span class="line"></span><br><span class="line">mysql&gt; select * from user for update;</span><br><span class="line">+----+-------+</span><br><span class="line">| id | name  |</span><br><span class="line">+----+-------+</span><br><span class="line">|  1 | zer0e |</span><br><span class="line">|  2 | zer0e |</span><br><span class="line">|  3 | zer0e |</span><br><span class="line">|  4 | zer0e |</span><br><span class="line">|  5 | aaa   |</span><br><span class="line">+----+-------+</span><br><span class="line">5 rows in set</span><br><span class="line"></span><br><span class="line">mysql&gt; select * from user;</span><br><span class="line">+----+-------+</span><br><span class="line">| id | name  |</span><br><span class="line">+----+-------+</span><br><span class="line">|  1 | zer0e |</span><br><span class="line">|  2 | zer0e |</span><br><span class="line">|  3 | zer0e |</span><br><span class="line">|  4 | zer0e |</span><br><span class="line">+----+-------+</span><br><span class="line">4 rows in set</span><br></pre></td></tr></table></figure>   </p>
+<p>我们可以发现使用<code>for update</code>或者<code>lock in share mode</code>都可以获取到当前读。<br>所以综上，在RR级别下，幻读并未真正解决，而是因为快照读所以无法读取到最新数据。  </p>
+<h3 id="解决幻读"><a href="#解决幻读" class="headerlink" title="解决幻读"></a>解决幻读</h3><p>那么在RR级别下innodb到底有没有解决幻读问题？通过什么解决？<br>答案是解决了，通过Next-Key锁来实现。</p>
+<h4 id="Next-Key锁"><a href="#Next-Key锁" class="headerlink" title="Next-Key锁"></a>Next-Key锁</h4><p>Next-Key锁是行锁和间隙锁的合并，所谓间隙锁，就是在锁住当前行时，同时锁住当前索引的上下范围。<br>下面进行几项实验：  </p>
+<h5 id="无主键表"><a href="#无主键表" class="headerlink" title="无主键表"></a>无主键表</h5><p>首先隔离级别定为RR，创建表t1，并插入几条间隔数据。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; create table t1(id int,key id(id))engine=innodb;</span><br><span class="line">Query OK, 0 rows affected</span><br><span class="line"></span><br><span class="line">mysql&gt; insert into t1 values(1),(3),(5);</span><br><span class="line">Query OK, 3 rows affected</span><br><span class="line">Records: 3  Duplicates: 0  Warnings: 0</span><br><span class="line"></span><br><span class="line">mysql&gt; select * from t1;</span><br><span class="line">+----+</span><br><span class="line">| id |</span><br><span class="line">+----+</span><br><span class="line">|  1 |</span><br><span class="line">|  3 |</span><br><span class="line">|  5 |</span><br><span class="line">+----+</span><br><span class="line">3 rows in set</span><br></pre></td></tr></table></figure>   </p>
+<p>事务A通过for update锁住id=5的数据行。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from t1 where id=5 for update;</span><br><span class="line">+----+</span><br><span class="line">| id |</span><br><span class="line">+----+</span><br><span class="line">|  5 |</span><br><span class="line">+----+</span><br><span class="line">1 row in set</span><br></pre></td></tr></table></figure>   </p>
+<p>此时开启事务B，添加一个数据行在id=5前后。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; insert into t1 values(2);</span><br><span class="line">Query OK, 1 row affected</span><br><span class="line"></span><br><span class="line">mysql&gt; insert into t1 values(4);</span><br><span class="line">1049 - Unknown database &apos;ate user set name = &quot;aaa&quot; where id = 5&apos;</span><br><span class="line">terminated by user</span><br><span class="line">mysql&gt; use test;</span><br><span class="line">Database changed</span><br><span class="line">mysql&gt; insert into t1 values(6);</span><br><span class="line"></span><br></pre></td></tr></table></figure> </p>
+<p>我们会发现事务B会等待，直到事务A提交过后，事务B才插入成功。<br>那么Next-Key锁锁住的到底是多少行？其实它锁住的是它上下的一个范围。例如上述表中，对id=5的行进行加锁，那么innodb会把数据分为几个段，分别为(negative infinity,3]，(3,5]，(5,positive infinity]，都是左闭右开区间，那么对id=5的行添加行锁，同时会对(3,5]，(5,positive infinity]这两个区间添加gap锁(即间隙锁)，导致其他事务无法在这个区间进行更新操作。  </p>
+<h5 id="有主键表"><a href="#有主键表" class="headerlink" title="有主键表"></a>有主键表</h5><p>上面的例子中没有主键，只是有一个普通索引而已。我们再来试一下有主键的例子。<br>创建表并插入几条数据：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; create table t2(id int primary key)engine = innodb;</span><br><span class="line">Query OK, 0 rows affected</span><br><span class="line"></span><br><span class="line">mysql&gt; insert into t2 values(1),(3),(5);</span><br><span class="line">Query OK, 3 rows affected</span><br><span class="line">Records: 3  Duplicates: 0  Warnings: 0</span><br></pre></td></tr></table></figure> </p>
+<p>开启事务A并对id=5的行进行锁定。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; begin;</span><br><span class="line">Query OK, 0 rows affected</span><br><span class="line"></span><br><span class="line">mysql&gt; select * from t2 where id = 5 for update;</span><br><span class="line">+----+</span><br><span class="line">| id |</span><br><span class="line">+----+</span><br><span class="line">|  5 |</span><br><span class="line">+----+</span><br><span class="line">1 row in set</span><br></pre></td></tr></table></figure> </p>
+<p>然后尝试在事务B中插入数据。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; insert into t2 values(4);</span><br><span class="line">Query OK, 1 row affected</span><br><span class="line"></span><br><span class="line">mysql&gt; insert into t2 values(6);</span><br><span class="line">Query OK, 1 row affected</span><br><span class="line"></span><br><span class="line">mysql&gt; select * from t2 where id = 5 for update;</span><br><span class="line">....</span><br></pre></td></tr></table></figure> </p>
+<p>我们发现innodb并没有使用gap锁，而是只锁定了当前行。<br>那其实在innodb当中，<strong>行级锁是通过给索引上的索引项加锁来实现的，当查询的索引含有唯一属性时（主键索引，唯一索引），那么innodb会对next-key锁进行优化，使它降级为行级锁，锁住的不再是范围。</strong><br>所以如果把id不设置成主键，而是设置成唯一索引，也能达到相应的效果。  </p>
+<h5 id="使用无索引字段"><a href="#使用无索引字段" class="headerlink" title="使用无索引字段"></a>使用无索引字段</h5><p>最后我们尝试下使用无索引字段来加锁会如何。<br>先创建表，并插入数据。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; create table t3(id int,name varchar(10),key id(id))engine=innodb;</span><br><span class="line">Query OK, 0 rows affected</span><br><span class="line"></span><br><span class="line">mysql&gt; insert into t3 values (1,&quot;a&quot;),(3,&quot;b&quot;),(5,&quot;c&quot;);</span><br><span class="line">Query OK, 3 rows affected</span><br><span class="line">Records: 3  Duplicates: 0  Warnings: 0</span><br><span class="line"></span><br></pre></td></tr></table></figure> </p>
+<p>开启事务A对name=”c”的行加锁。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; begin;</span><br><span class="line">Query OK, 0 rows affected</span><br><span class="line"></span><br><span class="line">mysql&gt; select * from t3 where name = &quot;c&quot; for update;</span><br><span class="line">+----+------+</span><br><span class="line">| id | name |</span><br><span class="line">+----+------+</span><br><span class="line">|  5 | c    |</span><br><span class="line">+----+------+</span><br><span class="line">1 row in set</span><br><span class="line"></span><br></pre></td></tr></table></figure> </p>
+<p>在事务B中尝试加锁其他行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from t3 where name = &quot;a&quot; for update;</span><br><span class="line">...</span><br><span class="line">mysql&gt; select * from t3 where name = &quot;b&quot; for update;</span><br><span class="line">...</span><br><span class="line">mysql&gt; insert into t3 values (4,&quot;d&quot;);</span><br><span class="line">...</span><br></pre></td></tr></table></figure> </p>
+<p>可以发现innodb其实对其他行都添加了锁，无法进行更新操作。那通过之前的结论，我们知道行级锁是通过索引加锁，条件中的列没有索引，因此innodb会给全表加上间隙锁。除非事务A提交，否则其他事务无法进行更新操作。  </p>
+<h4 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h4><p>那之所以<a href="/2020/11/01/transaction_isolation/#innoDB中MVCC的实现">前一个实验</a>“没有”解决幻读，原因在于快照读没有通过行级锁锁住当前行，表中也没有索引，条件语句中没有增加索引条件。我们可以通过添加索引并使用索引的当前读，来解决幻读问题。<br>所以在innodb当中，行级锁防止别的事务对当前行进行修改和删除，间隙锁防止其他事务新增数据，行级锁和间隙锁形成的next-key锁共同解决了RR级别下写的幻读问题。  </p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>那本篇的大致内容就写到这里了，本来只计划整理下基础知识，没想到越写越多，多整理了一个mysql中隔离级别的实现。这部分知识我之前是不太了解的，通过自己做下实验后，有种柳暗花明的感觉。也许这就是学习技术所带来的乐趣吧。  </p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
+<li><a href="https://dev.mysql.com/doc/" target="_blank" rel="noopener">mysql参考手册</a></li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>原文作者：<a href="http://re0.top">Zer0</a>
+            <p>原文链接：<a href="http://re0.top/2020/11/01/transaction_isolation/">http://re0.top/2020/11/01/transaction_isolation/</a>
+            <p>发表日期：<a href="http://re0.top/2020/11/01/transaction_isolation/">November 1st 2020, 2:10:00 pm</a>
+            <p>更新日期：<a href="http://re0.top/2020/11/01/transaction_isolation/">November 2nd 2020, 3:24:22 pm</a>
+            <p>版权声明：本文采用<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2020/10/09/snowflake/" title= "浅谈雪花算法">
+                    <div class="prevTitle">浅谈雪花算法</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:zcluslloye@gmail.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/zer0e" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+            
+                <a href="https://t.me/zer009" class="iconfont-archer telegram" target="_blank" title=telegram></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+	<div class="copyright">
+		<span id="hexo-power">Hosted by <a href="https://pages.coding.me" target="_blank">Coding Pages</a></span>
+	</div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#正文"><span class="toc-number">2.</span> <span class="toc-text">正文</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#什么是事务"><span class="toc-number">2.1.</span> <span class="toc-text">什么是事务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#事务的四大特性"><span class="toc-number">2.2.</span> <span class="toc-text">事务的四大特性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用事务"><span class="toc-number">2.3.</span> <span class="toc-text">使用事务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Mysql"><span class="toc-number">2.3.1.</span> <span class="toc-text">Mysql</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Spring"><span class="toc-number">2.3.2.</span> <span class="toc-text">Spring</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#并发事务所出现的问题"><span class="toc-number">2.4.</span> <span class="toc-text">并发事务所出现的问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#丢失更新"><span class="toc-number">2.4.1.</span> <span class="toc-text">丢失更新</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#脏读"><span class="toc-number">2.4.2.</span> <span class="toc-text">脏读</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#不可重复读"><span class="toc-number">2.4.3.</span> <span class="toc-text">不可重复读</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#幻读"><span class="toc-number">2.4.4.</span> <span class="toc-text">幻读</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#事务隔离级别"><span class="toc-number">2.5.</span> <span class="toc-text">事务隔离级别</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#读未提交-READ-UNCOMMITTED"><span class="toc-number">2.5.1.</span> <span class="toc-text">读未提交(READ UNCOMMITTED)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#读已提交-READ-COMMITTED"><span class="toc-number">2.5.2.</span> <span class="toc-text">读已提交(READ COMMITTED)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#可重复读-REPEATABLE-READ"><span class="toc-number">2.5.3.</span> <span class="toc-text">可重复读(REPEATABLE READ)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#可串行化-SERIALIZABLE"><span class="toc-number">2.5.4.</span> <span class="toc-text">可串行化(SERIALIZABLE)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#查看和修改事务隔离级别"><span class="toc-number">2.5.5.</span> <span class="toc-text">查看和修改事务隔离级别</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysql如何实现隔离级别"><span class="toc-number">2.6.</span> <span class="toc-text">mysql如何实现隔离级别</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#两段锁协议"><span class="toc-number">2.6.1.</span> <span class="toc-text">两段锁协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#读已提交与可重复读的加锁方式"><span class="toc-number">2.6.2.</span> <span class="toc-text">读已提交与可重复读的加锁方式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#读已提交-RC"><span class="toc-number">2.6.2.1.</span> <span class="toc-text">读已提交(RC)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#可重复读-RR"><span class="toc-number">2.6.2.2.</span> <span class="toc-text">可重复读(RR)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MVCC协议"><span class="toc-number">2.6.3.</span> <span class="toc-text">MVCC协议</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#悲观锁与乐观锁"><span class="toc-number">2.6.3.1.</span> <span class="toc-text">悲观锁与乐观锁</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#innoDB中MVCC的实现"><span class="toc-number">2.6.3.2.</span> <span class="toc-text">innoDB中MVCC的实现</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#快照读与当前读"><span class="toc-number">2.6.3.3.</span> <span class="toc-text">快照读与当前读</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#解决幻读"><span class="toc-number">2.6.4.</span> <span class="toc-text">解决幻读</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Next-Key锁"><span class="toc-number">2.6.4.1.</span> <span class="toc-text">Next-Key锁</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#无主键表"><span class="toc-number">2.6.4.1.1.</span> <span class="toc-text">无主键表</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#有主键表"><span class="toc-number">2.6.4.1.2.</span> <span class="toc-text">有主键表</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#使用无索引字段"><span class="toc-number">2.6.4.1.3.</span> <span class="toc-text">使用无索引字段</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#结论"><span class="toc-number">2.6.4.2.</span> <span class="toc-text">结论</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#总结"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#参考"><span class="toc-number">4.</span> <span class="toc-text">参考</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 68
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href= "/2020/11/01/transaction_isolation/" >回顾数据库事务隔离级别</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/09</span><a class="archive-post-title" href= "/2020/10/09/snowflake/" >浅谈雪花算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/design_patterns/" >谈谈设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/composite_pattern/" >设计模式之组合模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/flyweight_pattern/" >设计模式之享元模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span><a class="archive-post-title" href= "/2020/09/14/builder_pattern/" >设计模式之构建模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2020/09/13/arraylist_resize/" >ArrayList扩容之后内存地址会发生改变吗？</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2020/09/13/jmm/" >浅谈Java内存模型</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2020/09/08/visitor_pattern/" >设计模式之访问者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2020/09/08/template_method_pattern/" >设计模式之模板方法模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/memento_pattern/" >设计模式之备忘录模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/state_pattern/" >设计模式之状态模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2020/09/05/interpreter_pattern/" >设计模式之解释器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2020/09/05/chain_of_responsibility_pattern/" >设计模式之责任链模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2020/09/04/bridge_patterns/" >设计模式之桥接模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2020/09/02/prototype_pattern/" >设计模式之原型模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/29</span><a class="archive-post-title" href= "/2020/08/29/lambda/" >由lambda表达式引发的思考</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/27</span><a class="archive-post-title" href= "/2020/08/27/iterator_pattern/" >设计模式之迭代器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/27</span><a class="archive-post-title" href= "/2020/08/27/strategy_pattern/" >设计模式之策略模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/22</span><a class="archive-post-title" href= "/2020/08/22/adapter_pattern/" >设计模式之适配器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/19</span><a class="archive-post-title" href= "/2020/08/19/sql_concurrent/" >谈一道数据库更新的并发问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span><a class="archive-post-title" href= "/2020/08/17/decorator_pattern/" >设计模式之装饰器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span><a class="archive-post-title" href= "/2020/08/17/command_pattern/" >设计模式之命令模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/16</span><a class="archive-post-title" href= "/2020/08/16/facade_pattern/" >设计模式之外观模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/14</span><a class="archive-post-title" href= "/2020/08/14/lock_class/" >谈谈锁的种类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/13</span><a class="archive-post-title" href= "/2020/08/13/abstract_factory_pattern/" >设计模式之抽象工厂模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2020/08/12/mediator_pattern/" >设计模式之中介者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2020/08/12/factory_pattern/" >设计模式之工厂模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2020/08/10/spring_aop/" >浅谈Spring AOP</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2020/08/10/proxy_pattern/" >设计模式之代理模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/08</span><a class="archive-post-title" href= "/2020/08/08/observer/" >设计模式之观察者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/07</span><a class="archive-post-title" href= "/2020/08/07/singleton/" >设计模式之单例模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/06</span><a class="archive-post-title" href= "/2020/08/06/spring_ioc/" >谈谈Spring IoC</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2020/07/24/java_thread_pool/" >浅谈Java线程池</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/20</span><a class="archive-post-title" href= "/2020/07/20/dp3/" >浅谈动态规划Ⅲ</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/04</span><a class="archive-post-title" href= "/2020/07/04/database_master_slave/" >浅谈数据库主从复制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2020/06/24/load_balancing_algorithm/" >常见的负载均衡算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2020/06/15/load_balancing/" >浅谈负载均衡</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/14</span><a class="archive-post-title" href= "/2020/06/14/high_concurrency/" >浅谈高并发引起的问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/dp2/" >浅谈动态规划Ⅱ</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span><a class="archive-post-title" href= "/2020/05/13/topk/" >TopK问题与快速选择算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2020/04/29/binary_search/" >几种二分查找的模板与理解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/05</span><a class="archive-post-title" href= "/2020/04/05/dp1/" >浅谈动态规划</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2020/03/30/tree-traversal2/" >二叉树的广度优先(层次)遍历</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2020/03/30/tree-traversal/" >二叉树的前中后序遍历</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/24</span><a class="archive-post-title" href= "/2020/03/24/celery/" >初探celery任务队列</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/22</span><a class="archive-post-title" href= "/2020/03/22/java-reflection/" >理解Java反射</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span><a class="archive-post-title" href= "/2020/03/11/python-sync/" >浅谈python异步编程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/04</span><a class="archive-post-title" href= "/2020/03/04/python-copy/" >浅谈python中的引用与拷贝</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span><a class="archive-post-title" href= "/2020/02/10/spring-annotation/" >Springboot常用注解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/05</span><a class="archive-post-title" href= "/2020/01/05/dns-cache-pollution/" >DNS投毒分析</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href= "/2019/11/12/2019-11-12/" >谈一谈最近</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2019/04/01/ngrok/" >使用ngrok实现内网远程桌面</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href= "/2018/11/12/hctf2018wp/" >HCTF2018 web部分Writeup</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2018/11/02/js-prototype/" >浅谈JavaScript中的原型链</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2018/10/10/xssbot1/" >从零开始完成xssbot</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/12</span><a class="archive-post-title" href= "/2018/07/12/csp/" >浅谈CSP内容安全策略</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/07</span><a class="archive-post-title" href= "/2018/06/07/mergesort/" >经典算法之归并排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/02</span><a class="archive-post-title" href= "/2018/06/02/quicksort/" >经典算法之快速排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/28</span><a class="archive-post-title" href= "/2018/05/28/linux-shell/" >Linux下反弹shell的几种方式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/11</span><a class="archive-post-title" href= "/2018/05/11/selectsort/" >经典算法之选择排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2018/04/24/docker/" >docker常用命令汇总</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/11</span><a class="archive-post-title" href= "/2018/04/11/bubblesort/" >经典算法之冒泡排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2018/03/30/php-weak1/" >PHP弱类型总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/29</span><a class="archive-post-title" href= "/2018/03/29/second-sqli/" >记一次有趣的二次注入</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2018/03/18/hgame-misc/" >misc入门总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/hgame-web/" >CTF入门(坑)总结——web篇</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span><a class="archive-post-title" href= "/2018/03/10/talk-about-blog/" >谈一谈博客</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
+    
+        <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
+    
+        <span class="sidebar-tag-name" data-tags="编程"><span class="iconfont-archer">&#xe606;</span>编程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="设计模式"><span class="iconfont-archer">&#xe606;</span>设计模式</span>
+    
+        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
+    
+        <span class="sidebar-tag-name" data-tags="web"><span class="iconfont-archer">&#xe606;</span>web</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
+    
+        <span class="sidebar-tag-name" data-tags="数据库"><span class="iconfont-archer">&#xe606;</span>数据库</span>
+    
+        <span class="sidebar-tag-name" data-tags="linux"><span class="iconfont-archer">&#xe606;</span>linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="CTF"><span class="iconfont-archer">&#xe606;</span>CTF</span>
+    
+        <span class="sidebar-tag-name" data-tags="misc"><span class="iconfont-archer">&#xe606;</span>misc</span>
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
+    
+        <span class="sidebar-tag-name" data-tags="分布式"><span class="iconfont-archer">&#xe606;</span>分布式</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Zer0"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
