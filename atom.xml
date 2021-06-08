@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://re0.top/"/>
-  <updated>2021-04-05T08:40:54.191Z</updated>
+  <updated>2021-06-08T06:53:49.695Z</updated>
   <id>http://re0.top/</id>
   
   <author>
@@ -15,6 +15,33 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>zbot架构畅谈</title>
+    <link href="http://re0.top/2021/06/08/zbot/"/>
+    <id>http://re0.top/2021/06/08/zbot/</id>
+    <published>2021-06-08T06:10:00.000Z</published>
+    <updated>2021-06-08T06:53:49.695Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>zbot是由我个人编写的简易机器人框架，它依赖于mirai与mirai_api_http，目前实现了关键字回复与定时功能，<a href="https://github.com/zer0e/zbots" target="_blank" rel="noopener">zbot项目地址</a>。  </p><h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>本文的目的是聊聊zbot的项目架构，这个项目应该是我第一个思考并运用架构知识所编写的框架应用，虽然功能简单，但其中架构部分却值得思考与拓展。<br>zbot主要由以下几部分组成：</p><ul><li>handler，主要用于处理消息或者定时处理</li><li>receiver，从mirai_api_http接收消息的websocket客户端</li><li>pluginLoader，负责从外部加载用户自定义插件到框架中</li><li>Api，封装mirai_api_http的部分功能供用户插件使用</li><li>registry，注册中心，负责插件注册，调度和转发请求 </li></ul><h2 id="借鉴主流RPC框架架构"><a href="#借鉴主流RPC框架架构" class="headerlink" title="借鉴主流RPC框架架构"></a>借鉴主流RPC框架架构</h2><p>zbot前期架构准备中，借鉴了主流RPC框架的架构，以dubbo框架为例，这是一张dubbo的架构图。<img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/zbot/dubbo1.jpg" alt="dubbo架构"><br>在dubbo中，provider，即服务提供方通过主动方式向注册中心注册服务；而消费端则是通过向注册中心获取已经注册的服务列表，需要时通过协议直接对服务提供方进行调用。这么做的好处是注册中心只负责了服务注册与发现，不转发请求，减小了注册中心的压力，这对整个架构是必须的。  </p><h2 id="更换架构"><a href="#更换架构" class="headerlink" title="更换架构"></a>更换架构</h2><p>虽然dubbo框架的架构方案十分不错，但考虑到以下几点</p><ul><li>需要设计私有协议</li><li>服务提供方必须提供其注册中心地址进行注册，但zbot插件必须是无配置或者少配置的，因为需要令插件无需配置就能运行在各个环境中</li><li>为了开箱即用，注册中心无需成为单独节点，如zk，而是直接整合进框架中</li><li>对提供方可能得编写单独依赖，如TCP支持，自动注册等等</li></ul><p><strong>zbot的目的是插件开发简单，并且开箱即用。</strong>综合以上几点，主流RPC框架的架构其实并不适用与zbot。随后我借助RPC框架的各个节点角色重新设计架构。以下是项目架构图。<img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/zbot/zbot.jpg" alt="zbot架构">   </p><h2 id="架构说明"><a href="#架构说明" class="headerlink" title="架构说明"></a>架构说明</h2><p>首先谈谈关键的插件部分，对应到RPC框架中就是服务提供方，那在zbot中，服务提供方不再通过主动方式去注册，而是通过pluginLoader对服务进行扫描，主要做法是读取框架配置与目录下的插件，再将开启的有效插件进行统一注册。那在后续的思考中，我认为zbot的架构中registry与pluginLoader应该合并为一个新的registry，由注册中心主动扫描并注册插件。但考虑到框架整体已经完成，并没有太大必要去整合架构，此处只是提出个人看法。  </p><hr><p>其次就是服务消费端的调用流程，在zbot中，服务消费端就是msghandler，他通过订阅注册中心的关键词列表，负责消息的处理。重点是，在RPC框架中，当需要消费提供者的服务时，是由消费端主要通过协议调用提供者，而在zbot中，则是消费端需要调用服务时，将消息与服务端的id转发至注册中心，由注册中心进行调用。<br>这么做的好处是消费端不用存储服务端的地址，前面提到，提供方需要简单开发，尽管通过依赖与注解或许能暴露服务端的接口，但需要占用端口，并且框架的开发难度也会加大。那么坏处就是注册中心的压力变大，不仅需要负责服务发现并且需要请求转发。  </p><hr><p>最后是调用方式，从消费端转发给注册中心，再从注册中心调用消费端，均采用异步方式，因为消费端不依赖与服务提供者，所以可以不用同步进行调用。这样可以防止服务提供方的故障，或者说避免API方面故障使得框架出现异常卡死。</p><h1 id="后续思考"><a href="#后续思考" class="headerlink" title="后续思考"></a>后续思考</h1><p>目前想到的点其实是插件热加载。如果以目前的架构来说，热加载只能让pluginLoader再次去加载插件，因此需要从头开始扫描。如果是主动服务注册的方式，那么热加载实现可能会更灵活。只能说各有利弊，前面也有提到，插件不能分离与框架，插件不应该独立运行，而是依托于整个框架。并且采用主动注册方式也就需要重新加载所有插件，令插件自行去注册。从这方面来看，zbot不管采用主动注册方式还是被动加载方式都没有什么差别。<br>目前的实现方案还是在zbot框架前套一个启动器，zbot包含以上几个部分，因为需要将这几个部分组合起来。在不影响现有代码的情况下，通过编写不同工厂方法能在原有zbot的基础上封装一个类似命令行的界面，reload命令实现重新加载插件与配置，这是目前的方案。至于实现日期，<del>咕咕咕</del>。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;zbot是由我个人编写的简易机器人框架，它依赖于mirai与mirai_api_http，目前实现了关键字回复与定时功能，&lt;a href=&quot;
+      
+    
+    </summary>
+    
+    
+      <category term="编程" scheme="http://re0.top/tags/%E7%BC%96%E7%A8%8B/"/>
+    
+      <category term="Java" scheme="http://re0.top/tags/Java/"/>
+    
+      <category term="架构" scheme="http://re0.top/tags/%E6%9E%B6%E6%9E%84/"/>
+    
+  </entry>
   
   <entry>
     <title>对bsgamesdk的签名逆向分析</title>
@@ -509,32 +536,6 @@
       <category term="Java" scheme="http://re0.top/tags/Java/"/>
     
       <category term="Python" scheme="http://re0.top/tags/Python/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>设计模式之迭代器模式</title>
-    <link href="http://re0.top/2020/08/27/iterator_pattern/"/>
-    <id>http://re0.top/2020/08/27/iterator_pattern/</id>
-    <published>2020-08-27T08:00:00.000Z</published>
-    <updated>2020-08-27T09:32:01.023Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>本篇来讲讲迭代器模式。</p><h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><p>迭代器模式属于行为型模式，这种模式用于顺序访问集合对象中的元素，但是没有暴露内部的表示。例如java中的iterator。<br>一般来讲迭代器模式中有以下几个角色：</p><ul><li>迭代器(Iterator)：抽象接口，一般来说有几个方法，next()取得下一个元素，hasNext()判断是否有下一个元素，remove()移除元素。</li><li>具体迭代器，即实现迭代器接口的具体类</li><li>容器角色(Aggregate/Container)：也是个接口，一般有一个iterator()提供迭代器，java中有Collection，list，set等接口。</li><li>具体容器角色：即容器角色的实现类，如java中实现list的ArrayList等。</li></ul><h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><p>我们来实现一个简单的迭代器。<br>先定义简单迭代器：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Iterator</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasNext</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">next</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   </p><p>之后定义容器接口，里面有一个getIterator获取迭代器。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Container</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Iterator <span class="title">getIterator</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   </p><p>之后实现具体容器，使用内部类定义具体迭代器。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">keyRepository</span> <span class="keyword">implements</span> <span class="title">Container</span></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> String[] keys = &#123;<span class="string">"101"</span>,<span class="string">"102"</span>,<span class="string">"103"</span>&#125;;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Iterator <span class="title">getIterator</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> KeyIterator();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">KeyIterator</span> <span class="keyword">implements</span> <span class="title">Iterator</span></span>&#123;</span><br><span class="line">        <span class="keyword">int</span> index = <span class="number">0</span>;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasNext</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> index &lt; keys.length;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> Object <span class="title">next</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">this</span>.hasNext())&#123;</span><br><span class="line">                <span class="keyword">return</span> keys[index++];</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   </p><p>最后测试一下<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        keyRepository keyRepository = <span class="keyword">new</span> keyRepository();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (Iterator iterator = keyRepository.getIterator(); iterator.hasNext();)&#123;</span><br><span class="line">            System.out.println(<span class="string">"key is "</span> + iterator.next());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>   </p><h2 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h2><p>迭代器模式的优点在于简化了遍历的方式，对于数组或者列表我们还可以通过下标来获取对象，而如果对于一些无法通过下标获取对象的存储类型，我们就需要迭代器来顺序获取对象。其次我们可以实现多种遍历方式，如正序或者逆序。再者我们增加新的迭代器时无修修改原有的代码。<br>而缺点在于由于迭代器模式存储与遍历数据的方法是分开的，因此需要增加新的容器时就需要添加对应的迭代器类，增加复杂性。</p><h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>迭代器模式与容器是相互作用的，一般来说实现一个容器就要实现这个容器的迭代器，在java中的collection，list，set，map等都有它自己的迭代器。我们可以使用增强型for循环再配合迭代器进行遍历，十分方便。所以迭代器模式就是当我们需要实现一个新的容器时，就需要引入这个模式，来给这个容器提供一个迭代器。</p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;本篇来讲讲迭代器模式。&lt;/p&gt;
-&lt;h1 id=&quot;正文&quot;&gt;&lt;a href=&quot;#正文&quot; class=&quot;headerlink&quot; title=&quot;正文
-      
-    
-    </summary>
-    
-    
-      <category term="编程" scheme="http://re0.top/tags/%E7%BC%96%E7%A8%8B/"/>
-    
-      <category term="设计模式" scheme="http://re0.top/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/"/>
     
   </entry>
   
