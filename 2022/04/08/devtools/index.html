@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Zer0">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Zer0">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>devtools协议分析与自动化录制实现 · Zer0&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 6.0.0"><script src="/assets/js/DPlayer.min.js"></script></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Zer0&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">devtools协议分析与自动化录制实现</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Zer0's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            devtools协议分析与自动化录制实现
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Python">Python</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "自动化测试">自动化测试</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">3.1k</span>阅读时长: <span class="post-count reading-time">13 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2022/04/08</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>最近有个需求是做web自动化脚本录制，简单来说就是点击页面上的一个元素，就能把对应节点的xpath和自动化语法添加到脚本中。在airtest中，已经实现了这个功能，这里不再演示，通过实际使用，我认为这一技术实现的关键在于devtools，即通过与浏览器devtools的交互，实现当前节点的选取与脚本录制。<br>目前网上能搜索到的文章有限，本文将详细描述与自动化相关的devtools协议的研究与demo实现。</p>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>首先是去寻找下devtools的<a target="_blank" rel="noopener" href="https://chromedevtools.github.io/devtools-protocol/">文档</a>。CDP协议，全程Chrome DevTools Protocol，是用来检测、检查、调试和分析 Chromium、Chrome 和其他基于 Blink 的浏览器。通过开启调试端口，就能与devtools进行通信，从而实现事件与监听。  </p>
+<h2 id="开始"><a href="#开始" class="headerlink" title="开始"></a>开始</h2><p>首先使用<code>chrome.exe --remote-debugging-port=9222</code>开启chrome的远程调试端口。也可以加上<code>--headless</code>启用无头浏览器。<br>当启动完成后，访问<code>http://localhost:9222/json</code>即可获取到可交互的devtools地址。<strong>devtools采用websocket协议进行通信</strong>，通过与webSocketDebuggerUrl进行websocket连接即可与devtools进行通信。<br>到这，准备工作已经完成，现在需要分析需要的devtools协议。</p>
+<h2 id="使用原有工具观察协议"><a href="#使用原有工具观察协议" class="headerlink" title="使用原有工具观察协议"></a>使用原有工具观察协议</h2><p>相信各位都使用过devtools的inspect模式，这个模式能高亮选中的元素，并且当点击这个元素后，elements标签里会跳到对应节点的html代码处。<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/devtools/1.png" alt="1.png"><br>要观察devtools协议传输了什么，可以通过打开devtools前端的协议观察器。在devtools的试验设置里可以打开。打开后，在更多里打开协议监听器。<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/devtools/2.png" alt="2.png"><br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/devtools/3.png" alt="3.png"><br>点击inspect，选中页面上的元素，即可出现相关的协议请求，包括请求方法，请求参数，还有响应。  </p>
+<h2 id="数据格式"><a href="#数据格式" class="headerlink" title="数据格式"></a>数据格式</h2><p>当然，知道了通信具体参数并不代表可以直接发送数据了，我们还需了解交互的格式，在官方文档中，我们找到了一份<a target="_blank" rel="noopener" href="https://github.com/aslushnikov/getting-started-with-cdp/blob/master/README.md">getting-start</a>，这份文档用js写了份示例，根据示例我们可以清楚看到websocket交互的请求体。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	<span class="attr">&quot;id&quot;</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="attr">&quot;method&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;params&quot;</span>: &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中id作为请求的唯一标识，用于让请求方标识返回的内容是对应哪个请求的，当devtools返回时，会将此id返回，因此当需要当出现多个请求同时发出时，需要确保id唯一。<br>method字段对应响应的方法，而params字段则是方法对应的参数。<br>最后发送的是json数据的stringfy。  </p>
+<h2 id="大体实现"><a href="#大体实现" class="headerlink" title="大体实现"></a>大体实现</h2><p>回到protocol monitor，我们可以发现当启用inspect模式时，会发送<code>Overlay.setInspectMode</code>方法，开启检查模式。虽然也可以在官方文档中看到，但是官方文档方法实在太多了，不如这种方式来的直接。<br>其次在页面上选中元素时，会接收一个<code>Overlay.nodeHighlightRequested</code>事件，会返回一个nodeId，而当在页面上点击一个元素时会接收一个<code>Overlay.inspectNodeRequested</code>事件，返回一个backendNodeId。<br>而无论是nodeId还是backendNodeId，都可以通过<code>DOM.describeNode</code>方法发送指定参数的请求，获取这个节点的详细信息。这个方法的参数如下：  </p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	<span class="attr">&quot;nodeId&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">	<span class="attr">&quot;backendNodeId&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">	<span class="attr">&quot;objectId&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">	<span class="attr">&quot;depth&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">	<span class="attr">&quot;pierce&quot;</span>: <span class="string">&quot;&quot;</span></span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+<p>实际使用中，我们只需要发送nodeId或者backendNodeId即可。<br>其他实现自动化需要的事件还有<code>DOM.documentUpdated</code>，这个事件说明dom被更新了，需要重新获取dom，否则前后端的节点会不一致，可以通过<code>DOM.getDocument</code>方法重新获取dom，顺带一提，连接完成后，也应该执行一次这个方法。<br>至此，我们已经可以完成一个简单的自动化节点监控。下面简单写下代码。  </p>
+<h2 id="简易实现代码"><a href="#简易实现代码" class="headerlink" title="简易实现代码"></a>简易实现代码</h2><p>这里我们使用websocket-client作为websocket的客户端连接到devtools。<br>先从<code>http://127.0.0.1:9222/json</code>获取到webSocketDebuggerUrl。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line">send_msg_template = &#123;</span><br><span class="line">    <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="string">&quot;method&quot;</span>: <span class="string">&quot;&quot;</span>,</span><br><span class="line">    <span class="string">&quot;params&quot;</span>: &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">searchForNode = &#123;</span><br><span class="line">    <span class="string">&quot;mode&quot;</span>: <span class="string">&quot;searchForNode&quot;</span>,</span><br><span class="line">    <span class="string">&quot;highlightConfig&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;showInfo&quot;</span>: <span class="literal">True</span>,</span><br><span class="line">        <span class="string">&quot;showRulers&quot;</span>: <span class="literal">False</span>,</span><br><span class="line">        <span class="string">&quot;showStyles&quot;</span>: <span class="literal">False</span>,</span><br><span class="line">        <span class="string">&quot;showAccessibilityInfo&quot;</span>: <span class="literal">True</span>,</span><br><span class="line">        <span class="string">&quot;showExtensionLines&quot;</span>: <span class="literal">False</span>,</span><br><span class="line">        <span class="string">&quot;contentColor&quot;</span>: &#123;</span><br><span class="line">            <span class="string">&quot;r&quot;</span>: <span class="number">111</span>,</span><br><span class="line">            <span class="string">&quot;g&quot;</span>: <span class="number">168</span>,</span><br><span class="line">            <span class="string">&quot;b&quot;</span>: <span class="number">220</span>,</span><br><span class="line">            <span class="string">&quot;a&quot;</span>: <span class="number">0.66</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">disableSearchForNode = deepcopy(searchForNode)</span><br><span class="line">disableSearchForNode[<span class="string">&#x27;mode&#x27;</span>] = <span class="string">&quot;none&quot;</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span>():</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">on_message</span>(<span class="params">ws, msg</span>):</span></span><br><span class="line">        data = json. loads(msg)</span><br><span class="line">        pprint(data)</span><br><span class="line">        method = data[<span class="string">&#x27;method&#x27;</span>]</span><br><span class="line">        <span class="keyword">if</span> method == <span class="string">&#x27;Overlay.inspectNodeRequested&#x27;</span>:</span><br><span class="line">            <span class="comment"># 当在Inspector模式下，节点被按下时触发的事件</span></span><br><span class="line">            backend_node_id = data[<span class="string">&quot;params&quot;</span>][<span class="string">&#x27;backendNodeId&#x27;</span>]</span><br><span class="line">            <span class="comment"># pprint(backend_node_id)</span></span><br><span class="line">            <span class="comment"># 获取下详细的节点信息</span></span><br><span class="line">            send_msg(ws, <span class="string">&quot;DOM.describeNode&quot;</span>, &#123;<span class="string">&#x27;backendNodeId&#x27;</span>: backend_node_id&#125;)</span><br><span class="line">            <span class="comment"># 然后关闭Inspector模式</span></span><br><span class="line">            send_msg(ws, <span class="string">&quot;Overlay.setInspectMode&quot;</span>, disableSearchForNode)</span><br><span class="line">        <span class="keyword">elif</span> method == <span class="string">&quot;Overlay.nodeHighlightRequested&quot;</span>:</span><br><span class="line">            <span class="comment"># 这个方法是Inspector模式下，节点被选中时触发的，前提是已经获取过dom</span></span><br><span class="line">            send_msg(ws, <span class="string">&quot;DOM.describeNode&quot;</span>, &#123;<span class="string">&#x27;nodeId&#x27;</span>: data[<span class="string">&#x27;params&#x27;</span>][<span class="string">&#x27;nodeId&#x27;</span>]&#125;)</span><br><span class="line">        <span class="keyword">elif</span> method == <span class="string">&quot;DOM.documentUpdated&quot;</span>:</span><br><span class="line">            <span class="comment"># 收到这个方法说明dom被更新，需要重新获取下dom</span></span><br><span class="line">            send_msg(ws, <span class="string">&quot;DOM.getDocument&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">send_msg</span>(<span class="params">ws, method, params=<span class="literal">None</span></span>):</span></span><br><span class="line">        send_msg_template[<span class="string">&#x27;id&#x27;</span>] += <span class="number">1</span></span><br><span class="line">        msg = deepcopy(send_msg_template)</span><br><span class="line">        msg[<span class="string">&#x27;method&#x27;</span>] = method</span><br><span class="line">        msg[<span class="string">&#x27;params&#x27;</span>] = params <span class="keyword">if</span> params <span class="keyword">else</span> &#123;&#125;</span><br><span class="line">        ws.send(json.dumps(msg))</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">on_open</span>(<span class="params">ws</span>):</span></span><br><span class="line">        send_msg(ws, <span class="string">&quot;DOM.enable&quot;</span>)</span><br><span class="line">        send_msg(ws, <span class="string">&quot;Overlay.enable&quot;</span>)</span><br><span class="line">        send_msg(ws, <span class="string">&quot;Inspector.enable&quot;</span>)</span><br><span class="line">        send_msg(ws, <span class="string">&quot;DOM.getDocument&quot;</span>)</span><br><span class="line">        send_msg(ws, <span class="string">&quot;Overlay.setInspectMode&quot;</span>, searchForNode)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">from</span> websocket <span class="keyword">import</span> WebSocketApp</span><br><span class="line">    ws = WebSocketApp(<span class="string">&quot;ws://127.0.0.1:9222/devtools/page/EA63C0AE33770FD58FB89FD3A6ACB165&quot;</span>, on_message=on_message,</span><br><span class="line">                      on_open=on_open)</span><br><span class="line"></span><br><span class="line">    ws.run_forever()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    t = threading.Thread(target=main)</span><br><span class="line">    t.start()</span><br><span class="line">    t.join()</span><br></pre></td></tr></table></figure>
+<p>这里我们在连接完成后，立即发送几个方法，分别是<code>DOM.enable</code>,<code>Overlay.enable</code>,<code>Inspector.enable</code>,<code>DOM.getDocument</code>,<code>Overlay.setInspectMode</code>，其中几个enable是开启对应的功能，这里不再赘述，然后是立即获取一次dom，随后开启inspect模式，这里我们不需要浏览器中devtools的inspect那么多显示，如元素的padding，因此我们只保留最基础的设置。<br>随后我们在收到消息后就监听几个事件，分别是我们前文所讲的几个事件，随后在节点被按下后，取消inspect模式。<br>可以看看效果  </p>
+<div id="dplayer0" class="dplayer hexo-tag-dplayer-mark" style="margin-bottom: 20px;"></div><script>(function(){var player = new DPlayer({"container":document.getElementById("dplayer0"),"theme":"#FADFA3","preload":"none","video":{"url":"https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/devtools/1.mp4"}});window.dplayers||(window.dplayers=[]);window.dplayers.push(player);})()</script>
+
+
+<p>这里当我们移动到一个元素上时，会打印出该节点的详细信息，在按下节点后，inspect模式随即解除。  </p>
+<h2 id="使用第三方库监听"><a href="#使用第三方库监听" class="headerlink" title="使用第三方库监听"></a>使用第三方库监听</h2><p>当然，我们也可以专注于事件的监听和方法的发送，无需关注websocket的实现，<a target="_blank" rel="noopener" href="https://github.com/fate0/pychrome">pychrome</a>就是这样的一个库，它的核心代码不过二百多行，它可以通过设置listener来实现指定方法的监听，根据官方示例，我们可以简单改造下上面的代码。  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pychrome</span><br><span class="line">browser = pychrome.Browser(url=<span class="string">&quot;http://127.0.0.1:9222&quot;</span>)</span><br><span class="line">tab = browser.list_tab()[<span class="number">0</span>]</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_node</span>(<span class="params">**kwargs</span>):</span></span><br><span class="line">	result = tab.call_method(<span class="string">&quot;DOM.describeNode&quot;</span>, **kwargs)</span><br><span class="line">	pprint(result)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_node_and_stop_inspect</span>(<span class="params">**kwargs</span>):</span></span><br><span class="line">	result = tab.call_method(<span class="string">&quot;DOM.describeNode&quot;</span>, **kwargs)</span><br><span class="line">	pprint(result)</span><br><span class="line">	tab.call_method(<span class="string">&quot;Overlay.setInspectMode&quot;</span>, **disableSearchForNode)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">update_dom</span>(<span class="params">**kwargs</span>):</span></span><br><span class="line">	tab.call_method(<span class="string">&quot;DOM.getDocument&quot;</span>)</span><br><span class="line"></span><br><span class="line">tab.set_listener(<span class="string">&quot;Overlay.inspectNodeRequested&quot;</span>, get_node_and_stop_inspect)</span><br><span class="line">tab.set_listener(<span class="string">&quot;Overlay.nodeHighlightRequested&quot;</span>, get_node)</span><br><span class="line">tab.set_listener(<span class="string">&quot;DOM.documentUpdated&quot;</span>, update_dom)</span><br><span class="line"></span><br><span class="line">tab.start()</span><br><span class="line">tab.call_method(<span class="string">&quot;DOM.enable&quot;</span>)</span><br><span class="line">tab.call_method(<span class="string">&quot;Overlay.enable&quot;</span>)</span><br><span class="line">tab.call_method(<span class="string">&quot;Inspector.enable&quot;</span>)</span><br><span class="line">tab.call_method(<span class="string">&quot;DOM.getDocument&quot;</span>)</span><br><span class="line">tab.call_method(<span class="string">&quot;Overlay.setInspectMode&quot;</span>, **searchForNode)</span><br><span class="line"></span><br><span class="line">tab.wait(<span class="number">10</span>)</span><br><span class="line">tab.stop()</span><br></pre></td></tr></table></figure>
+<p>改造完成后，瞬间就很清爽，我们只需要对指定事件监听即可，脚本运行的情况与之前脚本相同，这里就不再演示。<br>唯一遗憾的是pychrome不支持一个event监听多个方法，新方法会覆盖旧方法。之后有机会提下pr吧。  </p>
+<h2 id="获取节点xpath"><a href="#获取节点xpath" class="headerlink" title="获取节点xpath"></a>获取节点xpath</h2><p>至此，我们的自动化录制已经实现了一大部分，那么剩下就是获取这个节点的xpath，唯一确定这个节点的位置，就可以在selenium准确点击这个元素了。<br>回到刚刚的<code>DOM.describeNode</code>方法，这个方法的返回如下</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="string">&#x27;node&#x27;</span>: &#123;<span class="string">&#x27;attributes&#x27;</span>: [<span class="string">&#x27;href&#x27;</span>,</span><br><span class="line">                                    <span class="string">&#x27;https://www.iana.org/domains/example&#x27;</span>],</span><br><span class="line">                     <span class="string">&#x27;backendNodeId&#x27;</span>: <span class="number">14</span>,</span><br><span class="line">                     <span class="string">&#x27;childNodeCount&#x27;</span>: <span class="number">1</span>,</span><br><span class="line">                     <span class="string">&#x27;localName&#x27;</span>: <span class="string">&#x27;a&#x27;</span>,</span><br><span class="line">                     <span class="string">&#x27;nodeId&#x27;</span>: <span class="number">0</span>,</span><br><span class="line">                     <span class="string">&#x27;nodeName&#x27;</span>: <span class="string">&#x27;A&#x27;</span>,</span><br><span class="line">                     <span class="string">&#x27;nodeType&#x27;</span>: <span class="number">1</span>,</span><br><span class="line">                     <span class="string">&#x27;nodeValue&#x27;</span>: <span class="string">&#x27;&#x27;</span>&#125;&#125;</span><br></pre></td></tr></table></figure>
+<p>我们知道这个节点的名称，attributes，但是我们却没有结构，来完成路径组装。其实<code>DOM.getDocument</code>是可以获取到完整结构树的，如果没有参数传递，那么最多只会获取1层的子树，我们可以指定depth参数为-1获取整个document结构。<br>有了整个dom树，那么我们就可以从上到下遍历树，从而获取节点的路径，我们也无需再次通过<code>DOM.describeNode</code>获取节点的数据。代码示例如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">dom_root = tab.call_method(<span class="string">&quot;DOM.getDocument&quot;</span>, depth=-<span class="number">1</span>)[<span class="string">&#x27;root&#x27;</span>]</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_path_from_root</span>(<span class="params">**kwargs</span>):</span></span><br><span class="line">	backend_node_id = kwargs.get(<span class="string">&quot;backendNodeId&quot;</span>)</span><br><span class="line">	path = _get_path(dom_root, backend_node_id, <span class="string">&quot;&quot;</span>)</span><br><span class="line">	<span class="built_in">print</span>(<span class="string">&quot;path: &quot;</span> + <span class="built_in">str</span>(path))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_get_path</span>(<span class="params">node, backend_node_id, path</span>):</span></span><br><span class="line">	<span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">	递归获取结构</span></span><br><span class="line"><span class="string">	:param node:</span></span><br><span class="line"><span class="string">	:param backend_node_id:</span></span><br><span class="line"><span class="string">	:param path</span></span><br><span class="line"><span class="string">	:return:</span></span><br><span class="line"><span class="string">	&quot;&quot;&quot;</span></span><br><span class="line">	<span class="keyword">if</span> <span class="keyword">not</span> node:</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">	<span class="keyword">if</span> node[<span class="string">&#x27;backendNodeId&#x27;</span>] == backend_node_id:</span><br><span class="line">		<span class="keyword">return</span> path + <span class="string">&quot;/&quot;</span> + node[<span class="string">&#x27;localName&#x27;</span>]</span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		<span class="keyword">for</span> child <span class="keyword">in</span> node.get(<span class="string">&#x27;children&#x27;</span>, []):</span><br><span class="line">			child_path = _get_path(child, backend_node_id, path + <span class="string">&quot;/&quot;</span> + node[<span class="string">&#x27;localName&#x27;</span>])</span><br><span class="line">			<span class="keyword">if</span> child_path:</span><br><span class="line">				<span class="keyword">return</span> child_path</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">None</span></span><br></pre></td></tr></table></figure>
+<p>我们点击页面上超链接，得到<code>path: //html/body/div/p/a</code>，这里前面多个/符号是因为root没有名称，获取后做下处理即可。下面的代码会改进。<br>当然只用路径肯定不够，当有id时，我们优先使用id来实现，顺便改造下之前的代码。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_get_path</span>(<span class="params">node, backend_node_id, path</span>):</span></span><br><span class="line">	<span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">	递归获取结构</span></span><br><span class="line"><span class="string">	:param node:</span></span><br><span class="line"><span class="string">	:param backend_node_id:</span></span><br><span class="line"><span class="string">	:param path</span></span><br><span class="line"><span class="string">	:return:</span></span><br><span class="line"><span class="string">	&quot;&quot;&quot;</span></span><br><span class="line">	<span class="keyword">if</span> <span class="keyword">not</span> node:</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">	node_attributes = node.get(<span class="string">&#x27;attributes&#x27;</span>, [])</span><br><span class="line">	node_id = <span class="literal">None</span></span><br><span class="line">	<span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="built_in">len</span>(node_attributes), <span class="number">2</span>):</span><br><span class="line">		<span class="keyword">if</span> node_attributes[i] == <span class="string">&quot;id&quot;</span>:</span><br><span class="line">			node_id = node_attributes[i + <span class="number">1</span>]</span><br><span class="line">	<span class="keyword">if</span> node_id:</span><br><span class="line">		new_path = <span class="string">&quot;//*[@id=\&quot;&#123;&#125;\&quot;]&quot;</span>.<span class="built_in">format</span>(node_id)</span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		new_path = (path + <span class="string">&quot;/&quot;</span> + node[<span class="string">&#x27;localName&#x27;</span>]) <span class="keyword">if</span> node[<span class="string">&#x27;localName&#x27;</span>] <span class="keyword">else</span> path</span><br><span class="line">	<span class="keyword">if</span> node[<span class="string">&#x27;backendNodeId&#x27;</span>] == backend_node_id:</span><br><span class="line">		<span class="keyword">return</span> new_path</span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		<span class="keyword">for</span> child <span class="keyword">in</span> node.get(<span class="string">&#x27;children&#x27;</span>, []):</span><br><span class="line">			child_path = _get_path(child, backend_node_id, new_path)</span><br><span class="line">			<span class="keyword">if</span> child_path:</span><br><span class="line">				<span class="keyword">return</span> child_path</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">None</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="也许是完善？"><a href="#也许是完善？" class="headerlink" title="也许是完善？"></a>也许是完善？</h2><p>当然这个获取xpath的代码还不完全，当节点有其他attr时也可以以这些属性作为xpath，并且还需要考虑同级别下有相同节点，此时需要用序号来标识。<br>并且通过id获取xpath也不能确保准确，因为网站的编写者可能重复使用id。(<del>CV程序员</del>)<br>例如，如下的html文件，我们在devtools的element里选中第一个p元素后右键复制XPath后，显示的path是<code>//*[@id=&quot;1&quot;]</code>，但这明显是有问题的，虽然是网页编写者的问题，但我们为了兼容所有系统，可以使用完整的path作为真正的xpath。  </p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">title</span>&gt;</span>Test<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;app&quot;</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">p</span> <span class="attr">id</span>=<span class="string">&#x27;1&#x27;</span>&gt;</span>test<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">p</span> <span class="attr">id</span>=<span class="string">&#x27;2&#x27;</span>&gt;</span>test<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;app&quot;</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">p</span> <span class="attr">id</span>=<span class="string">&#x27;1&#x27;</span>&gt;</span>test<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">p</span> <span class="attr">id</span>=<span class="string">&#x27;2&#x27;</span>&gt;</span>test<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>基于以上观点，我们在这不使用带有attribute的xpath，只使用完整的xpath路径作为节点的唯一路径。  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_get_path</span>(<span class="params">node, backend_node_id, path, idx=<span class="number">1</span></span>):</span></span><br><span class="line">	<span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">	递归获取结构</span></span><br><span class="line"><span class="string">	:param node:</span></span><br><span class="line"><span class="string">	:param backend_node_id:</span></span><br><span class="line"><span class="string">	:param path</span></span><br><span class="line"><span class="string">	:return:</span></span><br><span class="line"><span class="string">	&quot;&quot;&quot;</span></span><br><span class="line">	<span class="keyword">if</span> <span class="keyword">not</span> node:</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">	new_path = (path + <span class="string">&quot;/&quot;</span> + node[<span class="string">&#x27;localName&#x27;</span>]) <span class="keyword">if</span> node[<span class="string">&#x27;localName&#x27;</span>] <span class="keyword">else</span> path</span><br><span class="line">	<span class="keyword">if</span> idx != <span class="number">1</span> <span class="keyword">and</span> new_path:</span><br><span class="line">		new_path = new_path + <span class="string">&quot;[&#123;&#125;]&quot;</span>.<span class="built_in">format</span>(idx)</span><br><span class="line">	<span class="keyword">if</span> node[<span class="string">&#x27;backendNodeId&#x27;</span>] == backend_node_id:</span><br><span class="line">		<span class="keyword">return</span> new_path</span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		children = node.get(<span class="string">&#x27;children&#x27;</span>, [])</span><br><span class="line">		tag_map = &#123;&#125;</span><br><span class="line">		<span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(children)):</span><br><span class="line">			child = children[i]</span><br><span class="line">			<span class="keyword">if</span> child[<span class="string">&#x27;localName&#x27;</span>] <span class="keyword">in</span> tag_map:</span><br><span class="line">				tag_map[child[<span class="string">&#x27;localName&#x27;</span>]] += <span class="number">1</span></span><br><span class="line">			<span class="keyword">else</span>:</span><br><span class="line">				tag_map[child[<span class="string">&#x27;localName&#x27;</span>]] = <span class="number">1</span></span><br><span class="line">			child_path = _get_path(child, backend_node_id, new_path, tag_map[child[<span class="string">&#x27;localName&#x27;</span>]])</span><br><span class="line">			<span class="keyword">if</span> child_path:</span><br><span class="line">				<span class="keyword">return</span> child_path</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="literal">None</span></span><br></pre></td></tr></table></figure>
+<p>通过以上代码我们已经能初步实现步骤的自动化录制。  </p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文就网页自动化录制提出了自己的一些思路与代码实现，初步实现了自动化录制。当然，我相信仍旧有许多实际问题没有被我发现，只能等之后的具体开发才能发现会有什么问题。<br>其次，就airtest的功能来看，它认为节点的id不会重复，并且attribute大概率不会重复，因此它的xpath是多样的。<br><img src="https://zer0blog.oss-cn-hangzhou.aliyuncs.com/blog_image/devtools/4.png" alt="4.png"><br>相较于airtest的录制功能，这篇文章最后代码使用的是完整的xpath路径，保证路径唯一。</p>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>原文作者：<a href="https://re0.top">Zer0</a>
+            <p>原文链接：<a href="https://re0.top/2022/04/08/devtools/">https://re0.top/2022/04/08/devtools/</a>
+            <p>发表日期：<a href="https://re0.top/2022/04/08/devtools/">April 8th 2022, 6:00:00 pm</a>
+            <p>更新日期：<a href="https://re0.top/2022/04/08/devtools/">April 8th 2022, 10:12:20 pm</a>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2022/01/01/2022-first/" title= "由于代码架构设计不佳而引发的异常消失">
+                    <div class="prevTitle">由于代码架构设计不佳而引发的异常消失</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:zcluslloye@gmail.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/zer0e" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+            
+                <a href="https://t.me/zer009" class="iconfont-archer telegram" target="_blank" title=telegram></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+	<div class="copyright">
+		<span id="hexo-power">Hosted by <a href="https://pages.coding.me" target="_blank">Coding Pages</a></span>
+	</div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%AD%A3%E6%96%87"><span class="toc-number">2.</span> <span class="toc-text">正文</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E5%A7%8B"><span class="toc-number">2.1.</span> <span class="toc-text">开始</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%8E%9F%E6%9C%89%E5%B7%A5%E5%85%B7%E8%A7%82%E5%AF%9F%E5%8D%8F%E8%AE%AE"><span class="toc-number">2.2.</span> <span class="toc-text">使用原有工具观察协议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%A0%BC%E5%BC%8F"><span class="toc-number">2.3.</span> <span class="toc-text">数据格式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.4.</span> <span class="toc-text">大体实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E6%98%93%E5%AE%9E%E7%8E%B0%E4%BB%A3%E7%A0%81"><span class="toc-number">2.5.</span> <span class="toc-text">简易实现代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E7%AC%AC%E4%B8%89%E6%96%B9%E5%BA%93%E7%9B%91%E5%90%AC"><span class="toc-number">2.6.</span> <span class="toc-text">使用第三方库监听</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E8%8A%82%E7%82%B9xpath"><span class="toc-number">2.7.</span> <span class="toc-text">获取节点xpath</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9F%E8%AE%B8%E6%98%AF%E5%AE%8C%E5%96%84%EF%BC%9F"><span class="toc-number">2.8.</span> <span class="toc-text">也许是完善？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 73
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2022/04/08/devtools/" >devtools协议分析与自动化录制实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2022/01/01/2022-first/" >由于代码架构设计不佳而引发的异常消失</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/08</span><a class="archive-post-title" href= "/2021/06/08/zbot/" >zbot架构畅谈</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/05</span><a class="archive-post-title" href= "/2021/04/05/bsgamesdk-re/" >对bsgamesdk的签名逆向分析</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span><a class="archive-post-title" href= "/2020/12/13/autoConfiguration/" >浅谈Spring Boot自动配置</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href= "/2020/11/01/transaction_isolation/" >回顾数据库事务隔离级别</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/09</span><a class="archive-post-title" href= "/2020/10/09/snowflake/" >浅谈雪花算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/design_patterns/" >谈谈设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/composite_pattern/" >设计模式之组合模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/flyweight_pattern/" >设计模式之享元模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span><a class="archive-post-title" href= "/2020/09/14/builder_pattern/" >设计模式之构建模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2020/09/13/arraylist_resize/" >ArrayList扩容之后内存地址会发生改变吗？</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2020/09/13/jmm/" >浅谈Java内存模型</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2020/09/08/visitor_pattern/" >设计模式之访问者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2020/09/08/template_method_pattern/" >设计模式之模板方法模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/memento_pattern/" >设计模式之备忘录模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/state_pattern/" >设计模式之状态模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2020/09/05/interpreter_pattern/" >设计模式之解释器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2020/09/05/chain_of_responsibility_pattern/" >设计模式之责任链模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2020/09/04/bridge_patterns/" >设计模式之桥接模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2020/09/02/prototype_pattern/" >设计模式之原型模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/29</span><a class="archive-post-title" href= "/2020/08/29/lambda/" >由lambda表达式引发的思考</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/27</span><a class="archive-post-title" href= "/2020/08/27/iterator_pattern/" >设计模式之迭代器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/27</span><a class="archive-post-title" href= "/2020/08/27/strategy_pattern/" >设计模式之策略模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/22</span><a class="archive-post-title" href= "/2020/08/22/adapter_pattern/" >设计模式之适配器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/19</span><a class="archive-post-title" href= "/2020/08/19/sql_concurrent/" >谈一道数据库更新的并发问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span><a class="archive-post-title" href= "/2020/08/17/decorator_pattern/" >设计模式之装饰器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span><a class="archive-post-title" href= "/2020/08/17/command_pattern/" >设计模式之命令模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/16</span><a class="archive-post-title" href= "/2020/08/16/facade_pattern/" >设计模式之外观模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/14</span><a class="archive-post-title" href= "/2020/08/14/lock_class/" >谈谈锁的种类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/13</span><a class="archive-post-title" href= "/2020/08/13/abstract_factory_pattern/" >设计模式之抽象工厂模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2020/08/12/mediator_pattern/" >设计模式之中介者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2020/08/12/factory_pattern/" >设计模式之工厂模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2020/08/10/spring_aop/" >浅谈Spring AOP</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2020/08/10/proxy_pattern/" >设计模式之代理模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/08</span><a class="archive-post-title" href= "/2020/08/08/observer/" >设计模式之观察者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/07</span><a class="archive-post-title" href= "/2020/08/07/singleton/" >设计模式之单例模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/06</span><a class="archive-post-title" href= "/2020/08/06/spring_ioc/" >谈谈Spring IoC</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2020/07/24/java_thread_pool/" >浅谈Java线程池</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/20</span><a class="archive-post-title" href= "/2020/07/20/dp3/" >浅谈动态规划Ⅲ</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/04</span><a class="archive-post-title" href= "/2020/07/04/database_master_slave/" >浅谈数据库主从复制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2020/06/24/load_balancing_algorithm/" >常见的负载均衡算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2020/06/15/load_balancing/" >浅谈负载均衡</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/14</span><a class="archive-post-title" href= "/2020/06/14/high_concurrency/" >浅谈高并发引起的问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/dp2/" >浅谈动态规划Ⅱ</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span><a class="archive-post-title" href= "/2020/05/13/topk/" >TopK问题与快速选择算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2020/04/29/binary_search/" >几种二分查找的模板与理解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/05</span><a class="archive-post-title" href= "/2020/04/05/dp1/" >浅谈动态规划</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2020/03/30/tree-traversal2/" >二叉树的广度优先(层次)遍历</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2020/03/30/tree-traversal/" >二叉树的前中后序遍历</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/24</span><a class="archive-post-title" href= "/2020/03/24/celery/" >初探celery任务队列</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/22</span><a class="archive-post-title" href= "/2020/03/22/java-reflection/" >理解Java反射</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span><a class="archive-post-title" href= "/2020/03/11/python-sync/" >浅谈python异步编程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/04</span><a class="archive-post-title" href= "/2020/03/04/python-copy/" >浅谈python中的引用与拷贝</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span><a class="archive-post-title" href= "/2020/02/10/spring-annotation/" >Springboot常用注解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/05</span><a class="archive-post-title" href= "/2020/01/05/dns-cache-pollution/" >DNS投毒分析</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href= "/2019/11/12/2019-11-12/" >谈一谈最近</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2019/04/01/ngrok/" >使用ngrok实现内网远程桌面</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href= "/2018/11/12/hctf2018wp/" >HCTF2018 web部分Writeup</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2018/11/02/js-prototype/" >浅谈JavaScript中的原型链</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2018/10/10/xssbot1/" >从零开始完成xssbot</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/12</span><a class="archive-post-title" href= "/2018/07/12/csp/" >浅谈CSP内容安全策略</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/07</span><a class="archive-post-title" href= "/2018/06/07/mergesort/" >经典算法之归并排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/02</span><a class="archive-post-title" href= "/2018/06/02/quicksort/" >经典算法之快速排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/28</span><a class="archive-post-title" href= "/2018/05/28/linux-shell/" >Linux下反弹shell的几种方式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/11</span><a class="archive-post-title" href= "/2018/05/11/selectsort/" >经典算法之选择排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2018/04/24/docker/" >docker常用命令汇总</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/11</span><a class="archive-post-title" href= "/2018/04/11/bubblesort/" >经典算法之冒泡排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2018/03/30/php-weak1/" >PHP弱类型总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/29</span><a class="archive-post-title" href= "/2018/03/29/second-sqli/" >记一次有趣的二次注入</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2018/03/18/hgame-misc/" >misc入门总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/hgame-web/" >CTF入门(坑)总结——web篇</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span><a class="archive-post-title" href= "/2018/03/10/talk-about-blog/" >谈一谈博客</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="编程"><span class="iconfont-archer">&#xe606;</span>编程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
+    
+        <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
+    
+        <span class="sidebar-tag-name" data-tags="设计模式"><span class="iconfont-archer">&#xe606;</span>设计模式</span>
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
+    
+        <span class="sidebar-tag-name" data-tags="Android"><span class="iconfont-archer">&#xe606;</span>Android</span>
+    
+        <span class="sidebar-tag-name" data-tags="数据库"><span class="iconfont-archer">&#xe606;</span>数据库</span>
+    
+        <span class="sidebar-tag-name" data-tags="web"><span class="iconfont-archer">&#xe606;</span>web</span>
+    
+        <span class="sidebar-tag-name" data-tags="linux"><span class="iconfont-archer">&#xe606;</span>linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="misc"><span class="iconfont-archer">&#xe606;</span>misc</span>
+    
+        <span class="sidebar-tag-name" data-tags="CTF"><span class="iconfont-archer">&#xe606;</span>CTF</span>
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
+    
+        <span class="sidebar-tag-name" data-tags="分布式"><span class="iconfont-archer">&#xe606;</span>分布式</span>
+    
+        <span class="sidebar-tag-name" data-tags="自动化测试"><span class="iconfont-archer">&#xe606;</span>自动化测试</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Zer0"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
