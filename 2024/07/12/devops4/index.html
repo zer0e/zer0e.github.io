@@ -22,7 +22,7 @@
     <meta name="description" content="">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-    <title>Zer0e&#39;s Blog</title>
+    <title>【架构之路4】k8s对接ceph-rbd · Zer0e&#39;s Blog</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -77,6 +77,8 @@
 
     <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
     <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
     
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
@@ -201,14 +203,23 @@
 <meta name="generator" content="Hexo 6.0.0"></head>
 
     
-        <body class="home-body">
+        <body class="post-body">
     
     
-<header class="header index-header">
+<header class="header">
 
     <div class="read-progress"></div>
     <div class="header-sidebar-menu">&#xe775;</div>
     <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Zer0e&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">【架构之路4】k8s对接ceph-rbd</a>
+            </div>
+    </div>
     
     <a class="home-link" href=/>Zer0e's Blog</a>
 </header>
@@ -227,17 +238,17 @@ height:50vh;
     <!-- 主页  -->
     
     
-    <!-- 文章页  -->
+    <!-- 404页  -->
             
     <div class="site-intro-placeholder"></div>
-    <div class="site-intro-img" style="background-image: url(/intro/index-bg.jpg)"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            Zer0e's Blog
-            <!-- 文章页  -->
+            【架构之路4】k8s对接ceph-rbd
+            <!-- 404 -->
             
         </h1>
         <!-- 副标题 -->
@@ -245,12 +256,55 @@ height:50vh;
             <!-- 主页副标题  -->
             
             
-                Facing the ideal and the reality.
-            
-            <!-- 文章页  -->
+            <!-- 404 -->
             
         </p>
         <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "运维">运维</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "从0.5开始的运维架构之路">从0.5开始的运维架构之路</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">839</span>阅读时长: <span class="post-count reading-time">3 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2024/07/12</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
         
     </div>
 </div>
@@ -351,428 +405,91 @@ height:50vh;
 </script>        
         <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
         <div class="container container-unloaded">
-            <main class="main index-page">
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2022/04/08/devtools/" >
-            
-                <span>devtools协议分析与自动化录制实现</span>
-        </a>
-        <div class="abstract-content">
-            前言最近有个需求是做web自动化脚本录制，简单来说就是点击页面上的一个元素，就能把对应节点的xpath和自动化语法添加到脚本中。在airtest中，已经实现了这个功能，这里不再演示，通过实际使用，我认为这一技术实现的关键在于devtools，即通过与浏览器devtools的交互，实现当前节点的选取与脚本录制。目前网上能搜索到的文章有...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/04/08</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "Python">Python</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "自动化测试">自动化测试</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2022/01/01/2022-first/" >
-            
-                <span>由于代码架构设计不佳而引发的异常消失</span>
-        </a>
-        <div class="abstract-content">
-            写在前面真的好久没写文章了，上一篇还是21年的6月写的。工作上事情再加上回来只想打游戏，这半年就没输出文章，中间其实有几次想过写写，但是不知道写点啥。  
-打扫完房间，坐下打开电脑，正好原神预下载，也想想好久没写文章了，正好最近有个有意思的也是自己遇到问题，就边下载边码字了。  
-今天是2022年的元旦，先祝看到这篇文章的朋友新年快...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/01/01</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "Python">Python</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2021/06/08/zbot/" >
-            
-                <span>zbot架构畅谈</span>
-        </a>
-        <div class="abstract-content">
-            前言zbot是由我个人编写的简易机器人框架，它依赖于mirai与mirai_api_http，目前实现了关键字回复与定时功能，zbot项目地址。  
-正文本文的目的是聊聊zbot的项目架构，这个项目应该是我第一个思考并运用架构知识所编写的框架应用，虽然功能简单，但其中架构部分却值得思考与拓展。zbot主要由以下几部分组成：
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>上篇讲了cephfs对接k8s集群，体验不是很好，这篇接着体验ceph-rbd。</p>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><h2 id="安装rbd驱动"><a href="#安装rbd驱动" class="headerlink" title="安装rbd驱动"></a>安装rbd驱动</h2><p>很简单，接着使用helm安装即可。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl create namespace &quot;ceph-csi-rbd&quot;</span><br><span class="line">helm install --namespace &quot;ceph-csi-rbd&quot; &quot;ceph-csi-rbd&quot; ceph-csi/ceph-csi-rbd</span><br></pre></td></tr></table></figure>
 
-han...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/06/08</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "Java">Java</a>
-    
-</div>
-            
-        </div>
+<h2 id="ceph-pool-secret创建"><a href="#ceph-pool-secret创建" class="headerlink" title="ceph pool secret创建"></a>ceph pool secret创建</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ceph osd pool create k8s_rbd 128 128</span><br><span class="line">// 记得初始化</span><br><span class="line">rbd pool init k8s_rbd</span><br></pre></td></tr></table></figure>
+
+<p>创建名为k8s的用户</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ceph auth get-or-create client.k8s mon &#x27;profile rbd&#x27; osd &#x27;profile rbd pool=k8s_rbd&#x27;</span><br><span class="line">// AQAx4JBm6BItDBAAQue62g4QOmdDD27/PFZmQQ==</span><br></pre></td></tr></table></figure>
+
+<h2 id="修改k8s集群的rbd驱动配置文件"><a href="#修改k8s集群的rbd驱动配置文件" class="headerlink" title="修改k8s集群的rbd驱动配置文件"></a>修改k8s集群的rbd驱动配置文件</h2><p>老样子，安装rbd驱动后，ceph-csi-rbd命名空间下会有ceph-csi-config的configMap，修改它。</p>
+<p>这里我直接通过kubepi网页直接修改了，很方便，修改它的config.json，把下面的东西粘贴进去。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">&quot;clusterID&quot;</span>: <span class="string">&quot;ed91a6b4-3df6-11ef-9d94-000c29a7737d&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;monitors&quot;</span>: [</span><br><span class="line">          <span class="string">&quot;192.168.28.138:6789&quot;</span>,</span><br><span class="line">          <span class="string">&quot;192.168.28.139:6789&quot;</span>,</span><br><span class="line">          <span class="string">&quot;192.168.28.140:6789&quot;</span></span><br><span class="line">        ]</span><br><span class="line">      &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<p>增加secret.yaml</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Secret</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">csi-rbd-secret</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">ceph-csi-rbd</span></span><br><span class="line"><span class="attr">stringData:</span></span><br><span class="line">  <span class="attr">userID:</span> <span class="string">k8s</span></span><br><span class="line">  <span class="attr">userKey:</span> <span class="string">AQAx4JBm6BItDBAAQue62g4QOmdDD27/PFZmQQ==</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">storage.k8s.io/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">StorageClass</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">   <span class="attr">name:</span> <span class="string">csi-rbd-sc</span></span><br><span class="line"><span class="attr">provisioner:</span> <span class="string">rbd.csi.ceph.com</span></span><br><span class="line"><span class="attr">parameters:</span></span><br><span class="line">   <span class="attr">clusterID:</span> <span class="string">ed91a6b4-3df6-11ef-9d94-000c29a7737d</span></span><br><span class="line"></span><br><span class="line">   <span class="attr">pool:</span> <span class="string">k8s_rbd</span></span><br><span class="line"></span><br><span class="line">   <span class="attr">imageFeatures:</span> <span class="string">&quot;layering&quot;</span></span><br><span class="line"></span><br><span class="line">   <span class="attr">csi.storage.k8s.io/provisioner-secret-name:</span> <span class="string">csi-rbd-secret</span></span><br><span class="line">   <span class="attr">csi.storage.k8s.io/provisioner-secret-namespace:</span> <span class="string">ceph-csi-rbd</span></span><br><span class="line">   <span class="attr">csi.storage.k8s.io/controller-expand-secret-name:</span> <span class="string">csi-rbd-secret</span></span><br><span class="line">   <span class="attr">csi.storage.k8s.io/controller-expand-secret-namespace:</span> <span class="string">ceph-csi-rbd</span></span><br><span class="line">   <span class="attr">csi.storage.k8s.io/node-stage-secret-name:</span> <span class="string">csi-rbd-secret</span></span><br><span class="line">   <span class="attr">csi.storage.k8s.io/node-stage-secret-namespace:</span> <span class="string">ceph-csi-rbd</span></span><br><span class="line"></span><br><span class="line">   <span class="attr">csi.storage.k8s.io/fstype:</span> <span class="string">ext4</span></span><br><span class="line"><span class="attr">reclaimPolicy:</span> <span class="string">Delete</span></span><br><span class="line"><span class="attr">allowVolumeExpansion:</span> <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># If filesystem is xfs, nouuid will be automatically added to mountOptions</span></span><br><span class="line"><span class="attr">mountOptions:</span>   </span><br><span class="line">  <span class="bullet">-</span> <span class="string">discard</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="创建pvc绑定容器"><a href="#创建pvc绑定容器" class="headerlink" title="创建pvc绑定容器"></a>创建pvc绑定容器</h2><p>先创建pvc，<code>vim ceph-rbd-pvc.yaml</code></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">PersistentVolumeClaim</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">csi-rbd-pvc</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">accessModes:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">ReadWriteOnce</span></span><br><span class="line">  <span class="attr">resources:</span></span><br><span class="line">    <span class="attr">requests:</span></span><br><span class="line">      <span class="attr">storage:</span> <span class="string">1Gi</span></span><br><span class="line">  <span class="attr">storageClassName:</span> <span class="string">csi-rbd-sc</span></span><br></pre></td></tr></table></figure>
+
+<p><code>kubectl get pvc</code>可以看到是Bound的状态。</p>
+<p>绑定个容器试试，老熟人nginx</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Deployment</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">nginx-deployment</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">1</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">nginx-pod</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">nginx-pod</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">nginx</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">nginx:latest</span></span><br><span class="line">        <span class="attr">ports:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">80</span></span><br><span class="line">        <span class="attr">volumeMounts:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">mypvc</span></span><br><span class="line">            <span class="attr">mountPath:</span> <span class="string">/usr/share/nginx/html</span></span><br><span class="line">      <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">mypvc</span></span><br><span class="line">        <span class="attr">persistentVolumeClaim:</span></span><br><span class="line">          <span class="attr">claimName:</span> <span class="string">csi-rbd-pvc</span></span><br><span class="line">          <span class="attr">readOnly:</span> <span class="literal">false</span></span><br><span class="line"> <span class="string">---</span></span><br><span class="line"></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">nginx-service</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">nginx-pod</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">NodePort</span> <span class="comment"># service类型</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">80</span></span><br><span class="line">    <span class="attr">targetPort:</span> <span class="number">80</span></span><br></pre></td></tr></table></figure>
+
+<p>试了下也是正常绑定了。</p>
+<h2 id="是否解决了cephfs的问题"><a href="#是否解决了cephfs的问题" class="headerlink" title="是否解决了cephfs的问题"></a>是否解决了cephfs的问题</h2><p>先看看重新绑定好使不。</p>
+<p>老套路，进容器往/usr/share/nginx/html/index.html写点东西。然后nginx删掉重新部署看看。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Multi-Attach error for volume &quot;pvc-eb833c50-0acf-4b36-8b4e-b9e262f42406&quot; Volume is already used by pod(s) nginx-deployment-697596746b-z9zwp</span><br></pre></td></tr></table></figure>
+
+<p>报了个错，但是问题不大，因为不支持ReadWriteMany，所以绑定有问题，稍等片刻等前一个容器停止后，重新访问容器发现文件都还在。</p>
+<p>然后是自动释放.先把nginx停掉.然后删除pvc.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl delete -f /ceph-pvc.yaml</span><br></pre></td></tr></table></figure>
+
+<p>可以看到pv也自动删除了，非常好。</p>
+<p>扩容缩容也没啥问题。完美。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>rbd使用上相比fs果然好使，不知道是不是因为我把所有无关的pool都删除的原因，现在创建，绑定删除都没有任何问题。</p>
+<p>至此ceph与k8s的对接就告一段落了。</p>
+<p>后续应该是按照这个思路接着写我的部署系统了。但是有一点没想好就是volume应该在一个命名空间下去管理，还是说分散到各个应用中呢？PV属于集群级别，PVC有命名空间，那么volume数据存放到应用的命名空间就行了，只要把回收策略从Delete改为Retain应该就好了，删除时不影响数据即可。嗯就这么搞。</p>
+
     </article>
+    <!-- license  -->
     
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2021/04/05/bsgamesdk-re/" >
-            
-                <span>对bsgamesdk的签名逆向分析</span>
-        </a>
-        <div class="abstract-content">
-            前言最近看到pcr查看个人信息的脚本，比较感兴趣就稍微研究了一下。之前很早的时候对pcr进行过抓包，没想到是基于http协议的，感觉日本那边的it技术比国内的稍微落后一点。pcr接入的是bilibili游戏，要登录游戏得先登录b站账号，抓包之后发现登录过程还是比较简单的，首先是从服务器获取rsa公钥，然后把密码进行rsa加密，添加公...
+        <div class="license-wrapper">
+            <p>原文作者：<a href="https://re0.top">Zer0e</a>
+            <p>原文链接：<a href="https://re0.top/2024/07/12/devops4/">https://re0.top/2024/07/12/devops4/</a>
+            <p>发表日期：<a href="https://re0.top/2024/07/12/devops4/">July 12th 2024, 9:30:00 pm</a>
+            <p>更新日期：<a href="https://re0.top/2024/07/12/devops4/">July 12th 2024, 8:06:35 pm</a>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/04/05</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "Android">Android</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2020/12/13/autoConfiguration/" >
-            
-                <span>浅谈Spring Boot自动配置</span>
-        </a>
-        <div class="abstract-content">
-            前言好久没写技术性文章了，今天就来谈谈SpringBoot中最常见但是却很少人去了解的知识，那就是SpringBoot是如何让你免去如此多的xml配置的。本人技术有限，文章如有错误请谅解。  
-正文用过SpringBoot的人都很清楚，它很方便，不用配置xml，开箱即用，那你是否想过SpringBoot是如何实现自动配置的呢？我也很...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/12/13</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "Spring">Spring</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2020/11/01/transaction_isolation/" >
-            
-                <span>回顾数据库事务隔离级别</span>
-        </a>
-        <div class="abstract-content">
-            前言对于数据库隔离级别，前前后后可能复习了好多遍，但是很经常就忘记，今天就简单整理下概念和实例，方便以后回顾。
-正文什么是事务首先我们先明确事务是什么？为什么要有事务？事务(Transaction)，其实就是一个操作序列，我们知道，操作数据库是什么一条条SQL语句来实现的，那么事务就是包含这些SQL操作的清单。至于为什么要有事务，是...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/11/01</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "Mysql">Mysql</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2020/10/09/snowflake/" >
-            
-                <span>浅谈雪花算法</span>
-        </a>
-        <div class="abstract-content">
-            写在前面最近学习也有点陷入迷茫状态，不知道学些什么，也不知道写点什么。那就想起什么就写点啥，就当是重新学习。今天要来讲的是分布式系统中常用的一种算法，雪花算法。 
-正文什么是雪花算法雪花算法(snowflake)，它是Twitter公司使用的在分布式系统中生成唯一ID的一个算法，在2014年开源。雪花算法是在高并发环境下生成为ID的...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/10/09</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "算法">算法</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "分布式">分布式</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2020/09/17/design_patterns/" >
-            
-                <span>谈谈设计模式</span>
-        </a>
-        <div class="abstract-content">
-            前言设计模式是提高代码可读性的途径之一，面对不同的场景选择不同的设计模式，可以提高代码可读性，提高代码的可重用性还有可扩展性。接下来就讲讲什么是设计模式。  
-正文何为设计模式设计模式是在面向对象语言中，思想都是一致的，而在面向过程语言，函数式编程的语言中讨论设计模式是没有意义的。所谓的设计模式，就是前面提到的，在面向对象编程中的一...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/09/17</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "设计模式">设计模式</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2020/09/17/composite_pattern/" >
-            
-                <span>设计模式之组合模式</span>
-        </a>
-        <div class="abstract-content">
-            前言这篇是23种设计模式的最后一篇了，不知不觉整理了一个月，其实应该快点整理完，每天一到两篇文章虽然量不多，但是写的时候其实挺累人。言归正传，本文来讲最后一种设计模式，组合模式。  
-正文概念组合模式又称部分整体模式，它属于结构型模式，通常适用于有结构的系统，用于表示部分与整体层次。顺带一提，这里的有结构一般是树形结构。那这个模式他...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/09/17</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "设计模式">设计模式</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2020/09/17/flyweight_pattern/" >
-            
-                <span>设计模式之享元模式</span>
-        </a>
-        <div class="abstract-content">
-            前言本文谈谈享元模式。
-正文概念享元模式属于结构型模式，它主要是缓存重复的对象，以减少内存的消耗，这些相同的对象往往需要重复的使用，如果不对其进行缓存，可能会导致内存溢出。那享元模式一般配合工厂模式一起使用。常见的应用场景有Java中的String，在创建String时判断缓存池里是否有这个字符串，有的话直接返回，没有才进行创建。 ...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/09/17</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "设计模式">设计模式</a>
-    
-</div>
-            
-        </div>
-    </article>
     
     <!-- paginator  -->
-    
-    <nav class="page-nav">
-        <a class="extend prev" rel="prev" href="/">&amp;#60; PREV</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/3/">NEXT &amp;#62;</a>
-    </nav>
-    
-</main>
-            <!-- profile -->
+    <ul class="post-paginator">
+        <li class="next">
             
-            <div class="profile">
-    <img class="profile-avatar" alt="avatar" src= /avatar/2.jpg >
-    <div class="profile-name">Zer0e</div>
-    
-    <div class="profile-signature">
-        耿直的现实主义者 / 喜爱安全的web狗 / 无情的bug制造机器
-    </div>
-    
-    
-    <div class="profile-social">
-        
-    
-        
+        </li>
+        <li class="previous">
             
-                <a href="mailto:zcluslloye@gmail.com" class="iconfont-archer email" title=email ></a>
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2024/07/11/devops3/" title= "【架构之路3】k8s对接cephfs">
+                    <div class="prevTitle">【架构之路3】k8s对接cephfs</div>
+                </a>
             
-        
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
     
-        
-            
-                <a href="//github.com/zer0e" class="iconfont-archer github" target="_blank" title=github></a>
-            
-        
     
-        
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
     
-        
-            
-                <a href="https://t.me/zer009" class="iconfont-archer telegram" target="_blank" title=telegram></a>
-            
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-    
-        
-            
-                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
-            
-        
     
 
-    </div>
-    
-    
-    
-        <div class="about-me">
-            <a href = "/about" >ABOUT ME</a>
-        </div>
-    
-</div>
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
             
         </div>
         <footer class="footer footer-unloaded">
@@ -857,6 +574,24 @@ han...
 </footer>
     </div>
     <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%AD%A3%E6%96%87"><span class="toc-number">2.</span> <span class="toc-text">正文</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85rbd%E9%A9%B1%E5%8A%A8"><span class="toc-number">2.1.</span> <span class="toc-text">安装rbd驱动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ceph-pool-secret%E5%88%9B%E5%BB%BA"><span class="toc-number">2.2.</span> <span class="toc-text">ceph pool secret创建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%AE%E6%94%B9k8s%E9%9B%86%E7%BE%A4%E7%9A%84rbd%E9%A9%B1%E5%8A%A8%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">2.3.</span> <span class="toc-text">修改k8s集群的rbd驱动配置文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BApvc%E7%BB%91%E5%AE%9A%E5%AE%B9%E5%99%A8"><span class="toc-number">2.4.</span> <span class="toc-text">创建pvc绑定容器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%98%AF%E5%90%A6%E8%A7%A3%E5%86%B3%E4%BA%86cephfs%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-number">2.5.</span> <span class="toc-text">是否解决了cephfs的问题</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol>
+    </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
     <div class="sidebar sidebar-hide">
@@ -2087,6 +1822,8 @@ jsonContent:
     
     </div>
     <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
      
     <script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"model":{"jsonPath":"/live2dw/assets/koharu.model.json"},"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
 </html>

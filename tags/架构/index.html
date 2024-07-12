@@ -346,6 +346,43 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href = "/2024/07/12/devops4/" >
+            
+                <span>【架构之路4】k8s对接ceph-rbd</span>
+        </a>
+        <div class="abstract-content">
+            前言上篇讲了cephfs对接k8s集群，体验不是很好，这篇接着体验ceph-rbd。
+正文安装rbd驱动很简单，接着使用helm安装即可。
+12kubectl create namespace &quot;ceph-csi-rbd&quot;helm install --namespace &quot;ceph-csi-rbd&qu...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/07/12</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "运维">运维</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "从0.5开始的运维架构之路">从0.5开始的运维架构之路</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href = "/2024/07/11/devops3/" >
             
                 <span>【架构之路3】k8s对接cephfs</span>
@@ -657,36 +694,6 @@ han...
         <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags = "数据库">数据库</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2020/06/24/load_balancing_algorithm/" >
-            
-                <span>常见的负载均衡算法</span>
-        </a>
-        <div class="abstract-content">
-            前言上一篇文章讲了负载均衡的几种实现方式，这期就重点讲讲当请求到达负载均衡服务器时，服务器可以根据哪些算法来进行分配请求。 
-正文轮询法这种方法很简单，就是按照顺序轮流将请求分配到各个服务器上，对服务器的状态和负载情况并不关注。由于需要对pos变量进行操作，如果是高并发场景必须加写锁，并且会导致并发吞吐量的明显下降。以下代码实现了一...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/06/24</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
     
 </div>
             
@@ -1402,9 +1409,16 @@ han...
     
     
     
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 86
+        Total : 87
         </div>
         <!-- search  -->
         
@@ -1417,6 +1431,11 @@ han...
     
     <div class="archive-year"> 2024 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/12</span><a class="archive-post-title" href= "/2024/07/12/devops4/" >【架构之路4】k8s对接ceph-rbd</a>
+        </li>
     
     
         <li class="archive-post-item">
