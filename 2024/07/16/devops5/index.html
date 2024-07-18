@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Zer0e">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Zer0e">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>【架构之路5】搭建redis集群 · Zer0e&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Zer0e&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">【架构之路5】搭建redis集群</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Zer0e's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            【架构之路5】搭建redis集群
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "运维">运维</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "从0.5开始的运维架构之路">从0.5开始的运维架构之路</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">4.9k</span>阅读时长: <span class="post-count reading-time">25 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2024/07/16</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>竟然被问到了redis集群了不了解，我除了主从其他还没搭建过，这篇就搭建下redis的主从模式，哨兵模式，Cluster模式。</p>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><h2 id="主从模式"><a href="#主从模式" class="headerlink" title="主从模式"></a>主从模式</h2><p>这个模式老简单了，读写分离嘛。看我快速写出k8s编排文件。一主一从。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Deployment</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis-master-deployment</span></span><br><span class="line">  <span class="attr">labels:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">redis-master-deployment</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">1</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">redis-master</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">redis-master</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">redis-master</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">redis-master</span></span><br><span class="line">          <span class="attr">image:</span> <span class="string">redis:7.0</span></span><br><span class="line">          <span class="attr">imagePullPolicy:</span> <span class="string">IfNotPresent</span></span><br><span class="line">          <span class="attr">ports:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">6379</span></span><br><span class="line">          <span class="attr">args:</span> [<span class="string">&quot;--requirepass&quot;</span>, <span class="string">&quot;test&quot;</span>]</span><br><span class="line">      <span class="attr">restartPolicy:</span> <span class="string">Always</span></span><br><span class="line"></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis-master-service-nodeport</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">redis-master</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">NodePort</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">6379</span></span><br><span class="line">      <span class="attr">targetPort:</span> <span class="number">6379</span></span><br><span class="line"></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis-master-service</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">redis-master</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">ClusterIP</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">6379</span></span><br><span class="line">      <span class="attr">targetPort:</span> <span class="number">6379</span></span><br><span class="line"></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Deployment</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis-slave-deployment</span></span><br><span class="line">  <span class="attr">labels:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">redis-slave-deployment</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">1</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">redis-slave</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">redis-slave</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">redis-slave</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">redis-slave</span></span><br><span class="line">          <span class="attr">image:</span> <span class="string">redis:7.0</span></span><br><span class="line">          <span class="attr">imagePullPolicy:</span> <span class="string">IfNotPresent</span></span><br><span class="line">          <span class="attr">ports:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">6379</span></span><br><span class="line">          <span class="attr">args:</span> [<span class="string">&quot;--requirepass&quot;</span>, <span class="string">&quot;test&quot;</span>, <span class="string">&quot;--replicaof&quot;</span>, <span class="string">&quot;redis-master-service&quot;</span>, <span class="string">&quot;6379&quot;</span>, <span class="string">&quot;--masterauth&quot;</span>, <span class="string">&quot;test&quot;</span>]</span><br><span class="line">      <span class="attr">restartPolicy:</span> <span class="string">Always</span></span><br><span class="line"></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis-slave-service</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">redis-slave</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">NodePort</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">6379</span></span><br><span class="line">      <span class="attr">targetPort:</span> <span class="number">6379</span></span><br></pre></td></tr></table></figure>
+
+<p>这里能优化的是把配置挪到configMap中。再加节点也是一样的，可以把slave副本拉上去，也可以多加一个service。</p>
+<h2 id="哨兵模式"><a href="#哨兵模式" class="headerlink" title="哨兵模式"></a>哨兵模式</h2><p>这个模式用k8s部署坑还是比较多的，参考了网上的<a target="_blank" rel="noopener" href="https://juejin.cn/post/7339364757386002468">一些文章</a>。但是使用起来也是有一些问题。</p>
+<p>坑点：</p>
+<ol>
+<li>sentinel集群外部连接比较困难，当然这个可以配合ktconnect来做。</li>
+<li>sentinel的配置文件无法直接挂载configmap，因为启动sentinel是会检查配置文件是否可写。。。这个看了下执行日志发现会自动更改配置文件。</li>
+<li>由2可知，不想改镜像的话得动态写入配置文件到卷中。</li>
+</ol>
+<p>参照网上的教程，我也照猫画虎搞了一下。</p>
+<p>先是配置secret，存储redis和sentinel的密码，这里密码都是同一个。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">kind:</span> <span class="string">Secret</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis-secret</span></span><br><span class="line"><span class="attr">type:</span> <span class="string">Opaque</span></span><br><span class="line"><span class="attr">stringData:</span></span><br><span class="line">  <span class="attr">REDIS_PASSWORD:</span> <span class="string">&quot;test&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>redis的配置文件和初始化脚本</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ConfigMap</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis-config-map</span></span><br><span class="line"><span class="attr">data:</span></span><br><span class="line">  <span class="attr">REDIS_NODES:</span> <span class="string">&quot;redis-0.redis,redis-1.redis,redis-2.redis&quot;</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">redis.conf:</span> <span class="string">|</span></span><br><span class="line"><span class="string">    bind 0.0.0.0</span></span><br><span class="line"><span class="string">    protected-mode no</span></span><br><span class="line"><span class="string">    port 6379</span></span><br><span class="line"><span class="string">    tcp-backlog 511</span></span><br><span class="line"><span class="string">    timeout 10</span></span><br><span class="line"><span class="string">    tcp-keepalive 30</span></span><br><span class="line"><span class="string">    daemonize no</span></span><br><span class="line"><span class="string">    supervised no</span></span><br><span class="line"><span class="string">    pidfile &quot;/var/run/redis_6379.pid&quot;</span></span><br><span class="line"><span class="string">    loglevel notice</span></span><br><span class="line"><span class="string">    logfile &quot;&quot;</span></span><br><span class="line"><span class="string">    databases 16</span></span><br><span class="line"><span class="string">    always-show-logo yes</span></span><br><span class="line"><span class="string">    save &quot;&quot;</span></span><br><span class="line"><span class="string">    stop-writes-on-bgsave-error yes</span></span><br><span class="line"><span class="string">    rdbcompression yes</span></span><br><span class="line"><span class="string">    rdbchecksum yes</span></span><br><span class="line"><span class="string">    rdb-del-sync-files no</span></span><br><span class="line"><span class="string">    dir &quot;/data&quot;</span></span><br><span class="line"><span class="string">    replica-serve-stale-data yes</span></span><br><span class="line"><span class="string">    replica-read-only yes</span></span><br><span class="line"><span class="string">    repl-diskless-sync no</span></span><br><span class="line"><span class="string">    repl-diskless-sync-delay 5</span></span><br><span class="line"><span class="string">    repl-diskless-load disabled</span></span><br><span class="line"><span class="string">    appendonly no</span></span><br><span class="line"><span class="string">    repl-disable-tcp-nodelay no</span></span><br><span class="line"><span class="string">    replica-priority 100</span></span><br><span class="line"><span class="string">    acllog-max-len 128</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="meta">---</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ConfigMap</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis-init-script-config</span></span><br><span class="line"><span class="attr">data:</span></span><br><span class="line">  <span class="attr">sentinel_init.sh:</span> <span class="string">|</span></span><br><span class="line"><span class="string">    #! /bin/bash</span></span><br><span class="line"><span class="string"></span></span><br><span class="line">    <span class="string">for</span> <span class="string">i</span> <span class="string">in</span> <span class="string">$&#123;REDIS_NODES//,/</span> <span class="string">&#125;</span></span><br><span class="line">    <span class="string">do</span></span><br><span class="line">      <span class="string">echo</span> <span class="string">&quot;find master at $i&quot;</span></span><br><span class="line">      <span class="string">MASTER=$(redis-cli</span> <span class="string">--no-auth-warning</span> <span class="string">--raw</span> <span class="string">-h</span> <span class="string">$i</span> <span class="string">-a</span> <span class="string">$&#123;REDIS_PASSWORD&#125;</span> <span class="string">info</span> <span class="string">replication</span> <span class="string">|</span> <span class="string">awk</span> <span class="string">&#x27;&#123;print $1&#125;&#x27;</span> <span class="string">|</span> <span class="attr">grep master_host:</span> <span class="string">|</span> <span class="string">cut</span> <span class="string">-d</span> <span class="string">&quot;:&quot;</span> <span class="string">-f2)</span></span><br><span class="line">      <span class="string">if</span> [ <span class="string">&quot;$&#123;MASTER&#125;&quot;</span> <span class="string">==</span> <span class="string">&quot;&quot;</span> ]<span class="string">;</span> <span class="string">then</span></span><br><span class="line">          <span class="string">echo</span> <span class="string">&quot;no master found&quot;</span></span><br><span class="line">          <span class="string">MASTER=</span></span><br><span class="line">      <span class="string">else</span></span><br><span class="line">          <span class="string">echo</span> <span class="string">&quot;found $&#123;MASTER&#125;&quot;</span></span><br><span class="line">          <span class="string">break</span></span><br><span class="line">      <span class="string">fi</span></span><br><span class="line">    <span class="string">done</span></span><br><span class="line"></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;sentinel resolve-hostnames yes&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;sentinel announce-hostnames yes&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;sentinel monitor mymaster $&#123;MASTER&#125; 6379 2&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;sentinel auth-pass mymaster $&#123;REDIS_PASSWORD&#125;&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;sentinel down-after-milliseconds mymaster 5000&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;sentinel sentinel-pass $&#123;REDIS_PASSWORD&#125;&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;sentinel parallel-syncs mymaster 1&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;sentinel failover-timeout mymaster 10000&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;requirepass $&#123;REDIS_PASSWORD&#125;&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;sentinel announce-ip $&#123;HOSTNAME&#125;.sentinel&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line"></span><br><span class="line">    <span class="string">cat</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">  </span><br><span class="line">  <span class="attr">redis_init.sh:</span> <span class="string">|</span></span><br><span class="line"><span class="string">    #! /bin/bash</span></span><br><span class="line"><span class="string"></span></span><br><span class="line">    <span class="string">cp</span> <span class="string">/tmp/redis/redis.conf</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;requirepass $&#123;REDIS_PASSWORD&#125;&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;masterauth $&#123;REDIS_PASSWORD&#125;&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;replica-announce-ip $&#123;HOSTNAME&#125;.redis&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;replica-announce-port 6379 &quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;finding master...&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="string">if</span> [ <span class="string">&quot;$(timeout 5 redis-cli -h sentinel -p 26379 -a $&#123;REDIS_PASSWORD&#125; ping)&quot;</span> <span class="type">!=</span> <span class="string">&quot;PONG&quot;</span> ]<span class="string">;</span> <span class="string">then</span></span><br><span class="line"></span><br><span class="line">      <span class="string">echo</span> <span class="string">&quot;sentinel not found, defaulting to redis-0&quot;</span></span><br><span class="line"></span><br><span class="line">      <span class="string">if</span> [ <span class="string">$</span>&#123;<span class="string">HOSTNAME</span>&#125; <span class="string">==</span> <span class="string">&quot;redis-0&quot;</span> ]<span class="string">;</span> <span class="string">then</span></span><br><span class="line">        <span class="string">echo</span> <span class="string">&quot;this is redis-0, not updating config...&quot;</span></span><br><span class="line">      <span class="string">else</span></span><br><span class="line">        <span class="string">echo</span> <span class="string">&quot;updating redis.conf...&quot;</span></span><br><span class="line">        <span class="string">echo</span> <span class="string">&quot;repl-ping-replica-period 3&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">        <span class="string">echo</span> <span class="string">&quot;slave-read-only no&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">        <span class="string">echo</span> <span class="string">&quot;slaveof redis-0.redis 6379&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">      <span class="string">fi</span></span><br><span class="line"></span><br><span class="line">    <span class="string">else</span></span><br><span class="line"></span><br><span class="line">      <span class="string">echo</span> <span class="string">&quot;sentinel found, finding master&quot;</span></span><br><span class="line">      <span class="string">MASTER=&quot;$(redis-cli</span> <span class="string">-h</span> <span class="string">sentinel</span> <span class="string">-p</span> <span class="number">26379</span> <span class="string">-a</span> <span class="string">$&#123;REDIS_PASSWORD&#125;</span> <span class="string">sentinel</span> <span class="string">get-master-addr-by-name</span> <span class="string">mymaster</span> <span class="string">|</span> <span class="string">grep</span> <span class="string">-E</span> <span class="string">&#x27;(^redis-*)|([0-9]&#123;1,3&#125;\.[0-9]&#123;1,3&#125;\.[0-9]&#123;1,3&#125;\.[0-9]&#123;1,3&#125;)&#x27;</span><span class="string">)&quot;</span></span><br><span class="line"></span><br><span class="line">      <span class="string">if</span> [ <span class="string">&quot;$&#123;HOSTNAME&#125;.redis&quot;</span> <span class="string">==</span> <span class="string">$</span>&#123;<span class="string">MASTER</span>&#125; ]<span class="string">;</span> <span class="string">then</span></span><br><span class="line">        <span class="string">echo</span> <span class="string">&quot;this is master, not updating config...&quot;</span></span><br><span class="line">      <span class="string">else</span></span><br><span class="line">        <span class="string">echo</span> <span class="string">&quot;master found : $&#123;MASTER&#125;, updating redis.conf&quot;</span></span><br><span class="line">        <span class="string">echo</span> <span class="string">&quot;slave-read-only no&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">        <span class="string">echo</span> <span class="string">&quot;slaveof $&#123;MASTER&#125; 6379&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">        <span class="string">echo</span> <span class="string">&quot;repl-ping-replica-period 3&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">      <span class="string">fi</span></span><br><span class="line"></span><br><span class="line">    <span class="string">fi</span></span><br><span class="line"><span class="meta">---</span></span><br></pre></td></tr></table></figure>
+
+<p>这里稍微解释一下这个初始化脚本。首先讲讲redis_init.sh吧，首先我们会挂载 redis-config-map到/tmp/redis目录，把配置文件拷贝到/etc/redis/redis.conf作为我们真正的配置文件。然后就开始判断当前是否有sentinel且当前节点是否为主节点了。<code>redis-cli -h sentinel -p 26379 -a $&#123;REDIS_PASSWORD&#125; ping</code>是检查sentinel是否可用。而下面的MASTER则是判断当前节点是否是主节点。如果不是主节点，那么就添加slaveof到主节点，这里有个问题，就是slave-read-only应不应该是no。这里我尝试了一下，非master节点如果可写的话，其实同步不到主节点去。</p>
+<p>然后说说sentinel_init.sh。先遍历所有redis节点，然后找出master节点，然后把配置文件写到/etc/redis/sentinel.conf中供后续使用。</p>
+<p>然后是redis节点的部署。采用statefulSet部署。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">StatefulSet</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis</span></span><br><span class="line">  <span class="attr">labels:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">redis</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">serviceName:</span> <span class="string">redis</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">3</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">redis</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">redis</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">redis</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">initContainers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">config</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">redis:7.0</span></span><br><span class="line">        <span class="attr">env:</span> </span><br><span class="line">          <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">REDIS_PASSWORD</span></span><br><span class="line">            <span class="attr">valueFrom:</span></span><br><span class="line">              <span class="attr">secretKeyRef:</span></span><br><span class="line">                <span class="attr">name:</span> <span class="string">redis-secret</span></span><br><span class="line">                <span class="attr">key:</span> <span class="string">REDIS_PASSWORD</span></span><br><span class="line">        <span class="attr">command:</span> [<span class="string">&quot;sh&quot;</span>, <span class="string">&quot;-c&quot;</span>, <span class="string">&quot;/scripts/redis_init.sh&quot;</span>]</span><br><span class="line">        <span class="attr">volumeMounts:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="attr">name:</span>  <span class="string">redis-config</span></span><br><span class="line">            <span class="attr">mountPath:</span>  <span class="string">/etc/redis/</span></span><br><span class="line">          <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">init-scripts</span></span><br><span class="line">            <span class="attr">mountPath:</span> <span class="string">/scripts/</span></span><br><span class="line">          <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">origin-config</span></span><br><span class="line">            <span class="attr">mountPath:</span> <span class="string">/tmp/redis</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">redis</span></span><br><span class="line">          <span class="attr">image:</span> <span class="string">redis:7.0</span></span><br><span class="line">          <span class="attr">imagePullPolicy:</span> <span class="string">IfNotPresent</span></span><br><span class="line">          <span class="attr">args:</span> [<span class="string">&quot;/etc/redis/redis.conf&quot;</span>]</span><br><span class="line">          <span class="attr">ports:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">6379</span></span><br><span class="line">          <span class="attr">volumeMounts:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">name:</span>  <span class="string">redis-config</span></span><br><span class="line">              <span class="attr">mountPath:</span>  <span class="string">/etc/redis/</span></span><br><span class="line">             <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">data</span></span><br><span class="line">          	  <span class="attr">mountPath:</span> <span class="string">/data</span></span><br><span class="line">      <span class="attr">volumes:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span>  <span class="string">data</span></span><br><span class="line">          <span class="attr">emptyDir:</span> &#123;&#125;</span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">redis-config</span></span><br><span class="line">          <span class="attr">emptyDir:</span> &#123;&#125;</span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">init-scripts</span></span><br><span class="line">          <span class="attr">configMap:</span></span><br><span class="line">            <span class="attr">name:</span> <span class="string">redis-init-script-config</span></span><br><span class="line">            <span class="attr">defaultMode:</span> <span class="number">0777</span></span><br><span class="line">            <span class="attr">items:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">redis_init.sh</span></span><br><span class="line">              <span class="attr">path:</span> <span class="string">redis_init.sh</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">origin-config</span></span><br><span class="line">          <span class="attr">configMap:</span></span><br><span class="line">            <span class="attr">name:</span> <span class="string">redis-config-map</span></span><br><span class="line">            <span class="attr">items:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">redis.conf</span></span><br><span class="line">              <span class="attr">path:</span> <span class="string">redis.conf</span></span><br><span class="line">      <span class="attr">restartPolicy:</span> <span class="string">Always</span></span><br><span class="line">      <span class="attr">affinity:</span></span><br><span class="line">        <span class="attr">podAntiAffinity:</span></span><br><span class="line">          <span class="attr">requiredDuringSchedulingIgnoredDuringExecution:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">labelSelector:</span></span><br><span class="line">                <span class="attr">matchExpressions:</span></span><br><span class="line">                  <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">app</span></span><br><span class="line">                    <span class="attr">operator:</span> <span class="string">In</span></span><br><span class="line">                    <span class="attr">values:</span></span><br><span class="line">                      <span class="bullet">-</span> <span class="string">redis</span></span><br><span class="line">              <span class="attr">topologyKey:</span> <span class="string">kubernetes.io/hostname</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">redis</span></span><br><span class="line">  <span class="attr">clusterIP:</span> <span class="string">None</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">6379</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">redis</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis-0-node-port</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">statefulset.kubernetes.io/pod-name:</span> <span class="string">redis-0</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">NodePort</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">6379</span></span><br><span class="line">      <span class="attr">targetPort:</span> <span class="number">6379</span></span><br><span class="line"></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis-1-node-port</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">statefulset.kubernetes.io/pod-name:</span> <span class="string">redis-1</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">NodePort</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">6379</span></span><br><span class="line">      <span class="attr">targetPort:</span> <span class="number">6379</span></span><br><span class="line"></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis-2-node-port</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">statefulset.kubernetes.io/pod-name:</span> <span class="string">redis-2</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">NodePort</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">6379</span></span><br><span class="line">      <span class="attr">targetPort:</span> <span class="number">6379</span></span><br><span class="line"></span><br><span class="line"><span class="meta">---</span></span><br></pre></td></tr></table></figure>
+
+<p>解读一下。首先在初始化容器中，我们挂载了三个目录<code>redis-config init-scripts origin-config </code>。其中redis-config是一个临时卷，前面我们说过，redis和sentinel启动时要求配置文件可写，所以这里用的临时卷，init-scripts是初始化脚本，origin-config是redis的基础配置文件。init容器的作用就是将origin-config中的配置文件拷贝到redis-config中，并根据init-scripts中的redis_init.sh脚本生成配置文件到redis-config中，提供给真正容器使用。而真正容器中需要挂载的就是redis-config和data目录，data是redis的数据目录，生产环境中应配合pv和pvc实现持久化，这里采用临时卷过渡下。</p>
+<p>随后定义几个service，没啥好说的，这里是把三个节点的redis分别用nodePort暴露出来了，每个节点都能连接。</p>
+<p>然后是sentinel服务。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">StatefulSet</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">sentinel</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">serviceName:</span> <span class="string">sentinel</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">3</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">sentinel</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">sentinel</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">initContainers:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">config</span></span><br><span class="line">          <span class="attr">image:</span> <span class="string">redis:7.0</span></span><br><span class="line">          <span class="attr">env:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">REDIS_NODES</span></span><br><span class="line">              <span class="attr">valueFrom:</span></span><br><span class="line">                <span class="attr">configMapKeyRef:</span></span><br><span class="line">                  <span class="attr">name:</span> <span class="string">redis-config-map</span></span><br><span class="line">                  <span class="attr">key:</span> <span class="string">REDIS_NODES</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">REDIS_PASSWORD</span></span><br><span class="line">              <span class="attr">valueFrom:</span></span><br><span class="line">                <span class="attr">secretKeyRef:</span></span><br><span class="line">                  <span class="attr">name:</span> <span class="string">redis-secret</span></span><br><span class="line">                  <span class="attr">key:</span> <span class="string">REDIS_PASSWORD</span></span><br><span class="line">          <span class="attr">command:</span> [<span class="string">&quot;sh&quot;</span>, <span class="string">&quot;-c&quot;</span>, <span class="string">&quot;/scripts/sentinel_init.sh&quot;</span>]</span><br><span class="line">          <span class="attr">volumeMounts:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">name:</span>  <span class="string">redis-config</span></span><br><span class="line">              <span class="attr">mountPath:</span>  <span class="string">/etc/redis/</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">init-script</span></span><br><span class="line">              <span class="attr">mountPath:</span> <span class="string">/scripts/</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">image:</span>  <span class="string">redis:7.0</span></span><br><span class="line">          <span class="attr">name:</span>  <span class="string">sentinel</span></span><br><span class="line">          <span class="attr">command:</span> [<span class="string">&quot;redis-sentinel&quot;</span>]</span><br><span class="line">          <span class="attr">args:</span> [<span class="string">&quot;/etc/redis/sentinel.conf&quot;</span>]</span><br><span class="line">          <span class="attr">ports:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">name:</span>  <span class="string">sentinel</span></span><br><span class="line">              <span class="attr">containerPort:</span> <span class="number">26379</span></span><br><span class="line">          <span class="attr">volumeMounts:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">name:</span>  <span class="string">redis-config</span></span><br><span class="line">              <span class="attr">mountPath:</span>  <span class="string">/etc/redis/</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">data</span></span><br><span class="line">              <span class="attr">mountPath:</span> <span class="string">/data</span></span><br><span class="line">      <span class="attr">volumes:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span>  <span class="string">init-script</span></span><br><span class="line">          <span class="attr">configMap:</span></span><br><span class="line">            <span class="attr">name:</span> <span class="string">redis-init-script-config</span></span><br><span class="line">            <span class="attr">defaultMode:</span> <span class="number">0777</span></span><br><span class="line">            <span class="attr">items:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">sentinel_init.sh</span></span><br><span class="line">              <span class="attr">path:</span> <span class="string">sentinel_init.sh</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">redis-config</span></span><br><span class="line">          <span class="attr">emptyDir:</span> &#123;&#125;</span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">data</span></span><br><span class="line">          <span class="attr">emptyDir:</span> &#123;&#125;</span><br><span class="line">      <span class="attr">affinity:</span></span><br><span class="line">        <span class="attr">podAntiAffinity:</span></span><br><span class="line">          <span class="attr">requiredDuringSchedulingIgnoredDuringExecution:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="attr">labelSelector:</span></span><br><span class="line">              <span class="attr">matchExpressions:</span></span><br><span class="line">              <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">app</span></span><br><span class="line">                <span class="attr">operator:</span> <span class="string">In</span></span><br><span class="line">                <span class="attr">values:</span></span><br><span class="line">                <span class="bullet">-</span> <span class="string">sentinel</span></span><br><span class="line">            <span class="attr">topologyKey:</span> <span class="string">kubernetes.io/hostname</span></span><br><span class="line"></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">sentinel</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">sentinel</span></span><br><span class="line">  <span class="attr">clusterIP:</span> <span class="string">None</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">26379</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">redis</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">sentinel-node-port</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">sentinel</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">NodePort</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">26379</span></span><br><span class="line">      <span class="attr">targetPort:</span> <span class="number">26379</span></span><br><span class="line"><span class="meta">---</span></span><br></pre></td></tr></table></figure>
+
+<p>逻辑和redis差不多，这里便不再赘述。唯一有问题的地方是，连接到sentinel后，可以知道主节点的host，这里应该是redis-0.redis，但是由于我们不再集群内，所以dns域名解析失败，外部连接的话可能得配置ktconnect。这里我测试了下，当把主节点的pod删除后，sentinel会自动选举出新节点，当然这里也有一个问题，<strong>在主节点下线后的极短时间内，sentinel依旧会认为主节点是当前下线的节点，导致下线节点重新被拉起时，是以主节点配置启动的，但是当主容器还未启动时，sentinel更改了master，那么此时重新拉起的容器配置文件会被sentinel增加以下内容，导致节点变为只读。这与原先作者的本意不同。</strong>这里可以改进把每个节点配置文件增加<code>slave-read-only no</code>，即无论是否是主节点都增加这个。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># Generated by CONFIG REWRITE</span><br><span class="line">replicaof redis-1.redis 6379</span><br><span class="line">latency-tracking-info-percentiles 50 99 99.9</span><br></pre></td></tr></table></figure>
+
+<p>其次是既有主节点又有其他节点，那么通过sentinel获取时从节点时，也可进行数据添加，极大概率增加了数据的不可靠性。</p>
+<p>因此最终我改造了一下，把redis配置文件稍微改了下，从节点就应该不允许写。其实就是将<code>echo &quot;slave-read-only no&quot; &gt;&gt; /etc/redis/redis.conf</code>删除。此时只有主节点才能写，这才符合主从规范。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ConfigMap</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis-init-script-config</span></span><br><span class="line"><span class="attr">data:</span></span><br><span class="line">  <span class="attr">sentinel_init.sh:</span> <span class="string">|</span></span><br><span class="line"><span class="string">    #! /bin/bash</span></span><br><span class="line"><span class="string"></span></span><br><span class="line">    <span class="string">for</span> <span class="string">i</span> <span class="string">in</span> <span class="string">$&#123;REDIS_NODES//,/</span> <span class="string">&#125;</span></span><br><span class="line">    <span class="string">do</span></span><br><span class="line">      <span class="string">echo</span> <span class="string">&quot;find master at $i&quot;</span></span><br><span class="line">      <span class="string">MASTER=$(redis-cli</span> <span class="string">--no-auth-warning</span> <span class="string">--raw</span> <span class="string">-h</span> <span class="string">$i</span> <span class="string">-a</span> <span class="string">$&#123;REDIS_PASSWORD&#125;</span> <span class="string">info</span> <span class="string">replication</span> <span class="string">|</span> <span class="string">awk</span> <span class="string">&#x27;&#123;print $1&#125;&#x27;</span> <span class="string">|</span> <span class="attr">grep master_host:</span> <span class="string">|</span> <span class="string">cut</span> <span class="string">-d</span> <span class="string">&quot;:&quot;</span> <span class="string">-f2)</span></span><br><span class="line">      <span class="string">if</span> [ <span class="string">&quot;$&#123;MASTER&#125;&quot;</span> <span class="string">==</span> <span class="string">&quot;&quot;</span> ]<span class="string">;</span> <span class="string">then</span></span><br><span class="line">          <span class="string">echo</span> <span class="string">&quot;no master found&quot;</span></span><br><span class="line">          <span class="string">MASTER=</span></span><br><span class="line">      <span class="string">else</span></span><br><span class="line">          <span class="string">echo</span> <span class="string">&quot;found $&#123;MASTER&#125;&quot;</span></span><br><span class="line">          <span class="string">break</span></span><br><span class="line">      <span class="string">fi</span></span><br><span class="line">    <span class="string">done</span></span><br><span class="line"></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;sentinel resolve-hostnames yes&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;sentinel announce-hostnames yes&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;sentinel monitor mymaster $&#123;MASTER&#125; 6379 2&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;sentinel auth-pass mymaster $&#123;REDIS_PASSWORD&#125;&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;sentinel down-after-milliseconds mymaster 5000&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;sentinel sentinel-pass $&#123;REDIS_PASSWORD&#125;&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;sentinel parallel-syncs mymaster 1&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;sentinel failover-timeout mymaster 10000&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;requirepass $&#123;REDIS_PASSWORD&#125;&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;sentinel announce-ip $&#123;HOSTNAME&#125;.sentinel&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line"></span><br><span class="line">    <span class="string">cat</span> <span class="string">/etc/redis/sentinel.conf</span></span><br><span class="line">  </span><br><span class="line">  <span class="attr">redis_init.sh:</span> <span class="string">|</span></span><br><span class="line"><span class="string">    #! /bin/bash</span></span><br><span class="line"><span class="string"></span></span><br><span class="line">    <span class="string">cp</span> <span class="string">/tmp/redis/redis.conf</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;requirepass $&#123;REDIS_PASSWORD&#125;&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;masterauth $&#123;REDIS_PASSWORD&#125;&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;replica-announce-ip $&#123;HOSTNAME&#125;.redis&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;replica-announce-port 6379 &quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">    <span class="string">echo</span> <span class="string">&quot;finding master...&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="string">if</span> [ <span class="string">&quot;$(timeout 5 redis-cli -h sentinel -p 26379 -a $&#123;REDIS_PASSWORD&#125; ping)&quot;</span> <span class="type">!=</span> <span class="string">&quot;PONG&quot;</span> ]<span class="string">;</span> <span class="string">then</span></span><br><span class="line"></span><br><span class="line">      <span class="string">echo</span> <span class="string">&quot;sentinel not found, defaulting to redis-0&quot;</span></span><br><span class="line"></span><br><span class="line">      <span class="string">if</span> [ <span class="string">$</span>&#123;<span class="string">HOSTNAME</span>&#125; <span class="string">==</span> <span class="string">&quot;redis-0&quot;</span> ]<span class="string">;</span> <span class="string">then</span></span><br><span class="line">        <span class="string">echo</span> <span class="string">&quot;this is redis-0, not updating config...&quot;</span></span><br><span class="line">      <span class="string">else</span></span><br><span class="line">        <span class="string">echo</span> <span class="string">&quot;updating redis.conf...&quot;</span></span><br><span class="line">        <span class="string">echo</span> <span class="string">&quot;repl-ping-replica-period 3&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">        <span class="string">echo</span> <span class="string">&quot;slaveof redis-0.redis 6379&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">      <span class="string">fi</span></span><br><span class="line"></span><br><span class="line">    <span class="string">else</span></span><br><span class="line"></span><br><span class="line">      <span class="string">echo</span> <span class="string">&quot;sentinel found, finding master&quot;</span></span><br><span class="line">      <span class="string">MASTER=&quot;$(redis-cli</span> <span class="string">-h</span> <span class="string">sentinel</span> <span class="string">-p</span> <span class="number">26379</span> <span class="string">-a</span> <span class="string">$&#123;REDIS_PASSWORD&#125;</span> <span class="string">sentinel</span> <span class="string">get-master-addr-by-name</span> <span class="string">mymaster</span> <span class="string">|</span> <span class="string">grep</span> <span class="string">-E</span> <span class="string">&#x27;(^redis-*)|([0-9]&#123;1,3&#125;\.[0-9]&#123;1,3&#125;\.[0-9]&#123;1,3&#125;\.[0-9]&#123;1,3&#125;)&#x27;</span><span class="string">)&quot;</span></span><br><span class="line"></span><br><span class="line">      <span class="string">if</span> [ <span class="string">&quot;$&#123;HOSTNAME&#125;.redis&quot;</span> <span class="string">==</span> <span class="string">$</span>&#123;<span class="string">MASTER</span>&#125; ]<span class="string">;</span> <span class="string">then</span></span><br><span class="line">        <span class="string">echo</span> <span class="string">&quot;this is master, not updating config...&quot;</span></span><br><span class="line">      <span class="string">else</span></span><br><span class="line">        <span class="string">echo</span> <span class="string">&quot;master found : $&#123;MASTER&#125;, updating redis.conf&quot;</span></span><br><span class="line">        <span class="string">echo</span> <span class="string">&quot;slaveof $&#123;MASTER&#125; 6379&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">        <span class="string">echo</span> <span class="string">&quot;repl-ping-replica-period 3&quot;</span> <span class="string">&gt;&gt;</span> <span class="string">/etc/redis/redis.conf</span></span><br><span class="line">      <span class="string">fi</span></span><br><span class="line"></span><br><span class="line">    <span class="string">fi</span></span><br><span class="line"><span class="meta">---</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>因此最后使用方法就是先通过sentinel获取主节点或者从节点的地址，然后主节点写，从节点读。</p>
+<p>总得来说，哨兵模式搭建在k8s中会比较复杂，因为涉及到有状态服务的定义，所以得配合init容器和bash脚本去控制容器启动逻辑。</p>
+<h2 id="Cluster模式"><a href="#Cluster模式" class="headerlink" title="Cluster模式"></a>Cluster模式</h2><p>这个模式全自动好像比较困难，需要用到redis-trib工具。由于cluster集群必须在所有节点启动后才能进行初始化，而如果将初始化逻辑类似哨兵模式一样写入init.sh中，则是一件非常复杂而且低效的行为。</p>
+<p>先配置config</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ConfigMap</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis-config-map</span></span><br><span class="line"><span class="attr">data:</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">redis.conf:</span> <span class="string">|</span></span><br><span class="line"><span class="string">    bind 0.0.0.0</span></span><br><span class="line"><span class="string">    protected-mode no</span></span><br><span class="line"><span class="string">    port 6379</span></span><br><span class="line"><span class="string">    cluster-enabled yes</span></span><br><span class="line"><span class="string">    cluster-config-file /data/redis.conf</span></span><br><span class="line"><span class="string">    cluster-node-timeout 5000</span></span><br><span class="line"><span class="string">    dir &quot;/data&quot;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="meta">---</span></span><br></pre></td></tr></table></figure>
+
+<p>然后是redis节点创建出来，并创建无头服务。（<strong>无头service不分配clusterIP, 一般用于pod实例之间相互通信，不再像普通service那样负载均衡。</strong>）</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">StatefulSet</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">serviceName:</span> <span class="string">redis</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">6</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">redis</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">redis</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">terminationGracePeriodSeconds:</span> <span class="number">20</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">redis</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">redis:7.0</span></span><br><span class="line">        <span class="attr">args:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="string">&quot;/conf/redis.conf&quot;</span></span><br><span class="line">        <span class="attr">ports:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">redis</span></span><br><span class="line">              <span class="attr">containerPort:</span> <span class="number">6379</span></span><br><span class="line">              <span class="attr">protocol:</span> <span class="string">&quot;TCP&quot;</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">cluster</span></span><br><span class="line">              <span class="attr">containerPort:</span> <span class="number">16379</span></span><br><span class="line">              <span class="attr">protocol:</span> <span class="string">&quot;TCP&quot;</span></span><br><span class="line">        <span class="attr">volumeMounts:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">redis-conf</span></span><br><span class="line">            <span class="attr">mountPath:</span> <span class="string">/conf/</span></span><br><span class="line">          <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">redis-data</span></span><br><span class="line">            <span class="attr">mountPath:</span> <span class="string">/data</span></span><br><span class="line">      <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">redis-conf</span></span><br><span class="line">        <span class="attr">configMap:</span></span><br><span class="line">          <span class="attr">name:</span> <span class="string">redis-config-map</span></span><br><span class="line">          <span class="attr">items:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">redis.conf</span></span><br><span class="line">              <span class="attr">path:</span> <span class="string">redis.conf</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">redis-data</span></span><br><span class="line">        <span class="attr">emptyDir:</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">redis</span></span><br><span class="line">  <span class="attr">clusterIP:</span> <span class="string">None</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">6379</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">redis</span></span><br><span class="line"><span class="meta">---</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意这里我们采用的是临时卷，生产环境data务必换成持久化卷。</strong> </p>
+<p><strong>并且没有换成持久化卷是有问题的，后面会讲到，可以参照后面新的yaml。</strong></p>
+<p>注意这里没有配置节点亲和性，原因是因为我们创建的是3主3从，没有过多的节点让我们去均匀部署。</p>
+<p>无头服务的statefulSet会分配dns，为<code>&lt;pod name&gt;.&lt;service name&gt;.&lt;namespace&gt;.svc.cluster.local</code> 尝试dns这些服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">kubectl run --rm -i --tty busybox --image=busybox:1.28 /bin/sh</span><br><span class="line">nslookup redis-0.redis</span><br><span class="line"></span><br><span class="line">Server:    10.43.0.10</span><br><span class="line">Address 1: 10.43.0.10 kube-dns.kube-system.svc.cluster.local</span><br><span class="line"></span><br><span class="line">Name:      redis-0.redis</span><br><span class="line">Address 1: 10.42.1.60 redis-0.redis.default.svc.cluster.local</span><br></pre></td></tr></table></figure>
+
+<p>使用一个额外的容器来初始化我们的redis集群。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">kubectl run -it ubuntu --image=ubuntu:20.04 --restart=Never /bin/bash</span><br><span class="line">kubectl <span class="built_in">exec</span> -it ubuntu /bin/bash</span><br><span class="line"></span><br><span class="line">cat &gt; /etc/apt/sources.list &lt;&lt; <span class="string">EOF</span></span><br><span class="line"><span class="string">deb http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse</span></span><br><span class="line"><span class="string">deb-src http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse</span></span><br><span class="line"><span class="string">deb http://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse</span></span><br><span class="line"><span class="string">deb-src http://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse</span></span><br><span class="line"><span class="string">deb http://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse</span></span><br><span class="line"><span class="string">deb-src http://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse</span></span><br><span class="line"><span class="string">deb http://mirrors.aliyun.com/ubuntu/ focal-proposed main restricted universe multiverse</span></span><br><span class="line"><span class="string">deb-src http://mirrors.aliyun.com/ubuntu/ focal-proposed main restricted universe multiverse</span></span><br><span class="line"><span class="string">deb http://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse</span></span><br><span class="line"><span class="string">deb-src http://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">apt-get update</span><br><span class="line">apt-get install -y vim wget python3 python3-pip redis-tools dnsutils</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">pip install redis-trib</span><br><span class="line"></span><br><span class="line">创建只有Master节点的集群</span><br><span class="line">redis-trib.py create \</span><br><span class="line">  `dig +short redis-0.redis.default.svc.cluster.local`:6379 \</span><br><span class="line">  `dig +short redis-1.redis.default.svc.cluster.local`:6379 \</span><br><span class="line">  `dig +short redis-2.redis.default.svc.cluster.local`:6379</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">为每个Master添加Slave</span><br><span class="line">redis-trib.py replicate \</span><br><span class="line">  --master-addr `dig +short redis-0.redis.default.svc.cluster.local`:6379 \</span><br><span class="line">  --slave-addr `dig +short redis-3.redis.default.svc.cluster.local`:6379</span><br><span class="line">  </span><br><span class="line">redis-trib.py replicate \</span><br><span class="line">  --master-addr `dig +short redis-1.redis.default.svc.cluster.local`:6379 \</span><br><span class="line">  --slave-addr `dig +short redis-4.redis.default.svc.cluster.local`:6379</span><br><span class="line">  </span><br><span class="line">redis-trib.py replicate \</span><br><span class="line">  --master-addr `dig +short redis-2.redis.default.svc.cluster.local`:6379 \</span><br><span class="line">  --slave-addr `dig +short redis-5.redis.default.svc.cluster.local`:6379</span><br></pre></td></tr></table></figure>
+
+<p>到这里我们的集群就初始化成功了。</p>
+<p>我们可以进入其中一个redis节点看看。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">kubectl <span class="built_in">exec</span> -it redis-0 /bin/bash</span><br><span class="line"></span><br><span class="line">root@redis-0:/data<span class="comment"># redis-cli -c</span></span><br><span class="line">127.0.0.1:6379&gt; cluster nodes</span><br><span class="line">c0309e16b8d0727a4ad2cbe939ec59caac46e37d 10.42.0.93:6379@16379 slave 06809780e7800808a217eafb35f8cee395f51820 0 1721305716101 2 connected</span><br><span class="line">8a63ab6b6e6b1db63855afdf604646e7f0145348 10.42.1.60:6379@16379 myself,master - 0 1721305715000 1 connected 10923-16383</span><br><span class="line">956ebaec5cd6ac4b0970f823808bee6c076dcbe8 10.42.2.60:6379@16379 master - 0 1721305714591 4 connected 0-5461</span><br><span class="line">06809780e7800808a217eafb35f8cee395f51820 10.42.0.92:6379@16379 master - 0 1721305714592 2 connected 5462-10922</span><br><span class="line">f8effa58385f8941a193dfadbf2e90d018ca1c19 10.42.1.59:6379@16379 slave 956ebaec5cd6ac4b0970f823808bee6c076dcbe8 0 1721305715094 4 connected</span><br><span class="line">2937328a1fb97f0c21d203d24039e3f4f4e49da3 10.42.2.61:6379@16379 slave 8a63ab6b6e6b1db63855afdf604646e7f0145348 0 1721305716504 1 connected</span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; cluster info</span><br><span class="line">cluster_state:ok</span><br><span class="line">cluster_slots_assigned:16384</span><br><span class="line">cluster_slots_ok:16384</span><br><span class="line">cluster_slots_pfail:0</span><br><span class="line">cluster_slots_fail:0</span><br><span class="line">cluster_known_nodes:6</span><br><span class="line">cluster_size:3</span><br><span class="line">cluster_current_epoch:4</span><br><span class="line">cluster_my_epoch:1</span><br><span class="line">cluster_stats_messages_ping_sent:555</span><br><span class="line">cluster_stats_messages_pong_sent:549</span><br><span class="line">cluster_stats_messages_meet_sent:2</span><br><span class="line">cluster_stats_messages_sent:1106</span><br><span class="line">cluster_stats_messages_ping_received:549</span><br><span class="line">cluster_stats_messages_pong_received:557</span><br><span class="line">cluster_stats_messages_received:1106</span><br><span class="line">total_cluster_links_buffer_limit_exceeded:0</span><br></pre></td></tr></table></figure>
+
+<p>创建一个nodePort服务供外部访问看看</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis-access-service</span></span><br><span class="line">  <span class="attr">labels:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">redis</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">NodePort</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">redis-port</span></span><br><span class="line">    <span class="attr">port:</span> <span class="number">6379</span></span><br><span class="line">    <span class="attr">targetPort:</span> <span class="number">6379</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">redis</span></span><br></pre></td></tr></table></figure>
+
+<p>注意这里像<code>another redis desktop manager</code>这样的软件不能勾选cluster，因为它识别的所有节点都是内部ip。直接正常连接就行。</p>
+<p>这里我们直接删除redis-0，观察redis-3日志</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">1:S 18 Jul 2024 12:38:37.534 * Marking node 8a63ab6b6e6b1db63855afdf604646e7f0145348 as failing (quorum reached).</span><br><span class="line">1:S 18 Jul 2024 12:38:37.534 # Cluster state changed: fail</span><br><span class="line">1:S 18 Jul 2024 12:38:37.563 # Start of election delayed for 919 milliseconds (rank #0, offset 1171).</span><br><span class="line">1:S 18 Jul 2024 12:38:38.569 # Starting a failover election for epoch 5.</span><br><span class="line">1:S 18 Jul 2024 12:38:38.576 # Failover election won: I&#x27;m the new master.</span><br><span class="line">1:S 18 Jul 2024 12:38:38.576 # configEpoch set to 5 after successful failover</span><br><span class="line">1:M 18 Jul 2024 12:38:38.576 * Discarding previously cached master state.</span><br><span class="line">1:M 18 Jul 2024 12:38:38.576 # Setting secondary replication ID to 793c7bf0d23ad2480d10ebddeef4de92500b7f41, valid up to offset: 1172. New replication ID is d4170f01b37dbd48ab2898ff8cd2404a7025a2b7</span><br><span class="line">1:M 18 Jul 2024 12:38:38.577 # Cluster state changed: ok</span><br></pre></td></tr></table></figure>
+
+<p>可以看到此时redis-3晋升为master，进入控制台后也可以使用role命令查看。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">root@redis-3:/data# redis-cli</span><br><span class="line">127.0.0.1:6379&gt; role</span><br><span class="line">1) &quot;master&quot;</span><br><span class="line">2) (integer) 1171</span><br><span class="line">3) (empty array)</span><br><span class="line">127.0.0.1:6379&gt; </span><br></pre></td></tr></table></figure>
+
+<p>但此时新的问题来了，redis-0重新部署后加不到集群中了。我们在redis-3中执行<code>cluster nodes</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">root@redis-3:/data# redis-cli</span><br><span class="line">127.0.0.1:6379&gt; cluster nodes</span><br><span class="line">956ebaec5cd6ac4b0970f823808bee6c076dcbe8 10.42.2.60:6379@16379 master - 0 1721306662601 4 connected 0-5461</span><br><span class="line">c0309e16b8d0727a4ad2cbe939ec59caac46e37d 10.42.0.93:6379@16379 slave 06809780e7800808a217eafb35f8cee395f51820 0 1721306663005 2 connected</span><br><span class="line">f8effa58385f8941a193dfadbf2e90d018ca1c19 10.42.1.59:6379@16379 slave 956ebaec5cd6ac4b0970f823808bee6c076dcbe8 0 1721306662000 4 connected</span><br><span class="line">2937328a1fb97f0c21d203d24039e3f4f4e49da3 10.42.2.61:6379@16379 myself,master - 0 1721306661000 5 connected 10923-16383</span><br><span class="line">8a63ab6b6e6b1db63855afdf604646e7f0145348 10.42.1.60:6379@16379 master,fail - 1721306312230 1721306309711 1 connected</span><br><span class="line">06809780e7800808a217eafb35f8cee395f51820 10.42.0.92:6379@16379 master - 0 1721306662000 2 connected 5462-10922</span><br></pre></td></tr></table></figure>
+
+<p>发现有一个节点fail了，而在redis-0中执行则发现只有自己一个节点。</p>
+<p>再尝试下停掉其他master节点，也是如此。难道网上教程又不靠谱了？经过我的思考，大概知道是为什么了，原因出现在存储上，原文中每个节点的/data/redis.conf都是共用的，作者使用了一个nfs的卷再结合ReadWriteMany将存储共用。而我这里采用的是临时卷，所以节点重启后读取不到原先的/data/redis.conf就会自己创建导致加入不了集群。</p>
+<p>那咋办呢，结合前面的ceph-rbd创建PVC吧。走起。这里其实不一定要共用存储，每个节点创建一个单独的存储也是ok的。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">StatefulSet</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">serviceName:</span> <span class="string">redis</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">6</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">redis</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">redis</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">terminationGracePeriodSeconds:</span> <span class="number">20</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">redis</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">redis:7.0</span></span><br><span class="line">        <span class="attr">args:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="string">&quot;/conf/redis.conf&quot;</span></span><br><span class="line">        <span class="attr">ports:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">redis</span></span><br><span class="line">              <span class="attr">containerPort:</span> <span class="number">6379</span></span><br><span class="line">              <span class="attr">protocol:</span> <span class="string">&quot;TCP&quot;</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">cluster</span></span><br><span class="line">              <span class="attr">containerPort:</span> <span class="number">16379</span></span><br><span class="line">              <span class="attr">protocol:</span> <span class="string">&quot;TCP&quot;</span></span><br><span class="line">        <span class="attr">volumeMounts:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">redis-conf</span></span><br><span class="line">            <span class="attr">mountPath:</span> <span class="string">/conf/</span></span><br><span class="line">          <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">redis-data</span></span><br><span class="line">            <span class="attr">mountPath:</span> <span class="string">/data</span></span><br><span class="line">      <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">redis-conf</span></span><br><span class="line">        <span class="attr">configMap:</span></span><br><span class="line">          <span class="attr">name:</span> <span class="string">redis-config-map</span></span><br><span class="line">          <span class="attr">items:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">redis.conf</span></span><br><span class="line">              <span class="attr">path:</span> <span class="string">redis.conf</span></span><br><span class="line">  <span class="attr">volumeClaimTemplates:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">redis-data</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">accessModes:</span> [ <span class="string">&quot;ReadWriteOnce&quot;</span> ]</span><br><span class="line">      <span class="attr">storageClassName:</span> <span class="string">&quot;csi-rbd-sc&quot;</span></span><br><span class="line">      <span class="attr">resources:</span></span><br><span class="line">        <span class="attr">requests:</span></span><br><span class="line">          <span class="attr">storage:</span> <span class="string">1Gi</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">redis</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">redis</span></span><br><span class="line">  <span class="attr">clusterIP:</span> <span class="string">None</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">6379</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">redis</span></span><br><span class="line"><span class="meta">---</span></span><br></pre></td></tr></table></figure>
+
+<p>再重新重建集群。这里不再赘述。</p>
+<p>删除redis-0，查看集群是否能自恢复。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">root@redis-0:/data<span class="comment"># redis-cli</span></span><br><span class="line">127.0.0.1:6379&gt; cluster nodes</span><br><span class="line">4cf82b83963d3a5178d4d73db2080934e9d5f0a1 10.42.1.65:6379@16379 slave 33207c0188005e553000a456fb2d41f9d341eb05 0 1721308687541 3 connected</span><br><span class="line">1c978c4a36bb5f954411b2a965e2258915b4dfdc 10.42.0.95:6379@16379 slave 31e0da6c88f0d4954123b6d7df2de37967938696 0 1721308686531 2 connected</span><br><span class="line">3181437aa3fd71108a6c1616de15fa8e42d6add7 10.42.1.64:6379@16379 myself,slave cf9eb6aa26822f32decf9f3047c7cb606f677a1a 0 1721308685000 4 connected</span><br><span class="line">31e0da6c88f0d4954123b6d7df2de37967938696 10.42.0.94:6379@16379 master - 0 1721308686000 2 connected 0-5461</span><br><span class="line">33207c0188005e553000a456fb2d41f9d341eb05 10.42.2.66:6379@16379 master - 0 1721308686000 3 connected 10923-16383</span><br><span class="line">cf9eb6aa26822f32decf9f3047c7cb606f677a1a 10.42.2.67:6379@16379 master - 0 1721308686000 4 connected 5462-10922</span><br><span class="line">127.0.0.1:6379&gt; role</span><br><span class="line">1) <span class="string">&quot;slave&quot;</span></span><br><span class="line">2) <span class="string">&quot;10.42.2.67&quot;</span></span><br><span class="line">3) (<span class="built_in">integer</span>) 6379</span><br><span class="line">4) <span class="string">&quot;connected&quot;</span></span><br><span class="line">5) (<span class="built_in">integer</span>) 224</span><br><span class="line">127.0.0.1:6379&gt;</span><br></pre></td></tr></table></figure>
+
+<p>欸，发现redis-0成功变为了slave。</p>
+<p>至此，cluster集群的搭建就完成了。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>这篇文章整体下来，写了好几天，原本以为哨兵模式也可以简单搭建，没想到也是有点复杂的。中途还有面试和复盘要做，断断续续的。不过好在也算是了解了一些redis高可用集群的搭建。  </p>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>原文作者：<a href="https://re0.top">Zer0e</a>
+            <p>原文链接：<a href="https://re0.top/2024/07/16/devops5/">https://re0.top/2024/07/16/devops5/</a>
+            <p>发表日期：<a href="https://re0.top/2024/07/16/devops5/">July 16th 2024, 9:30:00 pm</a>
+            <p>更新日期：<a href="https://re0.top/2024/07/16/devops5/">July 18th 2024, 9:29:13 pm</a>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2024/07/17/2024-07-17-replay/" title= "2024面试复盘5">
+                    <div class="nextTitle">2024面试复盘5</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2024/07/16/2024-07-16-replay/" title= "2024面试复盘4">
+                    <div class="prevTitle">2024面试复盘4</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:zcluslloye@gmail.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/zer0e" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+            
+                <a href="https://t.me/zer009" class="iconfont-archer telegram" target="_blank" title=telegram></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+	<div class="copyright">
+		<span id="hexo-power">Hosted by <a href="https://pages.coding.me" target="_blank">Coding Pages</a></span>
+	</div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%AD%A3%E6%96%87"><span class="toc-number">2.</span> <span class="toc-text">正文</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BB%E4%BB%8E%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.1.</span> <span class="toc-text">主从模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%93%A8%E5%85%B5%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.2.</span> <span class="toc-text">哨兵模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Cluster%E6%A8%A1%E5%BC%8F"><span class="toc-number">2.3.</span> <span class="toc-text">Cluster模式</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 91
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2024 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/17</span><a class="archive-post-title" href= "/2024/07/17/2024-07-17-replay/" >2024面试复盘5</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2024/07/16/devops5/" >【架构之路5】搭建redis集群</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2024/07/16/2024-07-16-replay/" >2024面试复盘4</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2024/07/15/2024-07-15-replay/" >2024面试复盘3</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/12</span><a class="archive-post-title" href= "/2024/07/12/devops4/" >【架构之路4】k8s对接ceph-rbd</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span><a class="archive-post-title" href= "/2024/07/11/devops3/" >【架构之路3】k8s对接cephfs</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span><a class="archive-post-title" href= "/2024/07/11/devops2/" >【架构之路2】ceph集群搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2024/07/10/devops1/" >【架构之路1】k8s集群搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2024/07/10/devops0/" >从0.5开始的运维架构之路0</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2024/06/24/2024-06-24-replay/" >2024面试复盘2</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/23</span><a class="archive-post-title" href= "/2024/06/23/2024-06-23-replay/" >2024面试复盘1</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2024/06/11/2024-resign/" >写于6月离职之后</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2024/01/01/2023-summary/" >2023年度总结</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/31</span><a class="archive-post-title" href= "/2022/12/31/2022-2023/" >2022年度总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2022/04/08/devtools/" >devtools协议分析与自动化录制实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2022/01/01/2022-first/" >由于代码架构设计不佳而引发的异常消失</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/08</span><a class="archive-post-title" href= "/2021/06/08/zbot/" >zbot架构畅谈</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/05</span><a class="archive-post-title" href= "/2021/04/05/bsgamesdk-re/" >对bsgamesdk的签名逆向分析</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span><a class="archive-post-title" href= "/2020/12/13/autoConfiguration/" >浅谈Spring Boot自动配置</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href= "/2020/11/01/transaction_isolation/" >回顾数据库事务隔离级别</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/09</span><a class="archive-post-title" href= "/2020/10/09/snowflake/" >浅谈雪花算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/design_patterns/" >谈谈设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/composite_pattern/" >设计模式之组合模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/flyweight_pattern/" >设计模式之享元模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span><a class="archive-post-title" href= "/2020/09/14/builder_pattern/" >设计模式之构建模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2020/09/13/arraylist_resize/" >ArrayList扩容之后内存地址会发生改变吗？</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2020/09/13/jmm/" >浅谈Java内存模型</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2020/09/08/visitor_pattern/" >设计模式之访问者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2020/09/08/template_method_pattern/" >设计模式之模板方法模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/memento_pattern/" >设计模式之备忘录模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/state_pattern/" >设计模式之状态模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2020/09/05/interpreter_pattern/" >设计模式之解释器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2020/09/05/chain_of_responsibility_pattern/" >设计模式之责任链模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2020/09/04/bridge_patterns/" >设计模式之桥接模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2020/09/02/prototype_pattern/" >设计模式之原型模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/29</span><a class="archive-post-title" href= "/2020/08/29/lambda/" >由lambda表达式引发的思考</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/27</span><a class="archive-post-title" href= "/2020/08/27/iterator_pattern/" >设计模式之迭代器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/27</span><a class="archive-post-title" href= "/2020/08/27/strategy_pattern/" >设计模式之策略模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/22</span><a class="archive-post-title" href= "/2020/08/22/adapter_pattern/" >设计模式之适配器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/19</span><a class="archive-post-title" href= "/2020/08/19/sql_concurrent/" >谈一道数据库更新的并发问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span><a class="archive-post-title" href= "/2020/08/17/decorator_pattern/" >设计模式之装饰器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span><a class="archive-post-title" href= "/2020/08/17/command_pattern/" >设计模式之命令模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/16</span><a class="archive-post-title" href= "/2020/08/16/facade_pattern/" >设计模式之外观模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/14</span><a class="archive-post-title" href= "/2020/08/14/lock_class/" >谈谈锁的种类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/13</span><a class="archive-post-title" href= "/2020/08/13/abstract_factory_pattern/" >设计模式之抽象工厂模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2020/08/12/mediator_pattern/" >设计模式之中介者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2020/08/12/factory_pattern/" >设计模式之工厂模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2020/08/10/spring_aop/" >浅谈Spring AOP</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2020/08/10/proxy_pattern/" >设计模式之代理模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/08</span><a class="archive-post-title" href= "/2020/08/08/observer/" >设计模式之观察者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/07</span><a class="archive-post-title" href= "/2020/08/07/singleton/" >设计模式之单例模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/06</span><a class="archive-post-title" href= "/2020/08/06/spring_ioc/" >谈谈Spring IoC</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2020/07/24/java_thread_pool/" >浅谈Java线程池</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/20</span><a class="archive-post-title" href= "/2020/07/20/dp3/" >浅谈动态规划Ⅲ</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/04</span><a class="archive-post-title" href= "/2020/07/04/database_master_slave/" >浅谈数据库主从复制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2020/06/24/load_balancing_algorithm/" >常见的负载均衡算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2020/06/15/load_balancing/" >浅谈负载均衡</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/14</span><a class="archive-post-title" href= "/2020/06/14/high_concurrency/" >浅谈高并发引起的问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/dp2/" >浅谈动态规划Ⅱ</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span><a class="archive-post-title" href= "/2020/05/13/topk/" >TopK问题与快速选择算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2020/04/29/binary_search/" >几种二分查找的模板与理解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/05</span><a class="archive-post-title" href= "/2020/04/05/dp1/" >浅谈动态规划</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2020/03/30/tree-traversal2/" >二叉树的广度优先(层次)遍历</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2020/03/30/tree-traversal/" >二叉树的前中后序遍历</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/24</span><a class="archive-post-title" href= "/2020/03/24/celery/" >初探celery任务队列</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/22</span><a class="archive-post-title" href= "/2020/03/22/java-reflection/" >理解Java反射</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span><a class="archive-post-title" href= "/2020/03/11/python-sync/" >浅谈python异步编程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/04</span><a class="archive-post-title" href= "/2020/03/04/python-copy/" >浅谈python中的引用与拷贝</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span><a class="archive-post-title" href= "/2020/02/10/spring-annotation/" >Springboot常用注解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/05</span><a class="archive-post-title" href= "/2020/01/05/dns-cache-pollution/" >DNS投毒分析</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href= "/2019/11/12/2019-11-12/" >谈一谈最近</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2019/04/01/ngrok/" >使用ngrok实现内网远程桌面</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href= "/2018/11/12/hctf2018wp/" >HCTF2018 web部分Writeup</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2018/11/02/js-prototype/" >浅谈JavaScript中的原型链</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2018/10/10/xssbot1/" >从零开始完成xssbot</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/12</span><a class="archive-post-title" href= "/2018/07/12/csp/" >浅谈CSP内容安全策略</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/07</span><a class="archive-post-title" href= "/2018/06/07/mergesort/" >经典算法之归并排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/02</span><a class="archive-post-title" href= "/2018/06/02/quicksort/" >经典算法之快速排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/28</span><a class="archive-post-title" href= "/2018/05/28/linux-shell/" >Linux下反弹shell的几种方式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/11</span><a class="archive-post-title" href= "/2018/05/11/selectsort/" >经典算法之选择排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2018/04/24/docker/" >docker常用命令汇总</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/11</span><a class="archive-post-title" href= "/2018/04/11/bubblesort/" >经典算法之冒泡排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2018/03/30/php-weak1/" >PHP弱类型总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/29</span><a class="archive-post-title" href= "/2018/03/29/second-sqli/" >记一次有趣的二次注入</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/23</span><a class="archive-post-title" href= "/2018/03/23/polynomial/" >单向链表的学习</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2018/03/18/hgame-misc/" >misc入门总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/14</span><a class="archive-post-title" href= "/2018/03/14/shuffle/" >常见的洗牌算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/hgame-web/" >CTF入门(坑)总结——web篇</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span><a class="archive-post-title" href= "/2018/03/10/maze/" >使用递归算法解决迷宫问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span><a class="archive-post-title" href= "/2018/03/10/resolve-number/" >实现整数的所有划分数</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span><a class="archive-post-title" href= "/2018/03/10/talk-about-blog/" >谈一谈博客</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
+    
+        <span class="sidebar-tag-name" data-tags="编程"><span class="iconfont-archer">&#xe606;</span>编程</span>
+    
+        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
+    
+        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
+    
+        <span class="sidebar-tag-name" data-tags="设计模式"><span class="iconfont-archer">&#xe606;</span>设计模式</span>
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
+    
+        <span class="sidebar-tag-name" data-tags="Android"><span class="iconfont-archer">&#xe606;</span>Android</span>
+    
+        <span class="sidebar-tag-name" data-tags="数据库"><span class="iconfont-archer">&#xe606;</span>数据库</span>
+    
+        <span class="sidebar-tag-name" data-tags="web"><span class="iconfont-archer">&#xe606;</span>web</span>
+    
+        <span class="sidebar-tag-name" data-tags="自动化测试"><span class="iconfont-archer">&#xe606;</span>自动化测试</span>
+    
+        <span class="sidebar-tag-name" data-tags="linux"><span class="iconfont-archer">&#xe606;</span>linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="CTF"><span class="iconfont-archer">&#xe606;</span>CTF</span>
+    
+        <span class="sidebar-tag-name" data-tags="misc"><span class="iconfont-archer">&#xe606;</span>misc</span>
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
+    
+        <span class="sidebar-tag-name" data-tags="分布式"><span class="iconfont-archer">&#xe606;</span>分布式</span>
+    
+        <span class="sidebar-tag-name" data-tags="运维"><span class="iconfont-archer">&#xe606;</span>运维</span>
+    
+        <span class="sidebar-tag-name" data-tags="从0.5开始的运维架构之路"><span class="iconfont-archer">&#xe606;</span>从0.5开始的运维架构之路</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Zer0e"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    <script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"model":{"jsonPath":"/live2dw/assets/koharu.model.json"},"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>
+
+

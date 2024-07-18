@@ -466,7 +466,7 @@ height:50vh;
 </tr>
 </tbody></table>
 <p>如果需要日志采集追求高吞吐量，那么采用kafka；Rabbitmq使用简单，但是不利于二次开发。Rocketmq背靠阿里，成也如此败也如此，阿里的开源贡献很大，但是很多项目稳定后社区经常陷入停滞，不过阿里内部既然在使用，那么说明它的性能和可靠性有保证。</p>
-<h2 id="xxljob原理"><a href="#xxljob原理" class="headerlink" title="xxljob原理"></a>xxljob原理</h2><p>xxl-job是一个分布式的定时任务调度平台。主要分为admin和executor，**    ** </p>
+<h2 id="xxljob原理"><a href="#xxljob原理" class="headerlink" title="xxljob原理"></a>xxljob原理</h2><p>xxl-job是一个分布式的定时任务调度平台。主要分为admin和executor</p>
 <p><strong>xxl-job其实也是在quartz的基础上实现的，但是修改了任务调度的模式，并且任务调度采用注册和RPC调用方式来实现</strong>。2.1.0版本前核心调度模块都是基于<code>quartz</code>框架，2.1.0版本开始自研调度组件，移除<code>quartz</code>依赖 ，使用时间轮调度。</p>
 <p><code>xxl_job_info</code>表是<strong>记录定时任务</strong>的db表，里面有个<code>trigger_next_time（Long）</code>字段，表示下一次触发的时间点任务时间被修改 / 每一次任务触发后，可以根据<code>cronb</code>表达式计算下一次触发时间戳：<code>Date nextValidTime = new CronExpression(jobInfo.getJobCron()).getNextValidTimeAfter(new Date()))</code></p>
 <p>定时执行任务逻辑: </p>
@@ -521,13 +521,18 @@ height:50vh;
             <p>原文作者：<a href="https://re0.top">Zer0e</a>
             <p>原文链接：<a href="https://re0.top/2024/07/16/2024-07-16-replay/">https://re0.top/2024/07/16/2024-07-16-replay/</a>
             <p>发表日期：<a href="https://re0.top/2024/07/16/2024-07-16-replay/">七月 16日 2024, 3:00:00 下午</a>
-            <p>更新日期：<a href="https://re0.top/2024/07/16/2024-07-16-replay/">July 16th 2024, 5:00:58 pm</a>
+            <p>更新日期：<a href="https://re0.top/2024/07/16/2024-07-16-replay/">July 18th 2024, 9:24:11 pm</a>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
     <!-- paginator  -->
     <ul class="post-paginator">
         <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2024/07/16/devops5/" title= "【架构之路5】搭建redis集群">
+                    <div class="nextTitle">【架构之路5】搭建redis集群</div>
+                </a>
             
         </li>
         <li class="previous">
@@ -1295,9 +1300,23 @@ top:50vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 89
+        Total : 91
         </div>
         <!-- search  -->
         
@@ -1310,6 +1329,16 @@ top:50vh;
     
     <div class="archive-year"> 2024 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/17</span><a class="archive-post-title" href= "/2024/07/17/2024-07-17-replay/" >2024面试复盘5</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2024/07/16/devops5/" >【架构之路5】搭建redis集群</a>
+        </li>
     
     
         <li class="archive-post-item">

@@ -1,0 +1,2144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Zer0e">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Zer0e">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>2024面试复盘5 · Zer0e&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Zer0e&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">2024面试复盘5</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Zer0e's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            2024面试复盘5
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "随想">随想</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">6.7k</span>阅读时长: <span class="post-count reading-time">23 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2024/07/17</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>当我想好好复盘一下的时候总是通知我面试。怪不得说找工作是一件很辛苦的事情，既要找机会，又要面试，又要复盘，又要改简历，中途还得穿插学习，有点顶不住，忙里偷闲复盘一下。</p>
+<h1 id="复盘"><a href="#复盘" class="headerlink" title="复盘"></a>复盘</h1><p>两个面试放在一起讲了。一个都在问项目另一个八股文比较多。</p>
+<h2 id="项目"><a href="#项目" class="headerlink" title="项目"></a>项目</h2><p>深挖项目，无言。</p>
+<ol>
+<li>任务分片怎么做？</li>
+<li>优化点？</li>
+</ol>
+<h2 id="java和python多线程什么差别？"><a href="#java和python多线程什么差别？" class="headerlink" title="java和python多线程什么差别？"></a>java和python多线程什么差别？</h2><p>原回答：python一般使用threading.Thread直接创建线程，java里一般采用线程池管理线程。python的多线程无法利用到多核优势。</p>
+<p>网上看别人的回答：1.python不是真正的多线程。(GIL的问题)2.Java中，每个线程都有自己的堆栈空间，线程之间的堆栈空间是独立的。Python中，所有线程共享相同的内存空间，因此需要特别小心避免数据竞争和死锁。</p>
+<h2 id="工作最大的挑战是什么？"><a href="#工作最大的挑战是什么？" class="headerlink" title="工作最大的挑战是什么？"></a>工作最大的挑战是什么？</h2><p>项目管理和统筹。</p>
+<h2 id="最近有看什么书"><a href="#最近有看什么书" class="headerlink" title="最近有看什么书"></a>最近有看什么书</h2><p>复盘+。当然也没看多少，时间根本不够。</p>
+<h2 id="多线程编程时，如何确保数据安全"><a href="#多线程编程时，如何确保数据安全" class="headerlink" title="多线程编程时，如何确保数据安全"></a>多线程编程时，如何确保数据安全</h2><p>加锁是比较实用的操作。</p>
+<h2 id="常用的锁？"><a href="#常用的锁？" class="headerlink" title="常用的锁？"></a>常用的锁？</h2><p>java里就是synchronized还有lock，其他的有分布式锁。</p>
+<h2 id="synchronized关键字和java里的可重入锁有什么区别"><a href="#synchronized关键字和java里的可重入锁有什么区别" class="headerlink" title="synchronized关键字和java里的可重入锁有什么区别"></a>synchronized关键字和java里的可重入锁有什么区别</h2><p>这里面试官应该是想说synchronized和ReentrantLock。因为synchronized也是可重入的。</p>
+<ol>
+<li>两者都是可重入锁。</li>
+<li>ReentrantLock可以支持公平和非公平。</li>
+<li>ReentrantLock提供了一种能够中断等待锁的线程的机制，通过 <code>lock.lockInterruptibly()</code> 来实现这个机制。也就是说正在等待的线程可以选择放弃等待，改为处理其他事情。</li>
+<li><strong>可实现选择性通知（锁可以绑定多个条件）</strong>: <code>synchronized</code>关键字与<code>wait()</code>和<code>notify()</code>/<code>notifyAll()</code>方法相结合可以实现等待/通知机制。<code>ReentrantLock</code>类当然也可以实现，但是需要借助于<code>Condition</code>接口与<code>newCondition()</code>方法。</li>
+</ol>
+<h2 id="synchronized关键字加在普通方法和静态方法有什么区别"><a href="#synchronized关键字加在普通方法和静态方法有什么区别" class="headerlink" title="synchronized关键字加在普通方法和静态方法有什么区别"></a>synchronized关键字加在普通方法和静态方法有什么区别</h2><ul>
+<li><strong>修饰实例方法</strong> （锁当前对象实例）</li>
+<li><strong>修饰静态方法</strong> （锁当前类）</li>
+<li><strong>修饰代码块</strong> （锁指定对象/类）</li>
+</ul>
+<h2 id="线程池的几个常用参数"><a href="#线程池的几个常用参数" class="headerlink" title="线程池的几个常用参数"></a>线程池的几个常用参数</h2><p><code>ThreadPoolExecutor</code> 3 个最重要的参数：</p>
+<ul>
+<li><code>corePoolSize</code> : 任务队列未达到队列容量时，最大可以同时运行的线程数量。</li>
+<li><code>maximumPoolSize</code> : 任务队列中存放的任务达到队列容量的时候，当前可以同时运行的线程数量变为最大线程数。</li>
+<li><code>workQueue</code>: 新任务来的时候会先判断当前运行的线程数量是否达到核心线程数，如果达到的话，新任务就会被存放在队列中。</li>
+</ul>
+<p><code>ThreadPoolExecutor</code>其他常见参数 :</p>
+<ul>
+<li><code>keepAliveTime</code>:线程池中的线程数量大于 <code>corePoolSize</code> 的时候，如果这时没有新的任务提交，核心线程外的线程不会立即销毁，而是会等待，直到等待的时间超过了 <code>keepAliveTime</code>才会被回收销毁。</li>
+<li><code>unit</code> : <code>keepAliveTime</code> 参数的时间单位。</li>
+<li><code>threadFactory</code> :executor 创建新线程的时候会用到。</li>
+<li><code>handler</code> :拒绝策略（后面会单独详细介绍一下）。</li>
+</ul>
+<h2 id="常见拒绝策略策略"><a href="#常见拒绝策略策略" class="headerlink" title="常见拒绝策略策略"></a>常见拒绝策略策略</h2><p><code>ThreadPoolExecutor.AbortPolicy</code>：抛出 <code>RejectedExecutionException</code>来拒绝新任务的处理。</p>
+<p><code>ThreadPoolExecutor.CallerRunsPolicy</code>：调用执行自己的线程运行任务，也就是直接在调用<code>execute</code>方法的线程中运行(<code>run</code>)被拒绝的任务，如果执行程序已关闭，则会丢弃该任务。因此这种策略会降低对于新任务提交速度，影响程序的整体性能。如果你的应用程序可以承受此延迟并且你要求任何一个任务请求都要被执行的话，你可以选择这个策略。</p>
+<p><code>ThreadPoolExecutor.DiscardPolicy</code>：不处理新任务，直接丢弃掉。</p>
+<p><code>ThreadPoolExecutor.DiscardOldestPolicy</code>：此策略将丢弃最早的未处理的任务请求。</p>
+<h2 id="多线程导致死锁的原因"><a href="#多线程导致死锁的原因" class="headerlink" title="多线程导致死锁的原因"></a>多线程导致死锁的原因</h2><ul>
+<li><p>互斥条件：该资源任意一个时刻只由一个线程占用。</p>
+</li>
+<li><p>请求与保持条件：一个线程因请求资源而阻塞时，对已获得的资源保持不放。</p>
+</li>
+<li><p>不剥夺条件:线程已获得的资源在未使用完之前不能被其他线程强行剥夺，只有自己使用完毕后才释放资源。</p>
+</li>
+<li><p>循环等待条件:若干线程之间形成一种头尾相接的循环等待资源关系。</p>
+</li>
+</ul>
+<h2 id="死锁的检测和避免"><a href="#死锁的检测和避免" class="headerlink" title="死锁的检测和避免"></a>死锁的检测和避免</h2><p>使用<code>jmap</code>、<code>jstack</code>等命令查看 JVM 线程栈和堆内存的情况。如果有死锁，<code>jstack</code> 的输出中通常会有 <code>Found one Java-level deadlock:</code>的字样，后面会跟着死锁相关的线程信息。另外，实际项目中还可以搭配使用<code>top</code>、<code>df</code>、<code>free</code>等命令查看操作系统的基本情况，出现死锁可能会导致 CPU、内存等资源消耗过高。</p>
+<p><strong>如何预防死锁？</strong> 破坏死锁的产生的必要条件即可：</p>
+<ol>
+<li><strong>破坏请求与保持条件</strong>：一次性申请所有的资源。</li>
+<li><strong>破坏不剥夺条件</strong>：占用部分资源的线程进一步申请其他资源时，如果申请不到，可以主动释放它占有的资源。</li>
+<li><strong>破坏循环等待条件</strong>：靠按序申请资源来预防。按某一顺序申请资源，释放资源则反序释放。破坏循环等待条件。</li>
+</ol>
+<p>避免死锁就是在资源分配时，借助于算法（比如银行家算法）对资源分配进行计算评估，使其进入安全状态。</p>
+<h2 id="有一个任务需要等待几个子任务执行完成，需要怎么实现"><a href="#有一个任务需要等待几个子任务执行完成，需要怎么实现" class="headerlink" title="有一个任务需要等待几个子任务执行完成，需要怎么实现"></a>有一个任务需要等待几个子任务执行完成，需要怎么实现</h2><p>Semaphore，CountDownLatch， CyclicBarrier。</p>
+<p>假设有四个子任务</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> Semaphore semaphore = <span class="keyword">new</span> Semaphore(-<span class="number">4</span>);</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>;i&lt;<span class="number">4</span>;i++) &#123;</span><br><span class="line">    <span class="keyword">new</span> Thread(() -&gt; &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">        	<span class="comment">// 处理逻辑</span></span><br><span class="line">        &#125;<span class="keyword">finally</span> &#123;</span><br><span class="line">        	semaphore.release();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;).start();</span><br><span class="line">&#125;</span><br><span class="line">semaphore.acquire();</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> CountDownLatch countDownLatch = <span class="keyword">new</span> CountDownLatch(<span class="number">4</span>);</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>;i&lt;<span class="number">4</span>;i++) &#123;</span><br><span class="line">    <span class="keyword">new</span> Thread(() -&gt; &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">        	<span class="comment">// 处理逻辑</span></span><br><span class="line">        &#125;<span class="keyword">finally</span> &#123;</span><br><span class="line">        	countDownLatch.countDown();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;).start();</span><br><span class="line">&#125;</span><br><span class="line">countDownLatch.await();</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> CyclicBarrier cb = <span class="keyword">new</span> CyclicBarrier(<span class="number">5</span>);</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>;i&lt;<span class="number">4</span>;i++) &#123;</span><br><span class="line">    <span class="keyword">new</span> Thread(() -&gt; &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">        	<span class="comment">// 处理逻辑</span></span><br><span class="line">        &#125;<span class="keyword">finally</span> &#123;</span><br><span class="line">        	cb.await();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;).start();</span><br><span class="line">&#125;</span><br><span class="line">cb.await();</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="sql查询慢怎么排查？加了索引还是比较慢怎么排查"><a href="#sql查询慢怎么排查？加了索引还是比较慢怎么排查" class="headerlink" title="sql查询慢怎么排查？加了索引还是比较慢怎么排查"></a>sql查询慢怎么排查？加了索引还是比较慢怎么排查</h2><p>使用explain检查sql。</p>
+<p>优化手段：</p>
+<ol>
+<li>避免使用select * ，原因是会消耗更多CPU，增加带宽，无法使用mysql优化器覆盖索引的优化。</li>
+<li>分页优化。使用子查询或内连接，使用子查询的id作为主查询的条件。</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> `score`, `name` <span class="keyword">FROM</span> `cus_order`</span><br><span class="line"><span class="keyword">WHERE</span> id <span class="operator">&gt;=</span> (<span class="keyword">SELECT</span> id <span class="keyword">FROM</span> `cus_order` LIMIT <span class="number">1000000</span>, <span class="number">1</span>)</span><br><span class="line">LIMIT <span class="number">10</span>;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li><strong>尽量避免多表做 join</strong></li>
+<li><strong>建议不要使用外键与级联</strong></li>
+<li><strong>选择合适的字段类型</strong>。某些字符串可以转换成数字类型存储比如可以将 IP 地址转换成整型数据；对于非负型的数据 (如自增 ID,整型 IP，年龄) 来说,要优先使用无符号整型来存储；小数值类型（比如年龄、状态表示如 0/1）优先使用 TINYINT 类型；对于日期类型来说， 一定不要用字符串存储日期。可以考虑 DATETIME、TIMESTAMP 和 数值型时间戳；金额字段用 decimal，避免精度丢失；尽量使用自增 id 作为主键；不建议使用 NULL 作为列默认值；</li>
+</ol>
+<h2 id="索引失效的场景"><a href="#索引失效的场景" class="headerlink" title="索引失效的场景"></a>索引失效的场景</h2><ul>
+<li>SELECT * 不会直接导致索引失效（如果不走索引大概率是因为 where 查询范围过大导致的），但它可能会带来一些其他的性能问题比如造成网络传输和数据处理的浪费、无法使用索引覆盖;</li>
+<li>创建了组合索引，但查询条件未准守最左匹配原则;</li>
+<li>在索引列上进行计算、函数、类型转换等操作;</li>
+<li>以 % 开头的 LIKE 查询比如 LIKE ‘%abc’;;</li>
+<li>查询条件中使用 OR，且 OR 的前后条件中有一个列没有索引，涉及的索引都不会被使用到;</li>
+<li>IN 的取值范围较大时会导致索引失效，走全表扫描(NOT IN 和 IN 的失效场景相同);<br>发生<a target="_blank" rel="noopener" href="https://javaguide.cn/database/mysql/index-invalidation-caused-by-implicit-conversion.html">隐式转换</a>;</li>
+</ul>
+<h2 id="未满足最左匹配为什么会索引失效"><a href="#未满足最左匹配为什么会索引失效" class="headerlink" title="未满足最左匹配为什么会索引失效"></a>未满足最左匹配为什么会索引失效</h2><p>在 InnoDB 中联合索引只有先确定了前一个（左侧的值）后，才能确定下一个值。</p>
+<h2 id="innoDb索引结构？b-树有什么优点？"><a href="#innoDb索引结构？b-树有什么优点？" class="headerlink" title="innoDb索引结构？b+树有什么优点？"></a>innoDb索引结构？b+树有什么优点？</h2><p>innodb使用B+树。</p>
+<ol>
+<li>由于B+树在内部节点上不包含数据信息，因此在<strong>内存页中能够存放更多的key</strong>。 数据存放的更加紧密，具有更好的空间局部性。因此访问叶子节点上关联的数据也具有更好的缓存命中率。</li>
+<li>B+树的叶子结点都是相链的，因此对整棵树的便利只需要一次线性遍历叶子结点即可。而且由于数据顺序排列并且相连，所以便于<strong>区间查找和搜索</strong>。而B树则需要进行每一层的递归遍历。相邻的元素可能在内存中不相邻，所以缓存命中性没有B+树好。</li>
+</ol>
+<h2 id="代码里如何管理事务的？事务没生效的场景？"><a href="#代码里如何管理事务的？事务没生效的场景？" class="headerlink" title="代码里如何管理事务的？事务没生效的场景？"></a>代码里如何管理事务的？事务没生效的场景？</h2><p>声明式事务，@Transactional。当然也可以用代码手动开启一个事务，称作编程式事务。</p>
+<p>失效场景：</p>
+<ol>
+<li>没有被spring代理。如将注解标注在接口方法上，被final、static关键字修饰的类或方法，类方法内部调用</li>
+<li>框架不支持。非public修饰的方法，spring底层直接限制事务管理；多线程，一个事务是建立在一个数据库连接上的；数据库本身不支持事务，比如myisam</li>
+<li>错误使用@Transactional。错误的传播机制；rollbackFor设置错误，默认情况下事务仅回滚运行时异常和Error；内部异常被catch</li>
+</ol>
+<h2 id="分布式事务有用过吗？"><a href="#分布式事务有用过吗？" class="headerlink" title="分布式事务有用过吗？"></a>分布式事务有用过吗？</h2><p><strong>CAP 理论和 BASE 理论</strong>。<strong>CAP</strong> 也就是 <strong>Consistency（一致性）</strong>、<strong>Availability（可用性）</strong>、<strong>Partition Tolerance（分区容错性）</strong> 这三个单词首字母组合。</p>
+<p>CAP 定理（CAP theorem）指出对于一个分布式系统来说，当设计读写操作时，只能能同时满足以下三点中的两个：</p>
+<ul>
+<li><strong>一致性（Consistence）</strong> : 所有节点访问同一份最新的数据副本</li>
+<li><strong>可用性（Availability）</strong>: 非故障的节点在合理的时间内返回合理的响应（不是错误或者超时的响应）。</li>
+<li><strong>分区容错性（Partition tolerance）</strong> : 分布式系统出现网络分区的时候，仍然能够对外提供服务。</li>
+</ul>
+<p>CAP 理论中分区容错性 P 是一定要满足的，在此基础上，只能满足可用性 A 或者一致性 C。</p>
+<p><strong>为啥无同时保证 CA 呢？</strong></p>
+<p>举个例子：若系统出现“分区”，系统中的某个节点在进行写操作。为了保证 C， 必须要禁止其他节点的读写操作，这就和 A 发生冲突了。如果为了保证 A，其他节点的读写操作正常的话，那就和 C 发生冲突了。</p>
+<p><strong>选择的关键在于当前的业务场景，没有定论，比如对于需要确保强一致性的场景如银行一般会选择保证 CP 。</strong></p>
+<p><strong>BASE</strong> 是 <strong>Basically Available（基本可用）</strong> 、<strong>Soft-state（软状态）</strong> 和 <strong>Eventually Consistent（最终一致性）</strong> 三个短语的缩写。BASE 理论是对 CAP 中一致性 C 和可用性 A 权衡的结果，其来源于对大规模互联网系统分布式实践的总结，是基于 CAP 定理逐步演化而来的，它大大降低了我们对系统的要求。</p>
+<p><strong>BASE 理论本质上是对 CAP 的延伸和补充，更具体地说，是对 CAP 中 AP 方案的一个补充。</strong></p>
+<p>分布式一致性的 3 种级别：</p>
+<ol>
+<li><strong>强一致性</strong> ：系统写入了什么，读出来的就是什么。</li>
+<li><strong>弱一致性</strong> ：不一定可以读取到最新写入的值，也不保证多少时间之后读取到的数据是最新的，只是会尽量保证某个时刻达到数据一致的状态。</li>
+<li><strong>最终一致性</strong> ：弱一致性的升级版。，系统会保证在一定时间内达到数据一致的状态，</li>
+</ol>
+<p><strong>业界比较推崇是最终一致性级别，但是某些对数据一致要求十分严格的场景比如银行转账还是要保证强一致性。</strong></p>
+<p>分布式事务的解决方案有很多，比如：2PC、3PC、TCC、本地消息表、MQ 事务（Kafka 和 RocketMQ 都提供了事务相关功能） 、Saga 等等。</p>
+<p>2PC 将事务的提交过程分为 2 个阶段：准备阶段 和 提交阶段 。</p>
+<p>准备阶段的核心是“询问”事务参与者执行本地数据库事务操作是否成功。</p>
+<ol>
+<li>事务协调者/管理者（后文简称 TM） 向所有涉及到的 事务参与者（后文简称 RM） 发送消息询问：“你是否可以执行事务操作呢？”，并等待其答复。</li>
+<li>RM 接收到消息之后，开始执行本地数据库事务预操作比如写 redo log/undo log 日志，此时并不会提交事务 。</li>
+<li>RM 如果执行本地数据库事务操作成功，那就回复“Yes”表示我已就绪，否则就回复“No”表示我未就绪。</li>
+</ol>
+<p>提交阶段的核心是“询问”事务参与者提交本地事务是否成功。</p>
+<p>当所有事务参与者都是“就绪”状态的话：</p>
+<ol>
+<li>TM 向所有参与者发送消息：“你们可以提交事务啦！”（Commit 消息）</li>
+<li>RM 接收到 Commit 消息 后执行 提交本地数据库事务 操作，执行完成之后 释放整个事务期间所占用的资源。</li>
+<li>RM 回复：“事务已经提交” （ACK 消息）。</li>
+<li>TM 收到所有 事务参与者 的 ACK 消息 之后，整个分布式事务过程正式结束。</li>
+</ol>
+<p>当任一事务参与者是“未就绪”状态的话：</p>
+<ol>
+<li>TM 向所有参与者发送消息：“你们可以执行回滚操作了！”（Rollback 消息）。</li>
+<li>RM 接收到 Rollback 消息 后执行 本地数据库事务回滚 执行完成之后 释放整个事务期间所占用的资源。</li>
+<li>RM 回复：“事务已经回滚” （ACK 消息）。</li>
+<li>TM 收到所有 RM 的 ACK 消息 之后，中断事务。</li>
+</ol>
+<p>2PC 的优点：</p>
+<ul>
+<li>实现起来非常简单，各大主流数据库比如 MySQL、Oracle 都有自己实现。</li>
+<li>针对的是数据强一致性。不过，仍然可能存在数据不一致的情况。</li>
+</ul>
+<p>2PC 存在的问题：</p>
+<ul>
+<li>同步阻塞 ：事务参与者会在正式提交事务之前会一直占用相关的资源。比如用户小明转账给小红，那其他事务也要操作用户小明或小红的话，就会阻塞。</li>
+<li>数据不一致 ：由于网络问题或者TM宕机都有可能会造成数据不一致的情况。比如在第2阶段（提交阶段），部分网络出现问题导致部分参与者收不到 Commit/Rollback 消息的话，就会导致数据不一致。</li>
+<li>单点问题 ： TM在其中也是一个很重要的角色，如果TM在准备(Prepare)阶段完成之后挂掉的话，事务参与者就会一直卡在提交(Commit)阶段。</li>
+</ul>
+<p>3PC 是人们在 2PC 的基础上做了一些优化得到的。3PC 把 2PC 中的 准备阶段(Prepare) 做了进一步细化，分为 2 个阶段：</p>
+<ul>
+<li>准备阶段(CanCommit)</li>
+<li>预提交阶段(PreCommit)</li>
+</ul>
+<p>准备阶段 RM 不会执行事务操作，TM 只是向 RM 发送 准备请求 ，顺便询问一些信息比如事务参与者能否执行本地数据库事务操作。RM 回复“Yes”、“No”或者直接超时未回复。</p>
+<p>如果准备阶段所有的 RM 回复 “Yes”的话，TM 就会向所有的 RM 发送 PreCommit 消息（预提交请求） ，RM 收到消息之后会执行本地数据库事务预操作比如写 redo log/undo log 日志。</p>
+<p>如果准备阶段有任一 RM 回复“NO” 或者直接超时未回复的话，TM 就会给所有 RM 发送 Abort 消息（中断请求） ，RM 收到消息后直接中断事务。这样其实对 RM 来说损失并不大，因为本质上 RM 到现在还并没有实际做什么事情。</p>
+<p>如果 RM 成功的执行了事务预操作，就返回 “YES”。否则，返回“No”（最后的反悔机会）。</p>
+<p>预提交阶段 TM 与 RM 都引入了超时机制，如果 参与者 没有收到 TM 的 PreCommit 消息，或者 TM 没有收到参与者返回的预执行结果状态，那么在超过等待时间后，事务就会中断，这就避免了事务的阻塞。</p>
+<p>3PC 还同时在事务管理者和事务参与者中引入了 超时机制 ，如果在一定时间内没有收到事务参与者的消息就默认失败，进而避免事务参与者一直阻塞占用资源。2PC 中只有事务管理者才拥有超时机制，当事务参与者长时间无法与事务协调者通讯的情况下（比如协调者挂掉了），就会导致无法释放资源阻塞的问题。</p>
+<p>不过，3PC 并没有完美解决 2PC 的阻塞问题，引入了一些新问题比如性能糟糕，而且，依然存在数据不一致性问题。因此，3PC 的实际应用并不是很广泛，多数应用会选择通过复制状态机解决 2PC 的阻塞问题。</p>
+<p><strong>TCC（补偿事务）</strong></p>
+<ol>
+<li>Try（尝试）阶段 : 尝试执行。完成业务检查，并预留好必需的业务资源。</li>
+<li>Confirm（确认）阶段 ：确认执行。当所有事务参与者的 Try 阶段执行成功就会执行 Confirm ，Confirm 阶段会处理 Try 阶段预留的业务资源。否则，就会执行 Cancel 。</li>
+<li>Cancel（取消）阶段 ：取消执行，释放 Try 阶段预留的业务资源。</li>
+</ol>
+<p>TCC 模式不需要依赖于底层数据资源的事务支持，但是需要我们手动实现更多的代码，属于 侵入业务代码 的一种分布式解决方案。</p>
+<ul>
+<li>2PC/3PC 依靠数据库或者存储资源层面的事务，TCC 主要通过修改业务代码来实现。</li>
+<li>2PC/3PC 属于业务代码无侵入的，TCC 对业务代码有侵入。</li>
+<li>2PC/3PC 追求的是强一致性，在两阶段提交的整个过程中，一直会持有数据库的锁。TCC 追求的是最终一致性，不会一直持有各个业务资源的锁。</li>
+</ul>
+<p><strong>MQ 事务</strong></p>
+<p>RocketMQ 、 Kafka、Pulsar 、QMQ 都提供了事务相关的功能。事务允许事件流应用将消费，处理，生产消息整个过程定义为一个原子操作。</p>
+<ol>
+<li>MQ 发送方（比如物流服务）在消息队列上开启一个事务，然后发送一个“半消息”给 MQ Server/Broker。事务提交之前，半消息对于 MQ 订阅方/消费者（比如第三方通知服务）不可见</li>
+<li>“半消息”发送成功的话，MQ 发送方就开始执行本地事务。</li>
+<li>MQ 发送方的本地事务执行成功的话，“半消息”变成正常消息，可以正常被消费。MQ 发送方的本地事务执行失败的话，会直接回滚。</li>
+</ol>
+<p>MQ 的事务消息使用的是两阶段提交（2PC）</p>
+<h2 id="好的Java代码应该具备什么？"><a href="#好的Java代码应该具备什么？" class="headerlink" title="好的Java代码应该具备什么？"></a>好的Java代码应该具备什么？</h2><p>开放题，最关键的应该是代码可读。</p>
+<h2 id="面向对象编程的五个基本原则"><a href="#面向对象编程的五个基本原则" class="headerlink" title="面向对象编程的五个基本原则"></a>面向对象编程的五个基本原则</h2><p><strong>单一功能、开闭原则、里氏替换、接口隔离</strong>以及<strong>依赖反转</strong></p>
+<p>啊这，完全没印象了。</p>
+<h2 id="常用的设计模式？"><a href="#常用的设计模式？" class="headerlink" title="常用的设计模式？"></a>常用的设计模式？</h2><p>4年前写的一系列文章。需要再好好看看。</p>
+<h2 id="策略模式跟模板模式的区别"><a href="#策略模式跟模板模式的区别" class="headerlink" title="策略模式跟模板模式的区别"></a>策略模式跟模板模式的区别</h2><p><a href="https://re0.top/2020/08/27/strategy_pattern/">策略模式</a><br><a href="https://re0.top/2020/09/08/template_method_pattern/">模板方法模式</a></p>
+<p><code>模板模式一般只针对一套算法</code>，注重对同一个算法的不同细节进行抽象提供不同的实现。而<code>策略模式注重多套算法多套实现</code>，在算法中间不应该有交集，因此算法和算法只间一般不会有冗余代码！</p>
+<p>策略模式关注多种算法，模板模式关注一种算法。策略模式不同策略之间代码很少冗余。</p>
+<h2 id="redis的场景？分布式锁的场景？为什么采用redis做分布式锁？"><a href="#redis的场景？分布式锁的场景？为什么采用redis做分布式锁？" class="headerlink" title="redis的场景？分布式锁的场景？为什么采用redis做分布式锁？"></a>redis的场景？分布式锁的场景？为什么采用redis做分布式锁？</h2><p>之前复盘过。<strong>redis具有高效性、原子性操作、过期时间设置、Lua脚本支持以及高可用性和容错性等特性，使其成为一种可靠的分布式锁解决方案</strong></p>
+<h2 id="不使用redis做分布式锁可以用哪些替代？"><a href="#不使用redis做分布式锁可以用哪些替代？" class="headerlink" title="不使用redis做分布式锁可以用哪些替代？"></a>不使用redis做分布式锁可以用哪些替代？</h2><p>用数据库的悲观锁。之前看xxl的原理时有涉及到。</p>
+<h2 id="用数据库如何做分布式锁？锁名称的产生逻辑？"><a href="#用数据库如何做分布式锁？锁名称的产生逻辑？" class="headerlink" title="用数据库如何做分布式锁？锁名称的产生逻辑？"></a>用数据库如何做分布式锁？锁名称的产生逻辑？</h2><p>select for update + 唯一索引。</p>
+<p>锁名称应满足唯一性，如订单号。</p>
+<h2 id="kafka和rabbitmq有什么区别"><a href="#kafka和rabbitmq有什么区别" class="headerlink" title="kafka和rabbitmq有什么区别"></a>kafka和rabbitmq有什么区别</h2><p>前两篇复盘过。其实差别不是很大。</p>
+<h2 id="kafka的结构？"><a href="#kafka的结构？" class="headerlink" title="kafka的结构？"></a>kafka的结构？</h2><p><strong>Producer:</strong> 特指消息的生产者<br>**Consumer :**特指消息的消费者<br>**Consumer Group :**消费者组，可以并行消费Topic中partition的消息<br><strong>Broker：</strong>缓存代理，Kafa 集群中的一台或多台服务器统称为 broker。<br><strong>Topic：</strong>特指 Kafka 处理的消息源（feeds of messages）的不同分类。<br><strong>Partition：</strong>Topic 物理上的分组，一个 topic 可以分为多个 partition，每个 partition 是一个有序的队列。partition 中的每条消息都会被分配一个有序的 id（offset）<br><strong>Message：</strong>消息，是通信的基本单位，每个 producer 可以向一个 topic（主题）发布一些消息<br><strong>Producers(是个动词)：</strong>消息和数据生产者，向 Kafka 的一个 topic 发布消息的过程叫做 producers<br><strong>Consumers(是个动词)：</strong>消息和数据消费者，订阅 topics 并处理其发布的消息的过程叫做 consumers</p>
+<p>Kafka通过Zookeeper存储集群的meta等信息。</p>
+<p>一个Topic可以认为是一类信息，逻辑上的队列，每条消息都要指定Topic。为了使得Kafka的吞吐量可以线性提高，物理上将Topic分成一个或多个Partition。每个Partition在存储层面时append log文件，消息push进来后，会被追加到log文件的尾部，每条消息在文件中的位置成为offset(偏移量)，offset是一个long型数字，唯一的标识一条信息。因为每条消息都追加到Partition的尾部，所以属于磁盘的顺序写，效率很高。</p>
+<h2 id="如何保证消息的可靠性"><a href="#如何保证消息的可靠性" class="headerlink" title="如何保证消息的可靠性"></a>如何保证消息的可靠性</h2><p>之前有讲过。</p>
+<h2 id="解决过生产上什么问题？"><a href="#解决过生产上什么问题？" class="headerlink" title="解决过生产上什么问题？"></a>解决过生产上什么问题？</h2><p>答得不好。回答了一个排查cpu内存过高的一个步骤逻辑，重新整理下。</p>
+<h2 id="watchdog的原理"><a href="#watchdog的原理" class="headerlink" title="watchdog的原理"></a>watchdog的原理</h2><p>之前复盘过。</p>
+<h2 id="通过创建不过期的key实现锁会有什么问题"><a href="#通过创建不过期的key实现锁会有什么问题" class="headerlink" title="通过创建不过期的key实现锁会有什么问题"></a>通过创建不过期的key实现锁会有什么问题</h2><p>异常情况锁无法释放。</p>
+<h2 id="锁续期失败后的处理逻辑"><a href="#锁续期失败后的处理逻辑" class="headerlink" title="锁续期失败后的处理逻辑"></a>锁续期失败后的处理逻辑</h2><p>watchdog中锁续期失败后不再续期。</p>
+<h2 id="rabbitmq其他队列了解过吗"><a href="#rabbitmq其他队列了解过吗" class="headerlink" title="rabbitmq其他队列了解过吗"></a>rabbitmq其他队列了解过吗</h2><p>这里回答错了，我们用的Fanout、<em>Direct</em>、Topic指的是交换机的类型。</p>
+<p>Classic，Quorum，Stream才是队列类型。<strong>经典队列</strong>是 RabbitMQ 提供的原始队列类型，一般我们使用的都是这个。</p>
+<p>仲裁队列Quorum在分布式环境下对消息的可靠性保障更高。官方文档中明确表示，未来可能会使用Quorum仲裁队列来替代传统的Classic队列。Quorum队列基于Raft一致性协议实现，是一种新型的分布式消息队列。与Classic队列相比，Quorum队列以牺牲部分高级队列特性为代价，来换取更高的消息可靠性。</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th><code>Classic</code></th>
+<th><code>Quorum</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>非持久化队列（<code>Non-durable queues</code>）</td>
+<td>支持</td>
+<td>不支持</td>
+</tr>
+<tr>
+<td>独占队列（<code>Exclusivity</code>）</td>
+<td>支持</td>
+<td>不支持</td>
+</tr>
+<tr>
+<td>每条消息的持久化（<code>Per message persistence</code>）</td>
+<td>每条消息</td>
+<td>总是</td>
+</tr>
+<tr>
+<td>会员变更（<code>Membership changes</code>）</td>
+<td>自动</td>
+<td>手动</td>
+</tr>
+<tr>
+<td>消息<code>TTL</code>（<code>Message TTL</code>）</td>
+<td>支持</td>
+<td>支持（3.10版本开始）</td>
+</tr>
+<tr>
+<td>队列<code>TTL</code>（<code>Queue TTL</code>）</td>
+<td>支持</td>
+<td>支持</td>
+</tr>
+<tr>
+<td>队列长度限制（<code>Queue length limits</code>）</td>
+<td>支持</td>
+<td>支持</td>
+</tr>
+<tr>
+<td>懒加载（<code>Lazy behaviour</code>）</td>
+<td>支持</td>
+<td>始终</td>
+</tr>
+<tr>
+<td>消息优先级（<code>Message priority</code>）</td>
+<td>支持</td>
+<td>不支持</td>
+</tr>
+<tr>
+<td>消费者优先级（<code>Consumer priority</code>）</td>
+<td>支持</td>
+<td>支持</td>
+</tr>
+<tr>
+<td>死信交换（<code>Dead letter exchanges</code>）</td>
+<td>支持</td>
+<td>支持</td>
+</tr>
+<tr>
+<td>毒消息处理（<code>Poison message handling</code>）</td>
+<td>不支持</td>
+<td>支持</td>
+</tr>
+<tr>
+<td>全局<code>Qos</code>（<code>Global QoS Prefetch</code>）</td>
+<td>支持</td>
+<td>不支持</td>
+</tr>
+</tbody></table>
+<p><code>Stream</code>队列是<code>RabbitMQ</code>自<code>3.9.0</code>版本开始引入的一种新的数据队列类型，也是目前官方最为推荐的队列类型。这种队列类型的消息是持久化到磁盘并且具备分布式备份的，更适合于消费者多，读消息非常频繁的场景</p>
+<ul>
+<li>大规模分发（<code>large fan-outs</code>）</li>
+</ul>
+<p>当想要向多个订阅者发送相同的消息时，以往的队列类型必须为每个消费者绑定一个专用的队列。如果消费者的数量很大，这就会导致性能低下。而<code>Stream</code>队列允许任意数量的消费者使用同一个队列的消息，从而消除绑定多个队列的需求。</p>
+<ul>
+<li>消息回溯（<code>Replay/Time-travelling</code>）</li>
+</ul>
+<p><code>RabbitMQ</code>已有的这些队列类型，在消费者处理完消息后，消息都会从队列中删除，因此，无法重新读取已经消费过的消息。而<code>Stream</code>队列允许用户在日志的任何一个连接点开始重新读取数据。</p>
+<ul>
+<li>高吞吐性能（<code>Throughput Performance</code>）</li>
+</ul>
+<p><code>Stream</code>队列的设计以性能为主要目标，对消息传递吞吐量的提升非常明显。</p>
+<ul>
+<li>大日志（<code>Large logs</code>）</li>
+</ul>
+<p><code>RabbitMQ</code>一直以来有一个让人诟病的地方，就是当队列中积累的消息过多时，性能下降会非常明显。但是<code>Stream</code>队列的设计目标就是以最小的内存开销高效地存储大量的数据。</p>
+<h2 id="rabbitmq的灰度发布策略"><a href="#rabbitmq的灰度发布策略" class="headerlink" title="rabbitmq的灰度发布策略?"></a>rabbitmq的灰度发布策略?</h2><p>这个我猜测面试官是想问服务的发布顺序，因为他后面又问了一下。发布顺序肯定是新消费者新生产者，下线旧生产者旧消费者。</p>
+<p>但是这个确实也引出了我的一个思考，如果说消费的逻辑有改变，那么怎么进行灰度？</p>
+<p>首先应该老消费逻辑和新消费逻辑都要保留，提供过渡。生产者只保留新的也没问题，如果是要基于逻辑的一个灰度，那么可能业务上也需要配合，毕竟有些灰度逻辑网关没法保证始终落在新副本上。</p>
+<h2 id="mq的流量大概有多少"><a href="#mq的流量大概有多少" class="headerlink" title="mq的流量大概有多少"></a>mq的流量大概有多少</h2><p>目前是800-1000左右。</p>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>原文作者：<a href="https://re0.top">Zer0e</a>
+            <p>原文链接：<a href="https://re0.top/2024/07/17/2024-07-17-replay/">https://re0.top/2024/07/17/2024-07-17-replay/</a>
+            <p>发表日期：<a href="https://re0.top/2024/07/17/2024-07-17-replay/">July 17th 2024, 3:00:00 pm</a>
+            <p>更新日期：<a href="https://re0.top/2024/07/17/2024-07-17-replay/">July 18th 2024, 7:56:12 pm</a>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2024/07/16/devops5/" title= "【架构之路5】搭建redis集群">
+                    <div class="prevTitle">【架构之路5】搭建redis集群</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:zcluslloye@gmail.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/zer0e" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+            
+                <a href="https://t.me/zer009" class="iconfont-archer telegram" target="_blank" title=telegram></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+	<div class="copyright">
+		<span id="hexo-power">Hosted by <a href="https://pages.coding.me" target="_blank">Coding Pages</a></span>
+	</div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A4%8D%E7%9B%98"><span class="toc-number">2.</span> <span class="toc-text">复盘</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE"><span class="toc-number">2.1.</span> <span class="toc-text">项目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#java%E5%92%8Cpython%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%BB%80%E4%B9%88%E5%B7%AE%E5%88%AB%EF%BC%9F"><span class="toc-number">2.2.</span> <span class="toc-text">java和python多线程什么差别？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%9C%80%E5%A4%A7%E7%9A%84%E6%8C%91%E6%88%98%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">2.3.</span> <span class="toc-text">工作最大的挑战是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%80%E8%BF%91%E6%9C%89%E7%9C%8B%E4%BB%80%E4%B9%88%E4%B9%A6"><span class="toc-number">2.4.</span> <span class="toc-text">最近有看什么书</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%BC%96%E7%A8%8B%E6%97%B6%EF%BC%8C%E5%A6%82%E4%BD%95%E7%A1%AE%E4%BF%9D%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8"><span class="toc-number">2.5.</span> <span class="toc-text">多线程编程时，如何确保数据安全</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E7%9A%84%E9%94%81%EF%BC%9F"><span class="toc-number">2.6.</span> <span class="toc-text">常用的锁？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#synchronized%E5%85%B3%E9%94%AE%E5%AD%97%E5%92%8Cjava%E9%87%8C%E7%9A%84%E5%8F%AF%E9%87%8D%E5%85%A5%E9%94%81%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB"><span class="toc-number">2.7.</span> <span class="toc-text">synchronized关键字和java里的可重入锁有什么区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#synchronized%E5%85%B3%E9%94%AE%E5%AD%97%E5%8A%A0%E5%9C%A8%E6%99%AE%E9%80%9A%E6%96%B9%E6%B3%95%E5%92%8C%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB"><span class="toc-number">2.8.</span> <span class="toc-text">synchronized关键字加在普通方法和静态方法有什么区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E5%87%A0%E4%B8%AA%E5%B8%B8%E7%94%A8%E5%8F%82%E6%95%B0"><span class="toc-number">2.9.</span> <span class="toc-text">线程池的几个常用参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E6%8B%92%E7%BB%9D%E7%AD%96%E7%95%A5%E7%AD%96%E7%95%A5"><span class="toc-number">2.10.</span> <span class="toc-text">常见拒绝策略策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%AF%BC%E8%87%B4%E6%AD%BB%E9%94%81%E7%9A%84%E5%8E%9F%E5%9B%A0"><span class="toc-number">2.11.</span> <span class="toc-text">多线程导致死锁的原因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AD%BB%E9%94%81%E7%9A%84%E6%A3%80%E6%B5%8B%E5%92%8C%E9%81%BF%E5%85%8D"><span class="toc-number">2.12.</span> <span class="toc-text">死锁的检测和避免</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%89%E4%B8%80%E4%B8%AA%E4%BB%BB%E5%8A%A1%E9%9C%80%E8%A6%81%E7%AD%89%E5%BE%85%E5%87%A0%E4%B8%AA%E5%AD%90%E4%BB%BB%E5%8A%A1%E6%89%A7%E8%A1%8C%E5%AE%8C%E6%88%90%EF%BC%8C%E9%9C%80%E8%A6%81%E6%80%8E%E4%B9%88%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.13.</span> <span class="toc-text">有一个任务需要等待几个子任务执行完成，需要怎么实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sql%E6%9F%A5%E8%AF%A2%E6%85%A2%E6%80%8E%E4%B9%88%E6%8E%92%E6%9F%A5%EF%BC%9F%E5%8A%A0%E4%BA%86%E7%B4%A2%E5%BC%95%E8%BF%98%E6%98%AF%E6%AF%94%E8%BE%83%E6%85%A2%E6%80%8E%E4%B9%88%E6%8E%92%E6%9F%A5"><span class="toc-number">2.14.</span> <span class="toc-text">sql查询慢怎么排查？加了索引还是比较慢怎么排查</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E5%A4%B1%E6%95%88%E7%9A%84%E5%9C%BA%E6%99%AF"><span class="toc-number">2.15.</span> <span class="toc-text">索引失效的场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AA%E6%BB%A1%E8%B6%B3%E6%9C%80%E5%B7%A6%E5%8C%B9%E9%85%8D%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E7%B4%A2%E5%BC%95%E5%A4%B1%E6%95%88"><span class="toc-number">2.16.</span> <span class="toc-text">未满足最左匹配为什么会索引失效</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#innoDb%E7%B4%A2%E5%BC%95%E7%BB%93%E6%9E%84%EF%BC%9Fb-%E6%A0%91%E6%9C%89%E4%BB%80%E4%B9%88%E4%BC%98%E7%82%B9%EF%BC%9F"><span class="toc-number">2.17.</span> <span class="toc-text">innoDb索引结构？b+树有什么优点？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E9%87%8C%E5%A6%82%E4%BD%95%E7%AE%A1%E7%90%86%E4%BA%8B%E5%8A%A1%E7%9A%84%EF%BC%9F%E4%BA%8B%E5%8A%A1%E6%B2%A1%E7%94%9F%E6%95%88%E7%9A%84%E5%9C%BA%E6%99%AF%EF%BC%9F"><span class="toc-number">2.18.</span> <span class="toc-text">代码里如何管理事务的？事务没生效的场景？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1%E6%9C%89%E7%94%A8%E8%BF%87%E5%90%97%EF%BC%9F"><span class="toc-number">2.19.</span> <span class="toc-text">分布式事务有用过吗？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A5%BD%E7%9A%84Java%E4%BB%A3%E7%A0%81%E5%BA%94%E8%AF%A5%E5%85%B7%E5%A4%87%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-number">2.20.</span> <span class="toc-text">好的Java代码应该具备什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8B%E7%9A%84%E4%BA%94%E4%B8%AA%E5%9F%BA%E6%9C%AC%E5%8E%9F%E5%88%99"><span class="toc-number">2.21.</span> <span class="toc-text">面向对象编程的五个基本原则</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%9F"><span class="toc-number">2.22.</span> <span class="toc-text">常用的设计模式？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F%E8%B7%9F%E6%A8%A1%E6%9D%BF%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">2.23.</span> <span class="toc-text">策略模式跟模板模式的区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#redis%E7%9A%84%E5%9C%BA%E6%99%AF%EF%BC%9F%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E7%9A%84%E5%9C%BA%E6%99%AF%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E9%87%87%E7%94%A8redis%E5%81%9A%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%EF%BC%9F"><span class="toc-number">2.24.</span> <span class="toc-text">redis的场景？分布式锁的场景？为什么采用redis做分布式锁？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8D%E4%BD%BF%E7%94%A8redis%E5%81%9A%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E5%8F%AF%E4%BB%A5%E7%94%A8%E5%93%AA%E4%BA%9B%E6%9B%BF%E4%BB%A3%EF%BC%9F"><span class="toc-number">2.25.</span> <span class="toc-text">不使用redis做分布式锁可以用哪些替代？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E5%A6%82%E4%BD%95%E5%81%9A%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%EF%BC%9F%E9%94%81%E5%90%8D%E7%A7%B0%E7%9A%84%E4%BA%A7%E7%94%9F%E9%80%BB%E8%BE%91%EF%BC%9F"><span class="toc-number">2.26.</span> <span class="toc-text">用数据库如何做分布式锁？锁名称的产生逻辑？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#kafka%E5%92%8Crabbitmq%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB"><span class="toc-number">2.27.</span> <span class="toc-text">kafka和rabbitmq有什么区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#kafka%E7%9A%84%E7%BB%93%E6%9E%84%EF%BC%9F"><span class="toc-number">2.28.</span> <span class="toc-text">kafka的结构？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%AF%E9%9D%A0%E6%80%A7"><span class="toc-number">2.29.</span> <span class="toc-text">如何保证消息的可靠性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E8%BF%87%E7%94%9F%E4%BA%A7%E4%B8%8A%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="toc-number">2.30.</span> <span class="toc-text">解决过生产上什么问题？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#watchdog%E7%9A%84%E5%8E%9F%E7%90%86"><span class="toc-number">2.31.</span> <span class="toc-text">watchdog的原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%9A%E8%BF%87%E5%88%9B%E5%BB%BA%E4%B8%8D%E8%BF%87%E6%9C%9F%E7%9A%84key%E5%AE%9E%E7%8E%B0%E9%94%81%E4%BC%9A%E6%9C%89%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98"><span class="toc-number">2.32.</span> <span class="toc-text">通过创建不过期的key实现锁会有什么问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%94%81%E7%BB%AD%E6%9C%9F%E5%A4%B1%E8%B4%A5%E5%90%8E%E7%9A%84%E5%A4%84%E7%90%86%E9%80%BB%E8%BE%91"><span class="toc-number">2.33.</span> <span class="toc-text">锁续期失败后的处理逻辑</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#rabbitmq%E5%85%B6%E4%BB%96%E9%98%9F%E5%88%97%E4%BA%86%E8%A7%A3%E8%BF%87%E5%90%97"><span class="toc-number">2.34.</span> <span class="toc-text">rabbitmq其他队列了解过吗</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#rabbitmq%E7%9A%84%E7%81%B0%E5%BA%A6%E5%8F%91%E5%B8%83%E7%AD%96%E7%95%A5"><span class="toc-number">2.35.</span> <span class="toc-text">rabbitmq的灰度发布策略?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mq%E7%9A%84%E6%B5%81%E9%87%8F%E5%A4%A7%E6%A6%82%E6%9C%89%E5%A4%9A%E5%B0%91"><span class="toc-number">2.36.</span> <span class="toc-text">mq的流量大概有多少</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 91
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2024 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/17</span><a class="archive-post-title" href= "/2024/07/17/2024-07-17-replay/" >2024面试复盘5</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2024/07/16/devops5/" >【架构之路5】搭建redis集群</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2024/07/16/2024-07-16-replay/" >2024面试复盘4</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2024/07/15/2024-07-15-replay/" >2024面试复盘3</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/12</span><a class="archive-post-title" href= "/2024/07/12/devops4/" >【架构之路4】k8s对接ceph-rbd</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span><a class="archive-post-title" href= "/2024/07/11/devops3/" >【架构之路3】k8s对接cephfs</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span><a class="archive-post-title" href= "/2024/07/11/devops2/" >【架构之路2】ceph集群搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2024/07/10/devops1/" >【架构之路1】k8s集群搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2024/07/10/devops0/" >从0.5开始的运维架构之路0</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2024/06/24/2024-06-24-replay/" >2024面试复盘2</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/23</span><a class="archive-post-title" href= "/2024/06/23/2024-06-23-replay/" >2024面试复盘1</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2024/06/11/2024-resign/" >写于6月离职之后</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2024/01/01/2023-summary/" >2023年度总结</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/31</span><a class="archive-post-title" href= "/2022/12/31/2022-2023/" >2022年度总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2022/04/08/devtools/" >devtools协议分析与自动化录制实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2022/01/01/2022-first/" >由于代码架构设计不佳而引发的异常消失</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/08</span><a class="archive-post-title" href= "/2021/06/08/zbot/" >zbot架构畅谈</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/05</span><a class="archive-post-title" href= "/2021/04/05/bsgamesdk-re/" >对bsgamesdk的签名逆向分析</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span><a class="archive-post-title" href= "/2020/12/13/autoConfiguration/" >浅谈Spring Boot自动配置</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href= "/2020/11/01/transaction_isolation/" >回顾数据库事务隔离级别</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/09</span><a class="archive-post-title" href= "/2020/10/09/snowflake/" >浅谈雪花算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/design_patterns/" >谈谈设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/composite_pattern/" >设计模式之组合模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/flyweight_pattern/" >设计模式之享元模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span><a class="archive-post-title" href= "/2020/09/14/builder_pattern/" >设计模式之构建模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2020/09/13/arraylist_resize/" >ArrayList扩容之后内存地址会发生改变吗？</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2020/09/13/jmm/" >浅谈Java内存模型</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2020/09/08/visitor_pattern/" >设计模式之访问者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2020/09/08/template_method_pattern/" >设计模式之模板方法模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/memento_pattern/" >设计模式之备忘录模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/state_pattern/" >设计模式之状态模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2020/09/05/interpreter_pattern/" >设计模式之解释器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2020/09/05/chain_of_responsibility_pattern/" >设计模式之责任链模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2020/09/04/bridge_patterns/" >设计模式之桥接模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2020/09/02/prototype_pattern/" >设计模式之原型模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/29</span><a class="archive-post-title" href= "/2020/08/29/lambda/" >由lambda表达式引发的思考</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/27</span><a class="archive-post-title" href= "/2020/08/27/iterator_pattern/" >设计模式之迭代器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/27</span><a class="archive-post-title" href= "/2020/08/27/strategy_pattern/" >设计模式之策略模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/22</span><a class="archive-post-title" href= "/2020/08/22/adapter_pattern/" >设计模式之适配器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/19</span><a class="archive-post-title" href= "/2020/08/19/sql_concurrent/" >谈一道数据库更新的并发问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span><a class="archive-post-title" href= "/2020/08/17/decorator_pattern/" >设计模式之装饰器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span><a class="archive-post-title" href= "/2020/08/17/command_pattern/" >设计模式之命令模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/16</span><a class="archive-post-title" href= "/2020/08/16/facade_pattern/" >设计模式之外观模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/14</span><a class="archive-post-title" href= "/2020/08/14/lock_class/" >谈谈锁的种类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/13</span><a class="archive-post-title" href= "/2020/08/13/abstract_factory_pattern/" >设计模式之抽象工厂模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2020/08/12/mediator_pattern/" >设计模式之中介者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2020/08/12/factory_pattern/" >设计模式之工厂模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2020/08/10/spring_aop/" >浅谈Spring AOP</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2020/08/10/proxy_pattern/" >设计模式之代理模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/08</span><a class="archive-post-title" href= "/2020/08/08/observer/" >设计模式之观察者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/07</span><a class="archive-post-title" href= "/2020/08/07/singleton/" >设计模式之单例模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/06</span><a class="archive-post-title" href= "/2020/08/06/spring_ioc/" >谈谈Spring IoC</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2020/07/24/java_thread_pool/" >浅谈Java线程池</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/20</span><a class="archive-post-title" href= "/2020/07/20/dp3/" >浅谈动态规划Ⅲ</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/04</span><a class="archive-post-title" href= "/2020/07/04/database_master_slave/" >浅谈数据库主从复制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2020/06/24/load_balancing_algorithm/" >常见的负载均衡算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2020/06/15/load_balancing/" >浅谈负载均衡</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/14</span><a class="archive-post-title" href= "/2020/06/14/high_concurrency/" >浅谈高并发引起的问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/dp2/" >浅谈动态规划Ⅱ</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span><a class="archive-post-title" href= "/2020/05/13/topk/" >TopK问题与快速选择算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2020/04/29/binary_search/" >几种二分查找的模板与理解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/05</span><a class="archive-post-title" href= "/2020/04/05/dp1/" >浅谈动态规划</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2020/03/30/tree-traversal2/" >二叉树的广度优先(层次)遍历</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2020/03/30/tree-traversal/" >二叉树的前中后序遍历</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/24</span><a class="archive-post-title" href= "/2020/03/24/celery/" >初探celery任务队列</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/22</span><a class="archive-post-title" href= "/2020/03/22/java-reflection/" >理解Java反射</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span><a class="archive-post-title" href= "/2020/03/11/python-sync/" >浅谈python异步编程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/04</span><a class="archive-post-title" href= "/2020/03/04/python-copy/" >浅谈python中的引用与拷贝</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span><a class="archive-post-title" href= "/2020/02/10/spring-annotation/" >Springboot常用注解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/05</span><a class="archive-post-title" href= "/2020/01/05/dns-cache-pollution/" >DNS投毒分析</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href= "/2019/11/12/2019-11-12/" >谈一谈最近</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2019/04/01/ngrok/" >使用ngrok实现内网远程桌面</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href= "/2018/11/12/hctf2018wp/" >HCTF2018 web部分Writeup</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2018/11/02/js-prototype/" >浅谈JavaScript中的原型链</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2018/10/10/xssbot1/" >从零开始完成xssbot</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/12</span><a class="archive-post-title" href= "/2018/07/12/csp/" >浅谈CSP内容安全策略</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/07</span><a class="archive-post-title" href= "/2018/06/07/mergesort/" >经典算法之归并排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/02</span><a class="archive-post-title" href= "/2018/06/02/quicksort/" >经典算法之快速排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/28</span><a class="archive-post-title" href= "/2018/05/28/linux-shell/" >Linux下反弹shell的几种方式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/11</span><a class="archive-post-title" href= "/2018/05/11/selectsort/" >经典算法之选择排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2018/04/24/docker/" >docker常用命令汇总</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/11</span><a class="archive-post-title" href= "/2018/04/11/bubblesort/" >经典算法之冒泡排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2018/03/30/php-weak1/" >PHP弱类型总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/29</span><a class="archive-post-title" href= "/2018/03/29/second-sqli/" >记一次有趣的二次注入</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/23</span><a class="archive-post-title" href= "/2018/03/23/polynomial/" >单向链表的学习</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2018/03/18/hgame-misc/" >misc入门总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/14</span><a class="archive-post-title" href= "/2018/03/14/shuffle/" >常见的洗牌算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/hgame-web/" >CTF入门(坑)总结——web篇</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span><a class="archive-post-title" href= "/2018/03/10/maze/" >使用递归算法解决迷宫问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span><a class="archive-post-title" href= "/2018/03/10/resolve-number/" >实现整数的所有划分数</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span><a class="archive-post-title" href= "/2018/03/10/talk-about-blog/" >谈一谈博客</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
+    
+        <span class="sidebar-tag-name" data-tags="编程"><span class="iconfont-archer">&#xe606;</span>编程</span>
+    
+        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
+    
+        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
+    
+        <span class="sidebar-tag-name" data-tags="设计模式"><span class="iconfont-archer">&#xe606;</span>设计模式</span>
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
+    
+        <span class="sidebar-tag-name" data-tags="Android"><span class="iconfont-archer">&#xe606;</span>Android</span>
+    
+        <span class="sidebar-tag-name" data-tags="数据库"><span class="iconfont-archer">&#xe606;</span>数据库</span>
+    
+        <span class="sidebar-tag-name" data-tags="web"><span class="iconfont-archer">&#xe606;</span>web</span>
+    
+        <span class="sidebar-tag-name" data-tags="自动化测试"><span class="iconfont-archer">&#xe606;</span>自动化测试</span>
+    
+        <span class="sidebar-tag-name" data-tags="linux"><span class="iconfont-archer">&#xe606;</span>linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="CTF"><span class="iconfont-archer">&#xe606;</span>CTF</span>
+    
+        <span class="sidebar-tag-name" data-tags="misc"><span class="iconfont-archer">&#xe606;</span>misc</span>
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
+    
+        <span class="sidebar-tag-name" data-tags="分布式"><span class="iconfont-archer">&#xe606;</span>分布式</span>
+    
+        <span class="sidebar-tag-name" data-tags="运维"><span class="iconfont-archer">&#xe606;</span>运维</span>
+    
+        <span class="sidebar-tag-name" data-tags="从0.5开始的运维架构之路"><span class="iconfont-archer">&#xe606;</span>从0.5开始的运维架构之路</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Zer0e"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    <script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"model":{"jsonPath":"/live2dw/assets/koharu.model.json"},"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>
+
+
