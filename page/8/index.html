@@ -359,6 +359,68 @@ height:50vh;
     
     
     <article class="index-post">
+        <a class="abstract-title" href = "/2020/02/10/spring-annotation/" >
+            
+                <span>Springboot常用注解</span>
+        </a>
+        <div class="abstract-content">
+            前言最近在使用springboot进行开发，也学习了不少spring的知识，记录一下spring中常用的注解，方便自己学习与查找。
+正文@Beanbean是一个被实例化，组装，并通过 Spring IoC 容器所管理的对象。该注解主要定义在@Configuration或者@Component注解的类里，声明该方法的返回值是一个bea...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/02/10</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "web">web</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2020/01/05/dns-cache-pollution/" >
+            
+                <span>DNS投毒分析</span>
+        </a>
+        <div class="abstract-content">
+            前言最近因为研究了下DNSsec技术突然想起来著名的DNS投毒，就是DNS缓存污染，今天趁着有点时间研究下某知名防火墙对DNS是怎么进行污染的。
+原理由于DNS采用UDP协议来进行查询和应答，由于UDP是无连接的，所以当我们发送一个DNS请求时，如果有多个DNS响应包时，操作系统一般是以最先收到的响应包为准，这就使得了如果攻击者在正...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/01/05</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "web">web</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href = "/2019/11/12/2019-11-12/" >
             
                 <span>谈一谈最近</span>
@@ -583,65 +645,6 @@ bot准...
             <!-- date  -->
             <div class="abstract-date">
                 <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/06/02</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "算法">算法</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2018/05/28/linux-shell/" >
-            
-                <span>Linux下反弹shell的几种方式</span>
-        </a>
-        <div class="abstract-content">
-            前言现在服务器基本上都是采用linux系统，做为一条web狗，最希望当然是拿到网站的webshell，之前看到过几种方法，在这里总结一下吧。这里攻击端的ip为192.168.1.100,并且执行了nc -lvvp 9999，在9999端口进行监听。
-Bashbash是linux最基本的东西，用bash来反弹shell是必须要清楚的。...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/05/28</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "linux">linux</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2018/05/11/selectsort/" >
-            
-                <span>经典算法之选择排序</span>
-        </a>
-        <div class="abstract-content">
-            最近都没时间写文章，想想还是得偶尔空出点时间来写文章学习点东西。讲讲选择排序。选择排序和冒泡排序都是比较基本的排序算法，下面就来简单说说选择排序的实现方法。设数组的下标为[0…n-1]，i=0。刚开始整个数组都处于无序状态，在无序区中找到一个最小的数放在第i个位置，则现在[0..i]处于有序区，i++并重复步骤，直到i==n-1，则...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/05/11</span>
             </div>
             <!-- tags  -->
             
@@ -1475,9 +1478,23 @@ Bashbash是linux最基本的东西，用bash来反弹shell是必须要清楚的�
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 91
+        Total : 93
         </div>
         <!-- search  -->
         
@@ -1490,6 +1507,16 @@ Bashbash是linux最基本的东西，用bash来反弹shell是必须要清楚的�
     
     <div class="archive-year"> 2024 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/22</span><a class="archive-post-title" href= "/2024/07/22/2024-07-22-replay/" >2024面试复盘6</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/19</span><a class="archive-post-title" href= "/2024/07/19/devops6/" >【架构之路6】k8s-LoadBalancer搭建</a>
+        </li>
     
     
         <li class="archive-post-item">

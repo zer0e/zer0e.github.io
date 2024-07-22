@@ -359,6 +359,82 @@ height:50vh;
     
     
     <article class="index-post">
+        <a class="abstract-title" href = "/2024/07/22/2024-07-22-replay/" >
+            
+                <span>2024面试复盘6</span>
+        </a>
+        <div class="abstract-content">
+            前言pdd二面，面试官说他们是单休，可怕。
+复盘项目相关项目说了蛮久的，可能有二三十分钟。
+互斥锁和自旋锁自旋锁(Spin lock)和互斥锁(Mutex)两者都是为了保证多个线程在访问共享资源时的同步，防止数据竞争和不一致。
+互斥锁：
+
+线程在尝试获取锁时，如果锁已经被其他线程持有，线程会被阻塞并进入等待队列。
+操作系统负责管理线...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/07/22</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "随想">随想</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2024/07/19/devops6/" >
+            
+                <span>【架构之路6】k8s-LoadBalancer搭建</span>
+        </a>
+        <div class="abstract-content">
+            前言k8s默认不提供LoadBalancer实现，一般是云厂商的k8s集群会提供这样的功能，让我们的服务暴露到某个外部ip地址上。个人自建集群的话可以使用MetalLB来实现外部ip地址的分配。
+正文安装根据文档来安装还是挺简单的。
+1kubectl apply -f https://raw.githubusercontent.co...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/07/19</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "运维">运维</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "从0.5开始的运维架构之路">从0.5开始的运维架构之路</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href = "/2024/07/17/2024-07-17-replay/" >
             
                 <span>2024面试复盘5</span>
@@ -687,82 +763,6 @@ Ceph 是一个专注于分布式的、弹性可扩展的、高可靠的、性能
         <a class="post-tag" href="javascript:void(0);" data-tags = "运维">运维</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags = "从0.5开始的运维架构之路">从0.5开始的运维架构之路</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2024/07/10/devops0/" >
-            
-                <span>从0.5开始的运维架构之路0</span>
-        </a>
-        <div class="abstract-content">
-            随便聊聊最近离职了无聊想写一个系统，用于在k8s上部署应用，也是我们内部在用的一个部署平台，想着通过这个，把一些技术都给用上。没想到没写多久就遇到困难了，在想ceph是如何挂载到k8s上，运维老师又是如何把数据从原先的docker swarm迁移到k8s上。以上种种，在我写代码时暴露出来，因此我花了很久的时间，学习与踩坑，从k8s环...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/07/10</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "运维">运维</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "从0.5开始的运维架构之路">从0.5开始的运维架构之路</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2024/06/24/2024-06-24-replay/" >
-            
-                <span>2024面试复盘2</span>
-        </a>
-        <div class="abstract-content">
-            复盘快排原理，时间空间复杂度原理  
-
-选择基准元素
-
-分区操作（Partition）。通过一趟排序将待排序的数据分割成独立的两部分，其中一部分的所有数据都比另一部分的所有数据要小。这个过程称为分区操作。
-
-递归排序。递归地（recursive）把小于基准值元素的子数组和大于基准值元素的子数组排序。
-
-合并。通常，这个步骤并不需要实...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/06/24</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "随想">随想</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
     
 </div>
             
@@ -1590,9 +1590,23 @@ Ceph 是一个专注于分布式的、弹性可扩展的、高可靠的、性能
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 91
+        Total : 93
         </div>
         <!-- search  -->
         
@@ -1605,6 +1619,16 @@ Ceph 是一个专注于分布式的、弹性可扩展的、高可靠的、性能
     
     <div class="archive-year"> 2024 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/22</span><a class="archive-post-title" href= "/2024/07/22/2024-07-22-replay/" >2024面试复盘6</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/19</span><a class="archive-post-title" href= "/2024/07/19/devops6/" >【架构之路6】k8s-LoadBalancer搭建</a>
+        </li>
     
     
         <li class="archive-post-item">
