@@ -203,12 +203,23 @@
 <meta name="generator" content="Hexo 6.0.0"></head>
 
     
+        <body class="post-body">
+    
     
 <header class="header">
 
     <div class="read-progress"></div>
     <div class="header-sidebar-menu">&#xe775;</div>
     <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Zer0e&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">【架构之路7】tidb集群搭建</a>
+            </div>
+    </div>
     
     <a class="home-link" href=/>Zer0e's Blog</a>
 </header>
@@ -220,24 +231,80 @@
 
 
 
+
+height:50vh;
 ">
     
     <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
             
     <div class="site-intro-placeholder"></div>
-    <div class="site-intro-img" style="background-image: url(/)"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
+            
+            【架构之路7】tidb集群搭建
+            <!-- 404 -->
             
         </h1>
         <!-- 副标题 -->
         <p class="intro-subtitle">
             <!-- 主页副标题  -->
             
+            
+            <!-- 404 -->
+            
         </p>
         <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "运维">运维</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "从0.5开始的运维架构之路">从0.5开始的运维架构之路</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">1.8k</span>阅读时长: <span class="post-count reading-time">7 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2024/07/22</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
         
     </div>
 </div>
@@ -344,6 +411,16 @@
 <p><a target="_blank" rel="noopener" href="https://github.com/pingcap/tidb">TiDB</a> 是 <a target="_blank" rel="noopener" href="https://pingcap.com/about-cn/">PingCAP</a> 公司自主设计、研发的开源分布式关系型数据库，是一款同时支持在线事务处理与在线分析处理 (Hybrid Transactional and Analytical Processing, HTAP) 的融合型分布式数据库产品，具备水平扩容或者缩容、金融级高可用、实时 HTAP、云原生的分布式数据库、兼容 MySQL 协议和 MySQL 生态等重要特性。目标是为用户提供一站式 OLTP (Online Transactional Processing)、OLAP (Online Analytical Processing)、HTAP 解决方案。TiDB 适合高可用、强一致要求较高、数据规模较大等各种应用场景。</p>
 </blockquote>
 <p>上家公司没有使用分库分表，而是直接采用TiDB社区版来替代。目前使用上没什么大的问题。这里我就来搭建一个。</p>
+<p>TiDB的架构说明如下：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.pingcap.com/zh/tidb/dev/tidb-computing">TiDB Server</a>：SQL 层，对外暴露 MySQL 协议的连接 endpoint，负责接受客户端的连接，执行 SQL 解析和优化，最终生成分布式执行计划。TiDB 层本身是无状态的，实践中可以启动多个 TiDB 实例，通过负载均衡组件（如 TiProxy、LVS、HAProxy、ProxySQL 或 F5）对外提供统一的接入地址，客户端的连接可以均匀地分摊在多个 TiDB 实例上以达到负载均衡的效果。TiDB Server 本身并不存储数据，只是解析 SQL，将实际的数据读取请求转发给底层的存储节点 TiKV（或 TiFlash）。</li>
+<li><a target="_blank" rel="noopener" href="https://docs.pingcap.com/zh/tidb/dev/tidb-scheduling">PD (Placement Driver) Server</a>：整个 TiDB 集群的元信息管理模块，负责存储每个 TiKV 节点实时的数据分布情况和集群的整体拓扑结构，提供 TiDB Dashboard 管控界面，并为分布式事务分配事务 ID。PD 不仅存储元信息，同时还会根据 TiKV 节点实时上报的数据分布状态，下发数据调度命令给具体的 TiKV 节点，可以说是整个集群的“大脑”。此外，PD 本身也是由至少 3 个节点构成，拥有高可用的能力。建议部署奇数个 PD 节点。</li>
+<li>存储节点<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.pingcap.com/zh/tidb/dev/tidb-storage">TiKV Server</a>：负责存储数据，从外部看 TiKV 是一个分布式的提供事务的 Key-Value 存储引擎。存储数据的基本单位是 Region，每个 Region 负责存储一个 Key Range（从 StartKey 到 EndKey 的左闭右开区间）的数据，每个 TiKV 节点会负责多个 Region。TiKV 的 API 在 KV 键值对层面提供对分布式事务的原生支持，默认提供了 SI (Snapshot Isolation) 的隔离级别，这也是 TiDB 在 SQL 层面支持分布式事务的核心。TiDB 的 SQL 层做完 SQL 解析后，会将 SQL 的执行计划转换为对 TiKV API 的实际调用。所以，数据都存储在 TiKV 中。另外，TiKV 中的数据都会自动维护多副本（默认为三副本），天然支持高可用和自动故障转移。</li>
+<li><a target="_blank" rel="noopener" href="https://docs.pingcap.com/zh/tidb/dev/tiflash-overview">TiFlash</a>：TiFlash 是一类特殊的存储节点。和普通 TiKV 节点不一样的是，在 TiFlash 内部，数据是以列式的形式进行存储，主要的功能是为分析型的场景加速。</li>
+</ul>
+</li>
+</ul>
 <p>这里我们采用在k8s集群上搭建TiDB.<a target="_blank" rel="noopener" href="https://docs.pingcap.com/zh/tidb-in-kubernetes/stable/get-started">文档在这</a></p>
 <h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><h2 id="安装TiDB-Operator"><a href="#安装TiDB-Operator" class="headerlink" title="安装TiDB Operator"></a>安装TiDB Operator</h2><p><a target="_blank" rel="noopener" href="https://github.com/pingcap/tidb-operator">TiDB Operator</a> 是 Kubernetes 上的 TiDB 集群自动运维系统，提供包括部署、升级、扩缩容、备份恢复、配置变更的 TiDB 全生命周期管理。</p>
 <p>TiDB Operator安装共两步，分别为：</p>
@@ -351,7 +428,7 @@
 <li>安装 TiDB Operator CRDs</li>
 <li>安装 TiDB Operator</li>
 </ol>
-<p>TiDB Operator 包含许多实现 TiDB 集群不同组件的自定义资源类型 (CRD)。</p>
+<p>TiDB Operator 包含许多实现 TiDB 集群不同组件的自定义资源类型 (CRD)。简单来说就是扩展了k8s的yaml配置。</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl create -f https://raw.githubusercontent.com/pingcap/tidb-operator/v1.6.0/manifests/crd.yaml</span><br></pre></td></tr></table></figure>
 
 <p>使用helm安装TiDB Operator。</p>
@@ -359,13 +436,32 @@
 
 <p>等待tidb-controller-manager启动完成即可。这里提一下和网上教程不一样的是， <a target="_blank" rel="noopener" href="https://docs.pingcap.com/zh/tidb-in-kubernetes/stable/tidb-scheduler#tidb-scheduler-%E4%B8%8E-default-scheduler">tidb-scheduler</a>在1.19以上的k8s集群上不是必须的，所以它不会自动部署tidb-scheduler。</p>
 <h2 id="部署集群和监控"><a href="#部署集群和监控" class="headerlink" title="部署集群和监控"></a>部署集群和监控</h2><p>部署集群</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl create namespace tidb-cluster &amp;&amp; \</span><br><span class="line">    kubectl -n tidb-cluster apply -f https://raw.githubusercontent.com/pingcap/tidb-operator/v1.6.0/examples/basic/tidb-cluster.yaml</span><br></pre></td></tr></table></figure>
+<p>先创建命名空间</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl create namespace tidb-cluster</span><br></pre></td></tr></table></figure>
 
-<p>部署dashboard</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl -n tidb-cluster apply -f https://raw.githubusercontent.com/pingcap/tidb-operator/v1.6.0/examples/basic/tidb-dashboard.yaml</span><br></pre></td></tr></table></figure>
+<p>这里我们需要的是生产可用的集群，因此不能使用basic-example里面的yaml。即<code>https://raw.githubusercontent.com/pingcap/tidb-operator/v1.6.0/examples/basic/tidb-cluster.yaml</code></p>
+<p>我们使用advanced的tidb-cluster。<code>https://raw.githubusercontent.com/pingcap/tidb-operator/blob/v1.6.0/examples/advanced/tidb-cluster.yaml</code></p>
+<p>先把yaml下载下来删除一下无用注释，再改造一下。包括增加pv挂载，还有一些额外参数。</p>
+<p>搭了快两小时，终于成功了。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">pingcap.com/v1alpha1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">TidbCluster</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">advanced-tidb</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">tidb-cluster</span></span><br><span class="line"></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">version:</span> <span class="string">&quot;v8.1.0&quot;</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">timezone:</span> <span class="string">UTC</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  <span class="attr">configUpdateStrategy:</span> <span class="string">RollingUpdate</span></span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">  <span class="attr">helper:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">alpine:3.16.0</span></span><br><span class="line">  </span><br><span class="line">  <span class="attr">pvReclaimPolicy:</span> <span class="string">Retain</span></span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">  <span class="attr">enableDynamicConfiguration:</span> <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">  </span><br><span class="line">  <span class="attr">pd:</span></span><br><span class="line">    <span class="attr">baseImage:</span> <span class="string">pingcap/pd</span></span><br><span class="line">    <span class="attr">config:</span> <span class="string">|</span></span><br><span class="line"><span class="string">      client-urls = &quot;http://0.0.0.0:2379&quot;</span></span><br><span class="line"><span class="string">      peer-urls = &quot;http://0.0.0.0:2380&quot;</span></span><br><span class="line"><span class="string">      data-dir = &quot;/pd/data&quot;</span></span><br><span class="line"><span class="string">      [log.file]</span></span><br><span class="line"><span class="string">        filename = &quot;/pd/log/pd.log&quot;</span></span><br><span class="line"><span class="string">      [dashboard]</span></span><br><span class="line"><span class="string">        internal-proxy = true</span></span><br><span class="line"><span class="string"></span></span><br><span class="line">    </span><br><span class="line">    <span class="attr">replicas:</span> <span class="number">3</span></span><br><span class="line"></span><br><span class="line">    <span class="attr">maxFailoverCount:</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="attr">requests:</span></span><br><span class="line">    <span class="comment">#   cpu: 1000m</span></span><br><span class="line">    <span class="comment">#   memory: 1Gi</span></span><br><span class="line">      <span class="attr">storage:</span> <span class="string">10Gi</span></span><br><span class="line">    <span class="comment"># limits:</span></span><br><span class="line">    <span class="comment">#   cpu: 2000m</span></span><br><span class="line">    <span class="comment">#   memory: 2Gi</span></span><br><span class="line"></span><br><span class="line">   </span><br><span class="line">    <span class="attr">mountClusterClientSecret:</span> <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    <span class="attr">storageClassName:</span> <span class="string">&quot;csi-rbd-sc&quot;</span></span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    <span class="attr">storageVolumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">data</span></span><br><span class="line">        <span class="attr">storageSize:</span> <span class="string">2Gi</span></span><br><span class="line">        <span class="attr">mountPath:</span> <span class="string">/pd/data</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">log</span></span><br><span class="line">        <span class="attr">storageSize:</span> <span class="string">2Gi</span></span><br><span class="line">        <span class="attr">mountPath:</span> <span class="string">/pd/log</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">tidb:</span></span><br><span class="line"></span><br><span class="line">    <span class="attr">baseImage:</span> <span class="string">pingcap/tidb</span></span><br><span class="line"></span><br><span class="line">   </span><br><span class="line">    <span class="attr">config:</span> <span class="string">|</span></span><br><span class="line"><span class="string">      path = &quot;/tidb/data&quot;</span></span><br><span class="line"><span class="string">      [performance]</span></span><br><span class="line"><span class="string">        tcp-keep-alive = true</span></span><br><span class="line"><span class="string">      [log.file]</span></span><br><span class="line"><span class="string">        filename = &quot;/tidb/log/tidb.log&quot;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"></span><br><span class="line">    <span class="attr">replicas:</span> <span class="number">3</span></span><br><span class="line"></span><br><span class="line">    <span class="attr">maxFailoverCount:</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="attr">service:</span></span><br><span class="line">      <span class="attr">type:</span> <span class="string">LoadBalancer</span></span><br><span class="line">      <span class="attr">externalTrafficPolicy:</span> <span class="string">Local</span></span><br><span class="line">   </span><br><span class="line">  </span><br><span class="line"></span><br><span class="line">    <span class="attr">storageClassName:</span> <span class="string">&quot;csi-rbd-sc&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="attr">storageVolumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">data</span></span><br><span class="line">        <span class="attr">storageSize:</span> <span class="string">1Gi</span></span><br><span class="line">        <span class="attr">mountPath:</span> <span class="string">/tidb/data</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">log</span></span><br><span class="line">        <span class="attr">storageSize:</span> <span class="string">1Gi</span></span><br><span class="line">        <span class="attr">mountPath:</span> <span class="string">/tidb/log</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">tikv:</span></span><br><span class="line">    <span class="attr">baseImage:</span> <span class="string">pingcap/tikv</span></span><br><span class="line"></span><br><span class="line">    <span class="attr">config:</span> <span class="string">|</span></span><br><span class="line"><span class="string">      log-level = &quot;info&quot;</span></span><br><span class="line"><span class="string">      [rocksdb]</span></span><br><span class="line"><span class="string">        wal-dir = &quot;/data/tikv/wal&quot;</span></span><br><span class="line"><span class="string">      [titan]</span></span><br><span class="line"><span class="string">        dirname = &quot;/data/titan/data&quot;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line">    <span class="attr">replicas:</span> <span class="number">3</span></span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    <span class="attr">maxFailoverCount:</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    <span class="attr">requests:</span></span><br><span class="line">    <span class="comment">#   cpu: 1000m</span></span><br><span class="line">    <span class="comment">#   memory: 1Gi</span></span><br><span class="line">      <span class="attr">storage:</span> <span class="string">100Gi</span></span><br><span class="line">    <span class="comment"># limits:</span></span><br><span class="line">    <span class="comment">#   cpu: 2000m</span></span><br><span class="line">    <span class="comment">#   memory: 2Gi</span></span><br><span class="line">    <span class="comment">#   # settings `storage` here will add `--capacity` arg to tikv-server</span></span><br><span class="line">    <span class="comment">#   storage: 10Gi</span></span><br><span class="line"></span><br><span class="line">   </span><br><span class="line">    <span class="attr">mountClusterClientSecret:</span> <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">    <span class="attr">storageClassName:</span> <span class="string">&quot;csi-rbd-sc&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="attr">storageVolumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">wal</span></span><br><span class="line">        <span class="attr">storageSize:</span> <span class="string">&quot;2Gi&quot;</span></span><br><span class="line">        <span class="attr">mountPath:</span> <span class="string">&quot;/data/tikv/wal&quot;</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">titan</span></span><br><span class="line">        <span class="attr">storageSize:</span> <span class="string">&quot;2Gi&quot;</span></span><br><span class="line">        <span class="attr">mountPath:</span> <span class="string">&quot;/data/titan/data&quot;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<p>部署监控</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl -n tidb-cluster apply -f https://raw.githubusercontent.com/pingcap/tidb-operator/v1.6.0/examples/basic/tidb-monitor.yaml</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl -n tidb-cluster apply -f tidb-cluster.yaml</span><br></pre></td></tr></table></figure>
+
+<p>部署dashboard，pd中内置了dashboard，并且配置了<code>internal-proxy = true</code>，因此只需要把指定端口映射出来即可.</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">access-dashboard</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">tidb-cluster</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">dashboard</span></span><br><span class="line">    <span class="attr">port:</span> <span class="number">10262</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">LoadBalancer</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app.kubernetes.io/component:</span> <span class="string">discovery</span></span><br><span class="line">    <span class="attr">app.kubernetes.io/instance:</span> <span class="string">advanced-tidb</span></span><br><span class="line">    <span class="attr">app.kubernetes.io/name:</span> <span class="string">tidb-cluster</span></span><br></pre></td></tr></table></figure>
+
+<p>注意<code>app.kubernetes.io/instance</code>为上一步所搭建集群的名称，即<code>metadata.name</code></p>
+<p>然后部署监控，光有dashboard但是没有prometheus和Grafana也不行</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">pingcap.com/v1alpha1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">TidbMonitor</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">monitor</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">clusters:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">advanced-tidb</span></span><br><span class="line">  <span class="attr">persistent:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">storageClassName:</span> <span class="string">&quot;csi-rbd-sc&quot;</span></span><br><span class="line">  <span class="attr">storage:</span> <span class="string">5G</span></span><br><span class="line">  <span class="attr">prometheus:</span></span><br><span class="line">    <span class="attr">baseImage:</span> <span class="string">prom/prometheus</span></span><br><span class="line">    <span class="attr">version:</span> <span class="string">v2.27.1</span></span><br><span class="line">    <span class="attr">service:</span></span><br><span class="line">      <span class="attr">type:</span> <span class="string">LoadBalancer</span></span><br><span class="line">  <span class="attr">grafana:</span></span><br><span class="line">    <span class="attr">baseImage:</span> <span class="string">grafana/grafana</span></span><br><span class="line">    <span class="attr">version:</span> <span class="number">7.5</span><span class="number">.11</span></span><br><span class="line">    <span class="attr">service:</span></span><br><span class="line">      <span class="attr">type:</span> <span class="string">LoadBalancer</span></span><br><span class="line">  <span class="attr">initializer:</span></span><br><span class="line">    <span class="attr">baseImage:</span> <span class="string">pingcap/tidb-monitor-initializer</span></span><br><span class="line">    <span class="attr">version:</span> <span class="string">v8.1.0</span></span><br><span class="line">  <span class="attr">reloader:</span></span><br><span class="line">    <span class="attr">baseImage:</span> <span class="string">pingcap/tidb-monitor-reloader</span></span><br><span class="line">    <span class="attr">version:</span> <span class="string">v1.0.1</span></span><br><span class="line">  <span class="attr">prometheusReloader:</span></span><br><span class="line">    <span class="attr">baseImage:</span> <span class="string">quay.io/prometheus-operator/prometheus-config-reloader</span></span><br><span class="line">    <span class="attr">version:</span> <span class="string">v0.49.0</span></span><br><span class="line">  <span class="attr">imagePullPolicy:</span> <span class="string">IfNotPresent</span></span><br></pre></td></tr></table></figure>
+
+<p>获取dashboard的地址</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get svc -n tidb-cluster |grep dashboard</span><br></pre></td></tr></table></figure>
+
+<p>接下来就是登录tidb，修改root密码。这里便不再赘述。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>至此我们就搭建了一个初步生产可用的tidb集群，后期如果需要扩容的话可以扩展副本数即可，还是比较简单的。</p>
+<p>当然也还有许多配置我们没有用到，这些就得根据<a target="_blank" rel="noopener" href="https://docs.pingcap.com/zh/tidb/stable/pd-configuration-file">文档</a>去增加config了。</p>
+<p>最后我们清理下环境，不得不说在自己电脑上搭建tidb集群还是比较消耗性能的，搭建过程中先后扩容了节点的CPU和内存。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl delete namespace tidb-cluster</span><br></pre></td></tr></table></figure>
 
 
     </article>
@@ -373,9 +469,9 @@
     
         <div class="license-wrapper">
             <p>原文作者：<a href="https://re0.top">Zer0e</a>
-            <p>原文链接：<a href="https://re0.top/devops7.html">https://re0.top/devops7.html</a>
-            <p>发表日期：<a href="https://re0.top/devops7.html">July 19th 2024, 9:30:00 pm</a>
-            <p>更新日期：<a href="https://re0.top/devops7.html">July 22nd 2024, 3:19:40 pm</a>
+            <p>原文链接：<a href="https://re0.top/2024/07/22/devops7/">https://re0.top/2024/07/22/devops7/</a>
+            <p>发表日期：<a href="https://re0.top/2024/07/22/devops7/">July 22nd 2024, 9:30:00 pm</a>
+            <p>更新日期：<a href="https://re0.top/2024/07/22/devops7/">July 23rd 2024, 1:06:42 pm</a>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -385,6 +481,11 @@
             
         </li>
         <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2024/07/22/2024-07-22-replay/" title= "2024面试复盘6">
+                    <div class="prevTitle">2024面试复盘6</div>
+                </a>
             
         </li>
     </ul>
@@ -488,6 +589,24 @@
 </footer>
     </div>
     <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%AD%A3%E6%96%87"><span class="toc-number">2.</span> <span class="toc-text">正文</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85TiDB-Operator"><span class="toc-number">2.1.</span> <span class="toc-text">安装TiDB Operator</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%83%A8%E7%BD%B2%E9%9B%86%E7%BE%A4%E5%92%8C%E7%9B%91%E6%8E%A7"><span class="toc-number">2.2.</span> <span class="toc-text">部署集群和监控</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol>
+    </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
     <div class="sidebar sidebar-hide">
@@ -1154,9 +1273,16 @@
     
     
     
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 93
+        Total : 94
         </div>
         <!-- search  -->
         
@@ -1169,6 +1295,11 @@
     
     <div class="archive-year"> 2024 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/22</span><a class="archive-post-title" href= "/2024/07/22/devops7/" >【架构之路7】tidb集群搭建</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -1790,6 +1921,8 @@ jsonContent:
     
     </div>
     <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
      
     <script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"model":{"jsonPath":"/live2dw/assets/koharu.model.json"},"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
 </html>
