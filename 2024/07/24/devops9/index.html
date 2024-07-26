@@ -278,7 +278,7 @@ height:50vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>字数统计: <span class="post-count word-count">2.9k</span>阅读时长: <span class="post-count reading-time">15 min</span></span>
+                        <span>字数统计: <span class="post-count word-count">3k</span>阅读时长: <span class="post-count reading-time">15 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -420,7 +420,7 @@ height:50vh;
 <h2 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><p>这里用docker容器快速启动一个mysql。</p>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">mysql:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">&#x27;mysql:8.0&#x27;</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&#x27;MYSQL_ROOT_PASSWORD=root&#x27;</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&#x27;3306:3306&#x27;</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">mysql:/var/lib/mysql</span></span><br><span class="line"></span><br><span class="line"><span class="attr">volumes:</span></span><br><span class="line">  <span class="attr">mysql:</span></span><br></pre></td></tr></table></figure>
 
-<p>容器启动后需要做点准备工作，修改mysql的时区。因为默认情况下cdc应用和mysql时区不一致的话，可能会导致数据监听有延迟。</p>
+<p>容器启动后需要做点准备工作，修改mysql的时区。因为默认情况下cdc应用和mysql时区不一致的话，<del>可能会导致数据监听有延迟。</del>任务会一直在报错，无法正常监听。具体报错可以在webUI里看到。感兴趣可以不改mysql时区然后启动下flink-cdc试试。</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; show variables like &#x27;%time_zone%&#x27;;</span><br><span class="line">+------------------+--------+</span><br><span class="line">| Variable_name    | Value  |</span><br><span class="line">+------------------+--------+</span><br><span class="line">| system_time_zone | UTC    |</span><br><span class="line">| time_zone        | SYSTEM |</span><br><span class="line">+------------------+--------+</span><br><span class="line">2 rows in set (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; set persist time_zone=&#x27;+8:00&#x27;;</span><br><span class="line">Query OK, 0 rows affected (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; show variables like &#x27;%time_zone%&#x27;;</span><br><span class="line">+------------------+--------+</span><br><span class="line">| Variable_name    | Value  |</span><br><span class="line">+------------------+--------+</span><br><span class="line">| system_time_zone | UTC    |</span><br><span class="line">| time_zone        | +08:00 |</span><br><span class="line">+------------------+--------+</span><br><span class="line">2 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure>
 
 <p>创建一张测试表，再加点数据。</p>
@@ -465,13 +465,18 @@ height:50vh;
             <p>原文作者：<a href="https://re0.top">Zer0e</a>
             <p>原文链接：<a href="https://re0.top/2024/07/24/devops9/">https://re0.top/2024/07/24/devops9/</a>
             <p>发表日期：<a href="https://re0.top/2024/07/24/devops9/">July 24th 2024, 6:30:00 pm</a>
-            <p>更新日期：<a href="https://re0.top/2024/07/24/devops9/">July 24th 2024, 4:39:20 pm</a>
+            <p>更新日期：<a href="https://re0.top/2024/07/24/devops9/">July 24th 2024, 10:00:19 pm</a>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
     <!-- paginator  -->
     <ul class="post-paginator">
         <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2024/07/25/devops10/" title= "【架构之路10】sentinel限流上手">
+                    <div class="nextTitle">【架构之路10】sentinel限流上手</div>
+                </a>
             
         </li>
         <li class="previous">
@@ -1288,9 +1293,23 @@ top:50vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 96
+        Total : 98
         </div>
         <!-- search  -->
         
@@ -1303,6 +1322,16 @@ top:50vh;
     
     <div class="archive-year"> 2024 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2024/07/26/devops11/" >【架构之路11】sa-token框架上手体验</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2024/07/25/devops10/" >【架构之路10】sentinel限流上手</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -1873,6 +1902,8 @@ top:50vh;
         <span class="sidebar-tag-name" data-tags="运维"><span class="iconfont-archer">&#xe606;</span>运维</span>
     
         <span class="sidebar-tag-name" data-tags="从0.5开始的运维架构之路"><span class="iconfont-archer">&#xe606;</span>从0.5开始的运维架构之路</span>
+    
+        <span class="sidebar-tag-name" data-tags="面经"><span class="iconfont-archer">&#xe606;</span>面经</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
