@@ -22,7 +22,7 @@
     <meta name="description" content="">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-    <title>【架构之路2】ceph集群搭建 · Zer0e&#39;s Blog</title>
+    <title>2024面试复盘9 · Zer0e&#39;s Blog</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -217,7 +217,7 @@
                 <a href="/" >Zer0e&#39;s Blog</a>
             </div>
             <div class="post-title">
-                <a href="#" class="post-name">【架构之路2】ceph集群搭建</a>
+                <a href="#" class="post-name">2024面试复盘9</a>
             </div>
     </div>
     
@@ -247,7 +247,7 @@ height:50vh;
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            【架构之路2】ceph集群搭建
+            2024面试复盘9
             <!-- 404 -->
             
         </h1>
@@ -268,22 +268,20 @@ height:50vh;
     
         <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags = "随想">随想</a>
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "运维">运维</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "从0.5开始的运维架构之路">从0.5开始的运维架构之路</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags = "面经">面经</a>
     
 </div>
                 
                 
                     <div class="post-intro-read">
-                        <span>字数统计: <span class="post-count word-count">1.5k</span>阅读时长: <span class="post-count reading-time">6 min</span></span>
+                        <span>字数统计: <span class="post-count word-count">2.4k</span>阅读时长: <span class="post-count reading-time">8 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
                     <span class="post-intro-calander iconfont-archer">&#xe676;</span>
-                    <span class="post-intro-time">2024/07/11</span>
+                    <span class="post-intro-time">2024/08/02</span>
                     
                     <span id="busuanzi_container_page_pv" class="busuanzi-pv">
                         <span class="iconfont-archer">&#xe602;</span>
@@ -407,95 +405,126 @@ height:50vh;
         <div class="container container-unloaded">
             <main class="main post-page">
     <article class="article-entry">
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>上篇讲了k8s集群的搭建，这篇接着来搭建ceph集群。  </p>
-<blockquote>
-<p>以下内容来自<a target="_blank" rel="noopener" href="https://wiki.archlinuxcn.org/wiki/Ceph">wiki</a></p>
-<p>Ceph 是一个专注于分布式的、弹性可扩展的、高可靠的、性能优异的存储系统平台，可用于为虚拟机提供块存储方案或通过 FUSE提供常规的文件系统。Ceph 是个高度可配置的系统，管理者可以控制系统的各个方面。它提供了一个命令行界面用于监视和控制其存储集群。Ceph 也包含鉴证和授权功能，可兼容多种存储网关接口，如 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/OpenStack#Swift">OpenStack Swift</a> 和 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Amazon_S3">Amazon S3</a>。</p>
-</blockquote>
-<p>ceph中有几个术语，官网的描述为</p>
-<blockquote>
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>今天经历了一场长时间面试，接近快两小时，晚上又经历了一场，把我干蒙了，尤其是晚上那场，一共问了三个问题，我都没答上来。寄。。。</p>
+<h1 id="复盘"><a href="#复盘" class="headerlink" title="复盘"></a>复盘</h1><h2 id="JAVA代码加载执行过程"><a href="#JAVA代码加载执行过程" class="headerlink" title="JAVA代码加载执行过程"></a>JAVA代码加载执行过程</h2><p>涉及到类加载过程，根本记不住，就算文档在旁边我也答不上来。</p>
+<p>Java代码的加载和执行过程涉及多个步骤，包括编译、类加载、链接、初始化和运行。</p>
+<h3 id="1-编译阶段"><a href="#1-编译阶段" class="headerlink" title="1. 编译阶段"></a>1. 编译阶段</h3><p>Java源代码文件（.java）通过Java编译器（javac）编译成字节码文件（.class）。字节码是一种中间表示形式，它可以在Java虚拟机（JVM）上运行。</p>
+<h3 id="2-类加载阶段"><a href="#2-类加载阶段" class="headerlink" title="2. 类加载阶段"></a>2. 类加载阶段</h3><p>类加载阶段是将类的字节码加载到JVM内存中的过程。类加载器（ClassLoader）负责加载类。</p>
 <ul>
-<li><strong>Monitors</strong>: A <a target="_blank" rel="noopener" href="https://docs.ceph.com/en/latest/glossary/#term-Ceph-Monitor">Ceph Monitor</a> (<code>ceph-mon</code>) maintains maps of the cluster state, including the <a target="_blank" rel="noopener" href="https://docs.ceph.com/en/latest/rados/operations/monitoring/#display-mon-map">monitor map</a>, manager map, the OSD map, the MDS map, and the CRUSH map. These maps are critical cluster state required for Ceph daemons to coordinate with each other. Monitors are also responsible for managing authentication between daemons and clients. At least three monitors are normally required for redundancy and high availability.</li>
-<li><strong>Managers</strong>: A <a target="_blank" rel="noopener" href="https://docs.ceph.com/en/latest/glossary/#term-Ceph-Manager">Ceph Manager</a> daemon (<code>ceph-mgr</code>) is responsible for keeping track of runtime metrics and the current state of the Ceph cluster, including storage utilization, current performance metrics, and system load. The Ceph Manager daemons also host python-based modules to manage and expose Ceph cluster information, including a web-based <a target="_blank" rel="noopener" href="https://docs.ceph.com/en/latest/mgr/dashboard/#mgr-dashboard">Ceph Dashboard</a> and <a target="_blank" rel="noopener" href="https://docs.ceph.com/en/mgr/restful">REST API</a>. At least two managers are normally required for high availability.</li>
-<li><strong>Ceph OSDs</strong>: An Object Storage Daemon (<a target="_blank" rel="noopener" href="https://docs.ceph.com/en/latest/glossary/#term-Ceph-OSD">Ceph OSD</a>, <code>ceph-osd</code>) stores data, handles data replication, recovery, rebalancing, and provides some monitoring information to Ceph Monitors and Managers by checking other Ceph OSD Daemons for a heartbeat. At least three Ceph OSDs are normally required for redundancy and high availability.</li>
-<li><strong>MDSs</strong>: A <a target="_blank" rel="noopener" href="https://docs.ceph.com/en/latest/glossary/#term-Ceph-Metadata-Server">Ceph Metadata Server</a> (MDS, <code>ceph-mds</code>) stores metadata for the <a target="_blank" rel="noopener" href="https://docs.ceph.com/en/latest/glossary/#term-Ceph-File-System">Ceph File System</a>. Ceph Metadata Servers allow CephFS users to run basic commands (like <code>ls</code>, <code>find</code>, etc.) without placing a burden on the Ceph Storage Cluster.</li>
+<li><strong>启动类加载器（Bootstrap ClassLoader）</strong>：加载核心Java类库，如<code>java.lang</code>、<code>java.util</code>等，通常从JVM的运行时环境（rt.jar）中加载。</li>
+<li><strong>扩展类加载器（Extension ClassLoader）</strong>：加载扩展类库，通常从<code>lib/ext</code>目录中加载。</li>
+<li><strong>应用类加载器（Application ClassLoader）</strong>：加载应用程序的类，通常从类路径（classpath）中加载。</li>
 </ul>
-</blockquote>
-<p>稍微翻译一下</p>
+<h3 id="3-链接阶段"><a href="#3-链接阶段" class="headerlink" title="3. 链接阶段"></a>3. 链接阶段</h3><p>链接阶段将类的字节码合并到JVM中，并为其分配内存。链接阶段包括三个子阶段：</p>
 <ul>
-<li><strong>MONs</strong> : 即监视器，存放了集群状态及例如服务和数据位置等集群信息。</li>
-<li><strong>MDSs</strong> : 即元数据服务器，为 Ceph 文件系统存储元数据，以减轻存储集群的负载（例如<code>ls</code> 等命令所需的信息）。</li>
-<li><strong>MGRs</strong>: 负责集群监控，维护，并于外部监控系统对接，如普罗米修斯。</li>
-<li><strong>OSDs</strong> : 即 OSD daemons，负责集群的数据存储工作，也同时负责多项其它任务，例如数据复制，恢复及重平衡。</li>
+<li><strong>验证（Verification）</strong>：确保字节码符合JVM的规范，并且没有安全问题。</li>
+<li><strong>准备（Preparation）</strong>：为类的静态变量分配内存，并初始化为默认值。</li>
+<li><strong>解析（Resolution）</strong>：将常量池中的符号引用替换为直接引用。</li>
 </ul>
-<p>ceph的架构还是挺复杂的，建议去官网看看。</p>
-<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p>废话少说开始搭建。</p>
-<p>准备工作就不重复写了，可以参考上一篇，还是那三台机器138，139，140。</p>
-<p>官方目前推荐使用cephadm作为安装工具，那我们后续就用这个。至于ceph-ansible和ceph-deploy，前者我们做demo没必要，后者的话官网已经不再支持了。</p>
-<h2 id="安装cephadm"><a href="#安装cephadm" class="headerlink" title="安装cephadm"></a>安装cephadm</h2><p>在ubantu下很简单直接使用apt就行</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt install -y cephadm</span><br></pre></td></tr></table></figure>
+<h3 id="4-初始化阶段"><a href="#4-初始化阶段" class="headerlink" title="4. 初始化阶段"></a>4. 初始化阶段</h3><p>初始化阶段是执行类构造器方法 <code>&lt;clinit&gt;</code> 的过程。类构造器方法 <code>&lt;clinit&gt;</code> 是由编译器自动生成的，它包含类静态变量的赋值和静态代码块的执行。</p>
+<h3 id="5-执行阶段"><a href="#5-执行阶段" class="headerlink" title="5. 执行阶段"></a>5. 执行阶段</h3><p>在执行阶段，JVM开始执行应用程序的<code>main</code>方法。整个应用程序的执行过程由JVM的执行引擎来处理。执行引擎包括以下几个部分：</p>
+<ul>
+<li><strong>解释器（Interpreter）</strong>：逐行解释执行字节码。</li>
+<li><strong>即时编译器（Just-In-Time Compiler, JIT）</strong>：将热点代码（执行频繁的代码）编译成本地机器码，以提高执行效率。</li>
+<li><strong>垃圾收集器（Garbage Collector, GC）</strong>：管理内存，回收不再使用的对象。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Hello, World!&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>但是我们用的是centOS7！已经快被淘汰了，现在新版的叫CentOS Stream，内置的包管理器竟然叫做dnf。。。</p>
-<p>不管了，其实cephadm就是一个python脚本，我们去从源码拉下来就行。</p>
-<p>先安装python3</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y python3</span><br></pre></td></tr></table></figure>
+<p>假设我们有上述简单的Java代码，以下是详细的加载和执行过程</p>
+<p><strong>编译</strong>：</p>
+<ul>
+<li>使用 <code>javac Main.java</code> 编译器将 <code>Main.java</code> 编译为 <code>Main.class</code> 字节码文件。</li>
+</ul>
+<p><strong>类加载</strong>：</p>
+<ul>
+<li>JVM启动时，启动类加载器首先加载核心类库。</li>
+<li>应用类加载器加载 <code>Main</code> 类的字节码，将其放入方法区，并创建一个 <code>Class</code> 对象表示 <code>Main</code> 类。</li>
+</ul>
+<p><strong>链接</strong>：</p>
+<ul>
+<li><strong>验证</strong>：JVM验证 <code>Main.class</code> 字节码是否合法。</li>
+<li><strong>准备</strong>：为 <code>Main</code> 类的静态变量分配内存并初始化为默认值（此例中没有静态变量）。</li>
+<li><strong>解析</strong>：将常量池中的符号引用解析为直接引用。</li>
+</ul>
+<p><strong>初始化</strong>：</p>
+<ul>
+<li>执行 <code>Main</code> 类的静态初始化代码（如有），包括静态变量的初始化和静态代码块（此例中没有静态初始化代码）。</li>
+</ul>
+<p><strong>执行</strong>：</p>
+<ul>
+<li>JVM调用 <code>Main</code> 类的 <code>main</code> 方法。</li>
+<li>解释器解释执行 <code>main</code> 方法的字节码，将 <code>Hello, World!</code> 打印到控制台。</li>
+<li>JIT编译器在执行频繁的代码时将其编译为本地机器码，以提高执行效率。</li>
+</ul>
+<h2 id="JAVA中能否加载相同类名-自定义java-lang-String能否加载？"><a href="#JAVA中能否加载相同类名-自定义java-lang-String能否加载？" class="headerlink" title="JAVA中能否加载相同类名?自定义java.lang.String能否加载？"></a>JAVA中能否加载相同类名?自定义java.lang.String能否加载？</h2><p>在Java中，可以加载具有相同类名的类，但需要通过不同的类加载器来实现。每个类加载器都有其独立的命名空间，因此可以加载同名类而不冲突。这种机制在实现Java应用程序中的模块化、插件化和动态加载时非常有用。</p>
+<p><strong>类加载器</strong>：负责加载类文件到JVM内存中。Java中的类加载器包括引导类加载器（Bootstrap ClassLoader）、扩展类加载器（Extension ClassLoader）和应用类加载器（Application ClassLoader）。还可以自定义类加载器。</p>
+<p><strong>命名空间</strong>：每个类加载器都有自己的命名空间，包含其加载的所有类。不同类加载器的命名空间是独立的，这意味着两个不同类加载器可以加载同名的类而不冲突。</p>
+<p>简单来说就是使用不同的类加载器来加载类。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ClassLoaderTest</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// Load MyClass from dir1</span></span><br><span class="line">            CustomClassLoader classLoader1 = <span class="keyword">new</span> CustomClassLoader(<span class="string">&quot;bin/dir1/&quot;</span>);</span><br><span class="line">            Class&lt;?&gt; class1 = classLoader1.loadClass(<span class="string">&quot;com.example.MyClass&quot;</span>);</span><br><span class="line">            Object obj1 = class1.newInstance();</span><br><span class="line">            class1.getMethod(<span class="string">&quot;print&quot;</span>).invoke(obj1);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Load MyClass from dir2</span></span><br><span class="line">            CustomClassLoader classLoader2 = <span class="keyword">new</span> CustomClassLoader(<span class="string">&quot;bin/dir2/&quot;</span>);</span><br><span class="line">            Class&lt;?&gt; class2 = classLoader2.loadClass(<span class="string">&quot;com.example.MyClass&quot;</span>);</span><br><span class="line">            Object obj2 = class2.newInstance();</span><br><span class="line">            class2.getMethod(<span class="string">&quot;print&quot;</span>).invoke(obj2);</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>然后拉去代码，拉不下来记得export代理地址。CEPH_RELEASE版本可以参考<a target="_blank" rel="noopener" href="https://docs.ceph.com/en/latest/releases/#active-releases">这里</a>.</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CEPH_RELEASE=18.2.2</span><br><span class="line">curl --silent --remote-name --location https://download.ceph.com/rpm-<span class="variable">$&#123;CEPH_RELEASE&#125;</span>/el9/noarch/cephadm</span><br><span class="line">chmod +x cephadm</span><br></pre></td></tr></table></figure>
-
-<p>接下来是添加仓库，官网这里是安装的18.2，所以添加的是reef仓库，我这里安装的是15.x所以是octopus仓库</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./cephadm add-repo --release octopus</span><br><span class="line">./cephadm install</span><br></pre></td></tr></table></figure>
-
-<h2 id="初始化集群"><a href="#初始化集群" class="headerlink" title="初始化集群"></a>初始化集群</h2><p>在所有节点上完成cephadm安装后，安装ceph-common</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install ceph-common</span><br></pre></td></tr></table></figure>
-
-<p>在<strong>主节点</strong>初始化集群，初始化方式是使用docker方式，所以提前装好docker-ce，ceph-common中应该有docker依赖</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cephadm bootstrap --mon-ip 192.168.28.138</span><br></pre></td></tr></table></figure>
-
-<p>初始化完成后，终端会打印默认密码，进入<code>https://worker1:8443/</code>，<strong>记得先更改初始密码</strong>。</p>
-<p>执行<code>ceph -s</code>能查看集群信息说明初始化完成。记得保存下cluster.id，后续对接k8s需要使用。没记也不要紧，后面应该很多地方都可以看到。</p>
-<h2 id="添加子节点"><a href="#添加子节点" class="headerlink" title="添加子节点"></a>添加子节点</h2><p>将主节点的ceph配置文件和key文件传到子节点上</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">scp /etc/ceph/ceph.conf root@worker2:/etc/ceph/</span><br><span class="line">scp /etc/ceph/ceph.client.admin.keyring root@worker2:/etc/ceph/</span><br><span class="line"></span><br><span class="line">scp /etc/ceph/ceph.conf root@worker3:/etc/ceph/</span><br><span class="line">scp /etc/ceph/ceph.client.admin.keyring root@worker3:/etc/ceph/</span><br></pre></td></tr></table></figure>
-
-<p>添加host节点</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ceph orch host add worker2</span><br><span class="line">ceph orch host add worker3</span><br></pre></td></tr></table></figure>
-
-<p>在所有节点部署mon服务</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ceph orch daemon add mon worker2:192.168.28.139</span><br><span class="line">ceph orch daemon add mon worker3:192.168.28.140</span><br></pre></td></tr></table></figure>
-
-<p>在另外一个节点部署mgr服务</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ceph orch daemon add mgr worker2:192.168.28.139</span><br></pre></td></tr></table></figure>
-
-<p>这里我也尝试把节点3也部署mgr，但是发现部署后主节点的mgr服务会被取消，不知道啥原因，先不管了，影响也不大。</p>
-<h2 id="添加osd"><a href="#添加osd" class="headerlink" title="添加osd"></a>添加osd</h2><p>osd对应的就是硬盘，一个osd服务管理一个硬盘，这里我们在worker2和3上分别额外挂载两个硬盘。在VMware虚拟机设置中添加硬盘即可，在系统中不需要任何分区操作。   </p>
-<p>添加完成后重启系统。</p>
-<p>在2，3节点上执行<code>fdisk -l</code>命令，能看见挂载的硬盘，一般对于虚拟机来说，/dev/sdb和/dev/sdc是新加的两块硬盘。</p>
-<p>在主节点执行命令，查看可用设备</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ceph orch device ls</span><br></pre></td></tr></table></figure>
-
-<p>执行以下命令，让ceph将所有可用设备用作osd</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ceph orch apply osd --all-available-devices</span><br></pre></td></tr></table></figure>
-
-<p>也可手动部署osd</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ceph orch daemon add osd worker2:/dev/sdb</span><br></pre></td></tr></table></figure>
-
-<p>至此，ceph集群搭建完成。</p>
-<h1 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h1><h3 id="部署osd时，提示可能已经被使用。"><a href="#部署osd时，提示可能已经被使用。" class="headerlink" title="部署osd时，提示可能已经被使用。"></a>部署osd时，提示可能已经被使用。</h3><p>可能之前挂载的时候，没有卸载干净，需要重新清理lv(Logical Volume)，ceph正是使用lv技术来管理磁盘的。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">lvdisplay</span><br><span class="line">// 根据display找到对应磁盘</span><br><span class="line">lvremove /dev/ceph-e0242907-2693-4d51-a454-18aa38145020/osd-block-245236cd-4902-4973-b306-baa61bb16d1b</span><br><span class="line">// 记得重启</span><br><span class="line">reboot</span><br></pre></td></tr></table></figure>
-
-<h3 id="yum代理"><a href="#yum代理" class="headerlink" title="yum代理"></a>yum代理</h3><p>export的代理对yum不起作用，需要手动配置下</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/yum.conf</span><br><span class="line">// 在空行添加</span><br><span class="line">proxy=http://192.168.28.1:10801</span><br></pre></td></tr></table></figure>
-
-<h3 id="osd大量离线"><a href="#osd大量离线" class="headerlink" title="osd大量离线"></a>osd大量离线</h3><p>当启用了mds后，osd会定时与mds服务进行同步，此时如果时间异常会导致同步失败，一般情况下是mds服务或osd所在节点的时间不正确，用ntp同步一下时间即可。</p>
+<p>在Java中，自定义 <code>java.lang.String</code> 类并尝试加载它是非常困难的，因为 <code>java.lang.String</code> 是由引导类加载器（Bootstrap ClassLoader）加载的核心类。引导类加载器是JVM的一部分，用于加载核心Java类库，它有最高的优先级并且不允许由其他类加载器覆盖这些核心类。</p>
+<p><strong>引导类加载器的优先级</strong>：引导类加载器首先加载核心类库，包括 <code>java.lang.String</code>。由于它是最先被加载的类加载器，并且在JVM启动时就已经加载了核心类，其他类加载器不能覆盖或重新定义这些类。</p>
+<p><strong>双亲委派模型</strong>：Java的类加载器遵循双亲委派模型，即当一个类加载器加载类时，它首先委派给其父类加载器。如果父类加载器已经加载了这个类，子类加载器就不会再加载它。由于 <code>java.lang.String</code> 是由引导类加载器加载的，所有其他类加载器在加载 <code>java.lang.String</code> 时都会被委派给引导类加载器，从而无法加载自定义的 <code>java.lang.String</code>。</p>
+<p>虽然理论上可以通过一些非常规手段尝试加载自定义的 <code>java.lang.String</code> 类，但在标准JVM实现中，这样的操作通常会失败或导致异常。以下是一些可能的方式和其局限性：</p>
+<ol>
+<li><strong>通过自定义类加载器</strong>：即使你编写了一个自定义类加载器并尝试加载自定义的 <code>java.lang.String</code>，由于双亲委派模型，最终还是会委派给引导类加载器。</li>
+<li><strong>修改引导类路径</strong>：可以尝试将自定义的 <code>java.lang.String</code> 放在引导类路径上，但这需要修改JVM的启动参数，且一般来说这不被推荐，因为它会破坏JVM的稳定性和安全性。</li>
+</ol>
+<h2 id="mysql也能存储json，为什么mongo比mysql快"><a href="#mysql也能存储json，为什么mongo比mysql快" class="headerlink" title="mysql也能存储json，为什么mongo比mysql快"></a>mysql也能存储json，为什么mongo比mysql快</h2><h3 id="1-数据模型和存储机制"><a href="#1-数据模型和存储机制" class="headerlink" title="1. 数据模型和存储机制"></a>1. 数据模型和存储机制</h3><p><strong>MongoDB</strong>：</p>
+<ul>
+<li>MongoDB 是一个文档数据库，设计上天然支持 JSON（实际上是 BSON，Binary JSON）。</li>
+<li>数据以文档的形式存储，每个文档是一个键-值对的集合，可以嵌套和具有多样的结构。</li>
+<li>MongoDB 的文档模型更接近 JSON 的原始结构，因此存储和读取 JSON 数据时更加高效。</li>
+</ul>
+<p><strong>MySQL</strong>：</p>
+<ul>
+<li>MySQL 是一个关系型数据库，虽然它支持 JSON 数据类型，但其设计主要针对结构化数据。</li>
+<li>MySQL 在存储 JSON 数据时，通常将其作为字符串处理，需要额外的解析和转换。</li>
+<li>对 JSON 数据的查询和操作需要额外的步骤，如解析 JSON 字符串，这会影响性能。</li>
+</ul>
+<h3 id="2-索引和查询优化"><a href="#2-索引和查询优化" class="headerlink" title="2. 索引和查询优化"></a>2. 索引和查询优化</h3><p><strong>MongoDB</strong>：</p>
+<ul>
+<li>MongoDB 支持在文档中的嵌套字段上创建索引，这使得对嵌套 JSON 结构的查询更高效。</li>
+<li>MongoDB 的查询语言和引擎专为文档结构设计，能够直接对 BSON 结构进行操作，无需额外的解析步骤。</li>
+<li>由于设计上的优势，MongoDB 在进行复杂的嵌套查询时性能更好。</li>
+</ul>
+<p><strong>MySQL</strong>：</p>
+<ul>
+<li>MySQL 也支持对 JSON 字段创建索引，但其索引机制和查询优化主要为关系型数据设计。</li>
+<li>查询 JSON 数据时，MySQL 需要先解析 JSON 字符串，然后再执行查询，增加了额外的开销。</li>
+<li>对嵌套 JSON 结构的查询在 MySQL 中较为复杂，可能需要使用函数和额外的步骤来解析和提取数据。</li>
+</ul>
+<h3 id="3-数据更新和写入"><a href="#3-数据更新和写入" class="headerlink" title="3. 数据更新和写入"></a>3. 数据更新和写入</h3><p><strong>MongoDB</strong>：</p>
+<ul>
+<li>MongoDB 的写入操作设计上更加灵活，支持文档的部分更新。</li>
+<li>对于 JSON 数据的更新，MongoDB 能够直接修改文档中的嵌套字段，而无需整体替换。</li>
+<li>这种灵活性使得对 JSON 数据的写入和更新操作更高效。</li>
+</ul>
+<p><strong>MySQL</strong>：</p>
+<ul>
+<li>MySQL 对 JSON 数据的更新通常需要解析和重新构建整个 JSON 字符串，尤其是对于嵌套结构。</li>
+<li>这种操作增加了写入和更新的开销，导致性能下降。</li>
+</ul>
+<h3 id="4-并发处理和扩展性"><a href="#4-并发处理和扩展性" class="headerlink" title="4. 并发处理和扩展性"></a>4. 并发处理和扩展性</h3><p><strong>MongoDB</strong>：</p>
+<ul>
+<li>MongoDB 的架构设计为分布式存储和高并发处理进行了优化。</li>
+<li>通过分片和复制集机制，MongoDB 能够轻松扩展以应对大规模的数据量和高并发请求。</li>
+</ul>
+<p><strong>MySQL</strong>：</p>
+<ul>
+<li>MySQL 也支持分布式和集群架构，但其扩展性主要针对关系型数据。</li>
+<li>对于大规模 JSON 数据的处理，MySQL 的性能和扩展性可能不如 MongoDB。</li>
+</ul>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>这次真的一问三不知，另一场两小时面试基础问题比较多，周末整理下看看再发一篇。</p>
 
     </article>
     <!-- license  -->
     
         <div class="license-wrapper">
             <p>原文作者：<a href="https://re0.top">Zer0e</a>
-            <p>原文链接：<a href="https://re0.top/2024/07/11/devops2/">https://re0.top/2024/07/11/devops2/</a>
-            <p>发表日期：<a href="https://re0.top/2024/07/11/devops2/">July 11th 2024, 4:30:00 pm</a>
-            <p>更新日期：<a href="https://re0.top/2024/07/11/devops2/">July 11th 2024, 8:38:54 pm</a>
+            <p>原文链接：<a href="https://re0.top/2024/08/02/2024-08-02-replay/">https://re0.top/2024/08/02/2024-08-02-replay/</a>
+            <p>发表日期：<a href="https://re0.top/2024/08/02/2024-08-02-replay/">August 2nd 2024, 8:00:00 pm</a>
+            <p>更新日期：<a href="https://re0.top/2024/08/02/2024-08-02-replay/">August 2nd 2024, 9:05:28 pm</a>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -503,17 +532,12 @@ height:50vh;
     <ul class="post-paginator">
         <li class="next">
             
-                <div class="nextSlogan">Next Post</div>
-                <a href= "/2024/07/11/devops3/" title= "【架构之路3】k8s对接cephfs">
-                    <div class="nextTitle">【架构之路3】k8s对接cephfs</div>
-                </a>
-            
         </li>
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href= "/2024/07/10/devops1/" title= "【架构之路1】k8s集群搭建">
-                    <div class="prevTitle">【架构之路1】k8s集群搭建</div>
+                <a href= "/2024/08/01/2024-08-01-replay/" title= "2024面试复盘8">
+                    <div class="prevTitle">2024面试复盘8</div>
                 </a>
             
         </li>
@@ -634,7 +658,7 @@ top:50vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%AD%A3%E6%96%87"><span class="toc-number">2.</span> <span class="toc-text">正文</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85cephadm"><span class="toc-number">2.1.</span> <span class="toc-text">安装cephadm</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E9%9B%86%E7%BE%A4"><span class="toc-number">2.2.</span> <span class="toc-text">初始化集群</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0%E5%AD%90%E8%8A%82%E7%82%B9"><span class="toc-number">2.3.</span> <span class="toc-text">添加子节点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0osd"><span class="toc-number">2.4.</span> <span class="toc-text">添加osd</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="toc-number">3.</span> <span class="toc-text">常见问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%83%A8%E7%BD%B2osd%E6%97%B6%EF%BC%8C%E6%8F%90%E7%A4%BA%E5%8F%AF%E8%83%BD%E5%B7%B2%E7%BB%8F%E8%A2%AB%E4%BD%BF%E7%94%A8%E3%80%82"><span class="toc-number">3.0.1.</span> <span class="toc-text">部署osd时，提示可能已经被使用。</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#yum%E4%BB%A3%E7%90%86"><span class="toc-number">3.0.2.</span> <span class="toc-text">yum代理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#osd%E5%A4%A7%E9%87%8F%E7%A6%BB%E7%BA%BF"><span class="toc-number">3.0.3.</span> <span class="toc-text">osd大量离线</span></a></li></ol></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%A4%8D%E7%9B%98"><span class="toc-number">2.</span> <span class="toc-text">复盘</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#JAVA%E4%BB%A3%E7%A0%81%E5%8A%A0%E8%BD%BD%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B"><span class="toc-number">2.1.</span> <span class="toc-text">JAVA代码加载执行过程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%BC%96%E8%AF%91%E9%98%B6%E6%AE%B5"><span class="toc-number">2.1.1.</span> <span class="toc-text">1. 编译阶段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E9%98%B6%E6%AE%B5"><span class="toc-number">2.1.2.</span> <span class="toc-text">2. 类加载阶段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E9%93%BE%E6%8E%A5%E9%98%B6%E6%AE%B5"><span class="toc-number">2.1.3.</span> <span class="toc-text">3. 链接阶段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%88%9D%E5%A7%8B%E5%8C%96%E9%98%B6%E6%AE%B5"><span class="toc-number">2.1.4.</span> <span class="toc-text">4. 初始化阶段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%89%A7%E8%A1%8C%E9%98%B6%E6%AE%B5"><span class="toc-number">2.1.5.</span> <span class="toc-text">5. 执行阶段</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JAVA%E4%B8%AD%E8%83%BD%E5%90%A6%E5%8A%A0%E8%BD%BD%E7%9B%B8%E5%90%8C%E7%B1%BB%E5%90%8D-%E8%87%AA%E5%AE%9A%E4%B9%89java-lang-String%E8%83%BD%E5%90%A6%E5%8A%A0%E8%BD%BD%EF%BC%9F"><span class="toc-number">2.2.</span> <span class="toc-text">JAVA中能否加载相同类名?自定义java.lang.String能否加载？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysql%E4%B9%9F%E8%83%BD%E5%AD%98%E5%82%A8json%EF%BC%8C%E4%B8%BA%E4%BB%80%E4%B9%88mongo%E6%AF%94mysql%E5%BF%AB"><span class="toc-number">2.3.</span> <span class="toc-text">mysql也能存储json，为什么mongo比mysql快</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B%E5%92%8C%E5%AD%98%E5%82%A8%E6%9C%BA%E5%88%B6"><span class="toc-number">2.3.1.</span> <span class="toc-text">1. 数据模型和存储机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%B4%A2%E5%BC%95%E5%92%8C%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96"><span class="toc-number">2.3.2.</span> <span class="toc-text">2. 索引和查询优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%95%B0%E6%8D%AE%E6%9B%B4%E6%96%B0%E5%92%8C%E5%86%99%E5%85%A5"><span class="toc-number">2.3.3.</span> <span class="toc-text">3. 数据更新和写入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%B9%B6%E5%8F%91%E5%A4%84%E7%90%86%E5%92%8C%E6%89%A9%E5%B1%95%E6%80%A7"><span class="toc-number">2.3.4.</span> <span class="toc-text">4. 并发处理和扩展性</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
