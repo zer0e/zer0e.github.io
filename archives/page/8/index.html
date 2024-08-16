@@ -346,6 +346,36 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href = "/2020/06/24/load_balancing_algorithm/" >
+            
+                <span>常见的负载均衡算法</span>
+        </a>
+        <div class="abstract-content">
+            前言上一篇文章讲了负载均衡的几种实现方式，这期就重点讲讲当请求到达负载均衡服务器时，服务器可以根据哪些算法来进行分配请求。 
+正文轮询法这种方法很简单，就是按照顺序轮流将请求分配到各个服务器上，对服务器的状态和负载情况并不关注。由于需要对pos变量进行操作，如果是高并发场景必须加写锁，并且会导致并发吞吐量的明显下降。以下代码实现了一...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/06/24</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href = "/2020/06/15/load_balancing/" >
             
                 <span>浅谈负载均衡</span>
@@ -625,37 +655,6 @@
         <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags = "Python">Python</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2020/03/22/java-reflection/" >
-            
-                <span>理解Java反射</span>
-        </a>
-        <div class="abstract-content">
-            前言这篇文章鸽了好久，拖稿了好几天，趁着有精力的时候多写写文章。Java语言一直被我认为是常见语言中最难的语言，主要是概念繁多，然后就是JVM的知识点复杂，导致尽管有些人会写代码，但是问到某个知识点却不知道为何是这样。今天谈谈Java中的反射机制。什么是反射呢？反射就是在Java编译期以外的时间可以动态的加载一个类。还可以实例化对象...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/03/22</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "Java">Java</a>
     
 </div>
             
@@ -1504,9 +1503,16 @@
     
     
     
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 105
+        Total : 106
         </div>
         <!-- search  -->
         
@@ -1519,6 +1525,11 @@
     
     <div class="archive-year"> 2024 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2024/08/15/2024-08-15-replay/" >2024面试复盘13</a>
+        </li>
     
     
         <li class="archive-post-item">
