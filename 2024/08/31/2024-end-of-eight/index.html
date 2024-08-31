@@ -22,7 +22,7 @@
     <meta name="description" content="">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-    <title>谈一道数据库更新的并发问题 · Zer0e&#39;s Blog</title>
+    <title>写于8月最后一天 · Zer0e&#39;s Blog</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -217,7 +217,7 @@
                 <a href="/" >Zer0e&#39;s Blog</a>
             </div>
             <div class="post-title">
-                <a href="#" class="post-name">谈一道数据库更新的并发问题</a>
+                <a href="#" class="post-name">写于8月最后一天</a>
             </div>
     </div>
     
@@ -247,7 +247,7 @@ height:50vh;
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            谈一道数据库更新的并发问题
+            写于8月最后一天
             <!-- 404 -->
             
         </h1>
@@ -266,20 +266,18 @@ height:50vh;
                 
                     <div class= post-intro-tags >
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "数据库">数据库</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags = "随想">随想</a>
     
 </div>
                 
                 
                     <div class="post-intro-read">
-                        <span>字数统计: <span class="post-count word-count">909</span>阅读时长: <span class="post-count reading-time">3 min</span></span>
+                        <span>字数统计: <span class="post-count word-count">1.1k</span>阅读时长: <span class="post-count reading-time">3 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
                     <span class="post-intro-calander iconfont-archer">&#xe676;</span>
-                    <span class="post-intro-time">2020/08/19</span>
+                    <span class="post-intro-time">2024/08/31</span>
                     
                     <span id="busuanzi_container_page_pv" class="busuanzi-pv">
                         <span class="iconfont-archer">&#xe602;</span>
@@ -403,26 +401,28 @@ height:50vh;
         <div class="container container-unloaded">
             <main class="main post-page">
     <article class="article-entry">
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>今天进行了第一次面试，还是比较紧张的，面试官比较严肃，感觉面试官就是抓着一个点不断的问，问到你不会，这次面试算是很失败了，不仅前面的问题很多都不清楚，而且最后的coding题都没写完成，明明知道怎么写，缺敲不动键盘，但是也知道了自己的不足，主要是数据库方面，然后还有代码方面需要加强一下。再努力吧。<br>那文章还是得继续写，今天聊聊面试中提到的一个关于数据库修改数据的问题。  </p>
-<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><blockquote>
-<p>有这么一个场景，假设user表的结构为id,user_data，其中这个user_data是个json数据，存放着用户的年龄，名字等等的数据，如果一个用户并发修改这个字段中的user_age与user_name会出现什么样的情况？<br>首先这个问题，先考虑单个字段修改的情况，即我修改其中的某一个数据该怎么改？<br>我在面试中的回答是先取出这个json数据存为对象，然后对这个对象进行修改。但其实mysql5.7.8开始，就提供了对json字段进行操作的函数，有JSON_SET(), JSON_INSERT()还有JSON_REPLACE()，其中JSON_REPLACE()是用来修改json数据的某个字段。那我个人是不太清楚这个，上网查找才知道如果需要对json字段进行update，那可以使用以下代码：</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">update user set user_data = json_replace(user_data,&#x27;$.user_name&#x27;,&#x27;abc&#x27;,&#x27;$.user_age&#x27;,18) where id = 1;</span><br></pre></td></tr></table></figure>  
-
-<p>其实就是这么简单。<br>但我当时回答的是，先取出数据，再去修改。那问题来了，如果在读过后，被其他线程修改过了数据该怎么办？<br>例如原始数据为<code>1 &#123;&#39;user_name&#39;:&#39;abc&#39;,&#39;user_age&#39;:10&#125;</code>。<br>那么同时过来两个请求a,b：<br>其中a请求是把user_name改为aaa，而b请求是把user_age改为20。<br>那这时候如果请求时间十分接近，在a读取原始数据过后，还没来得及修改，b请求就已经将age改为20了，但此时a读取的数据就是旧的了，如果a继续写入，那age的值就会变为未修改前的。最终导致只有一个字段修改成功。  </p>
-<p>这个问题就是数据库并发时会出现的问题，其实就是不可重复读的问题，即一个事务在一段时间内读取的数据不一致，那解决办法我个人认为使用事务加锁进行解决。</p>
-<h2 id="排它锁与共享锁"><a href="#排它锁与共享锁" class="headerlink" title="排它锁与共享锁"></a>排它锁与共享锁</h2><p>mysql的innodb当中，有一种共享锁的存在，在读取数据前添加共享锁，其他事务只能添加共享锁。那排它锁就是在获取排它锁之后，其他事务不能添加任何锁。  </p>
-<p>那问题在于添加了读的共享锁之后，再添加排它锁会导致死锁，两个事务都没法获得锁，没法更新。所以我们可以在读取的时候就添加排它锁，事务结束后再释放就可以了。<br>那还有一种解决方案就是直接把数据库的隔离级别设为可串行化，事务排队执行，但可能导致请求的阻塞。  </p>
-<h1 id="后言"><a href="#后言" class="headerlink" title="后言"></a>后言</h1><p>以上就是这个问题的后续思考。<br>在写这篇文章时，没想到就收到了下一面的预约电话，感觉不可思议，明明表现不怎样。但学习永远都是停不下脚步的，就这样共勉吧。</p>
+        <h1 id="随笔"><a href="#随笔" class="headerlink" title="随笔"></a>随笔</h1><p>今天是8月最后一天，总觉得我应该写点什么，但是提笔忘字，哦不对，应该说手放键盘，却不知写下何物。</p>
+<p>今天早上五点半起床去爬了山，结果下山的时候低血糖，还好山不是很高，救回一条狗命。</p>
+<p>又去浙大玉泉校区看了看，可望不可即的感觉，门口有来送孩子上学的父母，她父母应该为他们的女儿或者儿子感到骄傲吧。高考真的是决定人的一生，我确实感觉到了，很多单位招聘只看第一学历，因为不管研究生或者留学生，其实钱能到位就好说，因此他们只相信相对公平的高考，相信被高考录取的学校就是你的实力。说实话，我打心里不认同，因为我认识第一学历一般，但是凭借自己努力考上研究生或者入职某个好单位的朋友，但是在这个社会上又不得不唯第一学历论，感觉很悲哀。</p>
+<p>上周末把boss上的简历给隐藏了，这周没有消息来打扰了。这周面试了华为od的流程，包括两面技术面，一面主管面。周三的时候阿里云的技术服务经理岗也面了一面，不过感觉是刷KPI的，应该不太行。</p>
+<p>华为od应该是八九不离十可以给offer的，整体面试难度偏低，说实话，只要你是目标院校，并且有点基础，代码也还可以，那么轻轻松松，没有网上说的那么难。又回到了上面说的学校论了，不过od看的是你的最高学历，目标院校笔试只要150，而听说非目标需要300往上。</p>
+<p>差不多给了20k，其中17k基本工资，3k绩效，绩效正常的话2个月年终，社保公积金基数为基本工资，公积金12%比例。大概算下来就是30%左右的涨幅，算计的真好。每个月最后一个周六需要加班，工资翻倍，差不多那天能有一千来块的收入。</p>
+<p>我纠结到底去不去，一旦去了外包我就没有回头路了。说是这么说，但我知道过去其实也是打杂，不知道能不能学习到什么，而且压力不知道咋样。朋友们也都在和我说，外包的地位那不是一般的低，也许华为里还好，因为od是当正式员工用的。但是技术提升我觉得不会特别高。</p>
+<p>我一直认为工资可以稍微低一些，但是技术得提升。但是现在就挺矛盾，一是面不到好的公司，二是去中小型公司技术其实很难再提升了，三是工资也比原来低很多。</p>
+<p>所以我现在纠结是不是应该先去od混着，然后顺便也继续面试，也是填补空窗期。虽然刚开始简历上不会写这段经历，但是可以继续尝试。但我也知道只要去了就会开始忙起来了，又开始无暇顾及面试，我是知道的。</p>
+<p>其次我也担心一旦我去od超过一定时间，我简历上肯定会写上这份经历，外包经历肯定对简历有影响，一是面试机会少，二是影响面试官印象。但如果只是单纯赚钱的话，我觉得可以去，20k其实也不低了。一个月20不知道领先了多少人，真的我认为网络社区上高工资的人太多了，搞得人人都很焦虑，中国月入过万的人才多少？</p>
+<p>有时候当你问出问题的那一刻，其实心里早就有了答案。你向其他人询问也只是为了坚定你的想法。</p>
+<p>未来的路还很长，不必太过焦虑。这句话其实很多人都和我说过。我们对自己的未来感到迷茫恰恰是因为不甘平凡而已。我也经常这样安慰自己，但是说实话还是想多赚钱。人是矛盾的动物。</p>
+<p>不知不觉胡言乱语一千多字，不知道写给谁看，只是想记录下此时的心情，想和自己和解，仅此而已。</p>
 
     </article>
     <!-- license  -->
     
         <div class="license-wrapper">
             <p>原文作者：<a href="https://re0.top">Zer0e</a>
-            <p>原文链接：<a href="https://re0.top/2020/08/19/sql_concurrent/">https://re0.top/2020/08/19/sql_concurrent/</a>
-            <p>发表日期：<a href="https://re0.top/2020/08/19/sql_concurrent/">August 19th 2020, 4:00:00 pm</a>
-            <p>更新日期：<a href="https://re0.top/2020/08/19/sql_concurrent/">August 19th 2020, 5:19:47 pm</a>
+            <p>原文链接：<a href="https://re0.top/2024/08/31/2024-end-of-eight/">https://re0.top/2024/08/31/2024-end-of-eight/</a>
+            <p>发表日期：<a href="https://re0.top/2024/08/31/2024-end-of-eight/">August 31st 2024, 7:14:24 pm</a>
+            <p>更新日期：<a href="https://re0.top/2024/08/31/2024-end-of-eight/">August 31st 2024, 9:38:05 pm</a>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -430,17 +430,12 @@ height:50vh;
     <ul class="post-paginator">
         <li class="next">
             
-                <div class="nextSlogan">Next Post</div>
-                <a href= "/2020/08/22/adapter_pattern/" title= "设计模式之适配器模式">
-                    <div class="nextTitle">设计模式之适配器模式</div>
-                </a>
-            
         </li>
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href= "/2020/08/17/decorator_pattern/" title= "设计模式之装饰器模式">
-                    <div class="prevTitle">设计模式之装饰器模式</div>
+                <a href= "/2024/08/15/2024-08-15-replay/" title= "2024面试复盘13">
+                    <div class="prevTitle">2024面试复盘13</div>
                 </a>
             
         </li>
@@ -561,7 +556,7 @@ top:50vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%AD%A3%E6%96%87"><span class="toc-number">2.</span> <span class="toc-text">正文</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%92%E5%AE%83%E9%94%81%E4%B8%8E%E5%85%B1%E4%BA%AB%E9%94%81"><span class="toc-number">2.1.</span> <span class="toc-text">排它锁与共享锁</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%90%8E%E8%A8%80"><span class="toc-number">3.</span> <span class="toc-text">后言</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%9A%8F%E7%AC%94"><span class="toc-number">1.</span> <span class="toc-text">随笔</span></a></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
