@@ -346,6 +346,80 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href = "/2024/07/16/devops5/" >
+            
+                <span>【架构之路5】搭建redis集群</span>
+        </a>
+        <div class="abstract-content">
+            前言竟然被问到了redis集群了不了解，我除了主从其他还没搭建过，这篇就搭建下redis的主从模式，哨兵模式，Cluster模式。
+正文主从模式这个模式老简单了，读写分离嘛。看我快速写出k8s编排文件。一主一从。
+123456789101112131415161718192021222324252627282930313233343...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/07/16</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "运维">运维</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "从0.5开始的运维架构之路">从0.5开始的运维架构之路</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2024/07/12/devops4/" >
+            
+                <span>【架构之路4】k8s对接ceph-rbd</span>
+        </a>
+        <div class="abstract-content">
+            前言上篇讲了cephfs对接k8s集群，体验不是很好，这篇接着体验ceph-rbd。
+正文安装rbd驱动很简单，接着使用helm安装即可。
+12kubectl create namespace &quot;ceph-csi-rbd&quot;helm install --namespace &quot;ceph-csi-rbd&qu...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/07/12</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "运维">运维</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "从0.5开始的运维架构之路">从0.5开始的运维架构之路</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href = "/2024/07/11/devops3/" >
             
                 <span>【架构之路3】k8s对接cephfs</span>
@@ -618,69 +692,10 @@ han...
         </div>
     </article>
     
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2020/06/15/load_balancing/" >
-            
-                <span>浅谈负载均衡</span>
-        </a>
-        <div class="abstract-content">
-            前言面对大量的访问请求与海量的数据，我们可以通过加大单机的性能来实现服务的稳定，还可以考虑拆分系统来防止单机故障。负载均衡（Load Balance）是指将负载（例如访问请求，任务等等）进行平衡分摊到多个服务器或组件上执行，以提高性能，作为单点故障的解决方案。本文将讨论常见的负载均衡分类。
-负载均衡分类从实现方式不同，可以分为软件实...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/06/15</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2020/06/14/high_concurrency/" >
-            
-                <span>浅谈高并发引起的问题</span>
-        </a>
-        <div class="abstract-content">
-            前言其实在学生时代，基本上是遇不到高并发的架构，真正遇到高并发的问题，往往是在工作之后，我在学生时代所写的很多项目其实跟高并发是一点边都沾不上，但是我依旧学习了许多高并发的知识，希望以后能派上用场。当然，其实脱离了实际去讲述高并发并不是正确的，因为不同的系统架构是不一致的，分析高并发与高可用性需要先分析整体架构再来定夺。本篇文章就是...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/06/14</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
     <!-- paginator  -->
     
     <nav class="page-nav">
-        <a class="extend prev" rel="prev" href="/tags/%E6%9E%B6%E6%9E%84/">&amp;#60; PREV</a><a class="page-number" href="/tags/%E6%9E%B6%E6%9E%84/">1</a><span class="page-number current">2</span>
+        <a class="extend prev" rel="prev" href="/tags/%E6%9E%B6%E6%9E%84/">&amp;#60; PREV</a><a class="page-number" href="/tags/%E6%9E%B6%E6%9E%84/">1</a><span class="page-number current">2</span><a class="page-number" href="/tags/%E6%9E%B6%E6%9E%84/page/3/">3</a><a class="extend next" rel="next" href="/tags/%E6%9E%B6%E6%9E%84/page/3/">NEXT &amp;#62;</a>
     </nav>
     
 </main>
@@ -1556,9 +1571,23 @@ han...
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 110
+        Total : 112
         </div>
         <!-- search  -->
         
@@ -1568,6 +1597,25 @@ han...
     
     
     
+    
+    <div class="archive-year"> 2025 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/15</span><a class="archive-post-title" href= "/2025/03/15/seckill-system-design/" >秒杀系统设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/02</span><a class="archive-post-title" href= "/2025/03/02/2025-migrate-vpc/" >某客户云上迁移实践</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
     
     <div class="archive-year"> 2024 </div>
     <ul class="year-list">
@@ -2172,27 +2220,33 @@ han...
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
-        <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
-    
         <span class="sidebar-tag-name" data-tags="编程"><span class="iconfont-archer">&#xe606;</span>编程</span>
     
         <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
+    
+        <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
     
         <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
     
         <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
     
+        <span class="sidebar-tag-name" data-tags="面经"><span class="iconfont-archer">&#xe606;</span>面经</span>
+    
         <span class="sidebar-tag-name" data-tags="设计模式"><span class="iconfont-archer">&#xe606;</span>设计模式</span>
+    
+        <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
     
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
         <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
     
-        <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
-    
         <span class="sidebar-tag-name" data-tags="Android"><span class="iconfont-archer">&#xe606;</span>Android</span>
     
         <span class="sidebar-tag-name" data-tags="数据库"><span class="iconfont-archer">&#xe606;</span>数据库</span>
+    
+        <span class="sidebar-tag-name" data-tags="运维"><span class="iconfont-archer">&#xe606;</span>运维</span>
+    
+        <span class="sidebar-tag-name" data-tags="从0.5开始的运维架构之路"><span class="iconfont-archer">&#xe606;</span>从0.5开始的运维架构之路</span>
     
         <span class="sidebar-tag-name" data-tags="web"><span class="iconfont-archer">&#xe606;</span>web</span>
     
@@ -2200,19 +2254,13 @@ han...
     
         <span class="sidebar-tag-name" data-tags="linux"><span class="iconfont-archer">&#xe606;</span>linux</span>
     
-        <span class="sidebar-tag-name" data-tags="CTF"><span class="iconfont-archer">&#xe606;</span>CTF</span>
-    
         <span class="sidebar-tag-name" data-tags="misc"><span class="iconfont-archer">&#xe606;</span>misc</span>
+    
+        <span class="sidebar-tag-name" data-tags="CTF"><span class="iconfont-archer">&#xe606;</span>CTF</span>
     
         <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
     
         <span class="sidebar-tag-name" data-tags="分布式"><span class="iconfont-archer">&#xe606;</span>分布式</span>
-    
-        <span class="sidebar-tag-name" data-tags="运维"><span class="iconfont-archer">&#xe606;</span>运维</span>
-    
-        <span class="sidebar-tag-name" data-tags="从0.5开始的运维架构之路"><span class="iconfont-archer">&#xe606;</span>从0.5开始的运维架构之路</span>
-    
-        <span class="sidebar-tag-name" data-tags="面经"><span class="iconfont-archer">&#xe606;</span>面经</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>

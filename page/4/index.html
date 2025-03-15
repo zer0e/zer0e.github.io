@@ -359,6 +359,81 @@ height:50vh;
     
     
     <article class="index-post">
+        <a class="abstract-title" href = "/2024/06/24/2024-06-24-replay/" >
+            
+                <span>2024面试复盘2</span>
+        </a>
+        <div class="abstract-content">
+            复盘快排原理，时间空间复杂度原理  
+
+选择基准元素
+
+分区操作（Partition）。通过一趟排序将待排序的数据分割成独立的两部分，其中一部分的所有数据都比另一部分的所有数据要小。这个过程称为分区操作。
+
+递归排序。递归地（recursive）把小于基准值元素的子数组和大于基准值元素的子数组排序。
+
+合并。通常，这个步骤并不需要实...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/06/24</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "随想">随想</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "面经">面经</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2024/06/23/2024-06-23-replay/" >
+            
+                <span>2024面试复盘1</span>
+        </a>
+        <div class="abstract-content">
+            前言今天又再一次面试了字节，在复习准备不足的情况下，我还是接受了面试邀请。很遗憾又在二面挂了，三年前我也曾经面过字节的校园招聘，那时候也是在二面挂了。  
+复盘缓存穿透/缓存击穿这两个概念面试的时候搞混了，还是没复习好，说实话接触的系统没能有这种场景。缓存穿透指的是有大量请求获取既不在缓存中也不在数据库中的数据，会导致数据库压力增大...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/06/23</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "随想">随想</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "面经">面经</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href = "/2024/06/11/2024-resign/" >
             
                 <span>写于6月离职之后</span>
@@ -618,78 +693,10 @@ han...
         </div>
     </article>
     
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2020/11/01/transaction_isolation/" >
-            
-                <span>回顾数据库事务隔离级别</span>
-        </a>
-        <div class="abstract-content">
-            前言对于数据库隔离级别，前前后后可能复习了好多遍，但是很经常就忘记，今天就简单整理下概念和实例，方便以后回顾。
-正文什么是事务首先我们先明确事务是什么？为什么要有事务？事务(Transaction)，其实就是一个操作序列，我们知道，操作数据库是什么一条条SQL语句来实现的，那么事务就是包含这些SQL操作的清单。至于为什么要有事务，是...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/11/01</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "Mysql">Mysql</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2020/10/09/snowflake/" >
-            
-                <span>浅谈雪花算法</span>
-        </a>
-        <div class="abstract-content">
-            写在前面最近学习也有点陷入迷茫状态，不知道学些什么，也不知道写点什么。那就想起什么就写点啥，就当是重新学习。今天要来讲的是分布式系统中常用的一种算法，雪花算法。 
-正文什么是雪花算法雪花算法(snowflake)，它是Twitter公司使用的在分布式系统中生成唯一ID的一个算法，在2014年开源。雪花算法是在高并发环境下生成为ID的...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/10/09</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "Java">Java</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "算法">算法</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "分布式">分布式</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
     <!-- paginator  -->
     
     <nav class="page-nav">
-        <a class="extend prev" rel="prev" href="/page/3/">&amp;#60; PREV</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/5/">NEXT &amp;#62;</a>
+        <a class="extend prev" rel="prev" href="/page/3/">&amp;#60; PREV</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><a class="extend next" rel="next" href="/page/5/">NEXT &amp;#62;</a>
     </nav>
     
 </main>
@@ -1642,9 +1649,23 @@ han...
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 110
+        Total : 112
         </div>
         <!-- search  -->
         
@@ -1654,6 +1675,25 @@ han...
     
     
     
+    
+    <div class="archive-year"> 2025 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/15</span><a class="archive-post-title" href= "/2025/03/15/seckill-system-design/" >秒杀系统设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/02</span><a class="archive-post-title" href= "/2025/03/02/2025-migrate-vpc/" >某客户云上迁移实践</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
     
     <div class="archive-year"> 2024 </div>
     <ul class="year-list">
@@ -2258,27 +2298,33 @@ han...
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
-        <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
-    
         <span class="sidebar-tag-name" data-tags="编程"><span class="iconfont-archer">&#xe606;</span>编程</span>
     
         <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
+    
+        <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
     
         <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
     
         <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
     
+        <span class="sidebar-tag-name" data-tags="面经"><span class="iconfont-archer">&#xe606;</span>面经</span>
+    
         <span class="sidebar-tag-name" data-tags="设计模式"><span class="iconfont-archer">&#xe606;</span>设计模式</span>
+    
+        <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
     
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
         <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
     
-        <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
-    
         <span class="sidebar-tag-name" data-tags="Android"><span class="iconfont-archer">&#xe606;</span>Android</span>
     
         <span class="sidebar-tag-name" data-tags="数据库"><span class="iconfont-archer">&#xe606;</span>数据库</span>
+    
+        <span class="sidebar-tag-name" data-tags="运维"><span class="iconfont-archer">&#xe606;</span>运维</span>
+    
+        <span class="sidebar-tag-name" data-tags="从0.5开始的运维架构之路"><span class="iconfont-archer">&#xe606;</span>从0.5开始的运维架构之路</span>
     
         <span class="sidebar-tag-name" data-tags="web"><span class="iconfont-archer">&#xe606;</span>web</span>
     
@@ -2286,19 +2332,13 @@ han...
     
         <span class="sidebar-tag-name" data-tags="linux"><span class="iconfont-archer">&#xe606;</span>linux</span>
     
-        <span class="sidebar-tag-name" data-tags="CTF"><span class="iconfont-archer">&#xe606;</span>CTF</span>
-    
         <span class="sidebar-tag-name" data-tags="misc"><span class="iconfont-archer">&#xe606;</span>misc</span>
+    
+        <span class="sidebar-tag-name" data-tags="CTF"><span class="iconfont-archer">&#xe606;</span>CTF</span>
     
         <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
     
         <span class="sidebar-tag-name" data-tags="分布式"><span class="iconfont-archer">&#xe606;</span>分布式</span>
-    
-        <span class="sidebar-tag-name" data-tags="运维"><span class="iconfont-archer">&#xe606;</span>运维</span>
-    
-        <span class="sidebar-tag-name" data-tags="从0.5开始的运维架构之路"><span class="iconfont-archer">&#xe606;</span>从0.5开始的运维架构之路</span>
-    
-        <span class="sidebar-tag-name" data-tags="面经"><span class="iconfont-archer">&#xe606;</span>面经</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>

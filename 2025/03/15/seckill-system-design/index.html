@@ -1,0 +1,2250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Zer0e">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Zer0e">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>秒杀系统设计 · Zer0e&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Zer0e&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">秒杀系统设计</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Zer0e's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            秒杀系统设计
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">5.9k</span>阅读时长: <span class="post-count reading-time">19 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2025/03/15</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>如何设计一个秒杀系统，想必大家一定在互联网上看了各种文章，本文结合内部系统的一些实践还有内部分享，总结了一些系统设计要点，供没有相关经验的同学参考。</p>
+<h1 id="什么是秒杀"><a href="#什么是秒杀" class="headerlink" title="什么是秒杀"></a>什么是秒杀</h1><p>在电商领域，存在着典型的秒杀业务场景，简单来说就是一件商品的购买人数远远大于这件商品的库存，而且这件商品在很短的时间内就会被抢购一空。即特定SKU的瞬时访问需求呈现指数级增长，而可售库存量级则维持极低水平，最终形成供不应求的”库存击穿”现象。</p>
+<p>比如每年的618、双11等业务场景，就是典型的秒杀业务场景。例如2023年双11期间，热门3C单品的每秒订单峰值达12万笔，库存释放后平均3.2秒即告售罄。</p>
+<p>秒杀活动的目的是拉新和促活。<br>拉新：通过实施”锚定商品”策略，选取高认知度、强引流属性的商品设置超低折扣，利用价格敏感型消费者的逐利心理，构建用户转化漏斗。最终形成”流量磁铁”效应。<br>促活：为主站引流，进而带动高客单价商品的销售。</p>
+<h1 id="秒杀的特点"><a href="#秒杀的特点" class="headerlink" title="秒杀的特点"></a>秒杀的特点</h1><ul>
+<li><p>业务特点</p>
+<ul>
+<li><p>限时限量限价</p>
+</li>
+<li><p>活动预热</p>
+</li>
+<li><p>持续时间短</p>
+</li>
+</ul>
+</li>
+<li><p>技术特点</p>
+<ul>
+<li><p>瞬时流量突增</p>
+</li>
+<li><p>读多写少</p>
+</li>
+<li><p>数据一致性要求高</p>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="秒杀系统的挑战"><a href="#秒杀系统的挑战" class="headerlink" title="秒杀系统的挑战"></a>秒杀系统的挑战</h1><h2 id="1-巨大的瞬时流量"><a href="#1-巨大的瞬时流量" class="headerlink" title="1. 巨大的瞬时流量"></a>1. 巨大的瞬时流量</h2><p>作为网站运营体系中的补充性营销手段，秒杀活动具有显著的突发性特征：其业务周期通常以分钟级计算，却在极短时间内会产生指数级增长的并发访问请求。若将此类活动与常规业务系统进行混合部署，将面临双重风险：其一，突发流量可能引发服务器资源过载，导致正常业务响应延迟；其二，更严重的情况下可能造成系统级联故障，致使整体服务平台瘫痪。因此，构建针对瞬时流量洪峰的防御体系，需要从多维度建立系统化的应对策略。</p>
+<h2 id="2-热点问题"><a href="#2-热点问题" class="headerlink" title="2. 热点问题"></a>2. 热点问题</h2><p>在分布式系统架构中，热点问题始终是高并发场景的核心挑战，主要表现为两种形态：操作型热点（如高频接口调用）和数据型热点（如特定商品的库存访问）。对热点的有效识别与治理直接关系到系统稳定性。</p>
+<ul>
+<li>异常热点请求的资源侵占效应：即使恶意请求仅占全局流量的百万分之一量级，若未建立有效的请求过滤机制，这类无效操作可能占据90%以上的计算资源，形成严重的资源错配现象。这不仅导致基础设施成本的无谓损耗，更会挤压正常业务请求的处理能力。</li>
+<li>合法热点请求的优化必要性：对于经过验证的有效热点请求，系统架构需要建立分级处理机制。通过热点预判、动态缓存策略、读写分离架构等手段，实现服务资源的精准调度。例如，针对秒杀商品的库存访问，可采用缓存替代传统数据库操作。</li>
+<li>热点扩散的连锁风险防控：未受控的热点可能引发次生问题，如缓存击穿导致的数据库雪崩，或分布式锁竞争引发的服务阻塞。这要求系统设计时需建立热点监控体系，实现毫秒级的热点识别与动态降级能力。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>热点操作</th>
+<th>热点数据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>零点刷新、零点下单、零点添加购物车都属于热点操作</td>
+<td>对于秒杀活动，大家抢购的都是同一个商品，所以这个商品直接就被推到了热点的位置，不管你是用的数据库，还是分布式缓存”都无法支持几十万、上百万对同一个key的读写</td>
+</tr>
+<tr>
+<td>热点操作是用户的行为，无法约束，但可以做一些限制，比如用户频繁刷新页面提示并阻止</td>
+<td>热点数据的处理有三步，一是热点识别，二是热点隔离，三是热点优化</td>
+</tr>
+</tbody></table>
+<h2 id="3-超卖问题"><a href="#3-超卖问题" class="headerlink" title="3. 超卖问题"></a>3. 超卖问题</h2><p>秒杀开始时，同时会有很多用户请求秒杀接口，如果查询库存和扣减库存这两步操作如果不能保证原子操作。一定会导致超卖问题，造成资损。<br>如何防止商品超卖造成资损，是需要我们重点考虑的。</p>
+<h2 id="4-接口防刷问题"><a href="#4-接口防刷问题" class="headerlink" title="4. 接口防刷问题"></a>4. 接口防刷问题</h2><p>黄牛党能够利用机器下单、人肉抢单，将秒杀商品瞬间抢到手，然后高价格售出赚取差价。大规模的批量机器下单，还会对网站的流量带来压力，产生类DDOS攻击，甚至能够造成网站瘫痪。<br>如何防正这类软件的重复无效请求，防止不断发起的请求也是需要我们针对性考虑的。</p>
+<h1 id="秒杀系统架构原则"><a href="#秒杀系统架构原则" class="headerlink" title="秒杀系统架构原则"></a>秒杀系统架构原则</h1><h2 id="1-尽量将请求拦截在上游"><a href="#1-尽量将请求拦截在上游" class="headerlink" title="1. 尽量将请求拦截在上游"></a>1. 尽量将请求拦截在上游</h2><p>尽量把请求拦截在上游，逐层过滤减少请求，让请求在秒杀系统可承受范围之内。</p>
+<p>我们将请求进行分层，从用户侧到系统分别经过DNS、CDN、WEB网关、WEB服务、中间件、DB。</p>
+<h2 id="2-数据要尽量少"><a href="#2-数据要尽量少" class="headerlink" title="2. 数据要尽量少"></a>2. 数据要尽量少</h2><p>一是用户请求的数据能少就少，包括上传给系统的数据和系统返回给用户的数据。二是要求系统依赖的数据能少就少，包括系统完成某些业务逻辑需要读取和保存的数据，这些数据一般是和后台服务以及数据库打交道的。数据库本身容易成为一个瓶颈，数据越简单、越小则越好。</p>
+<h2 id="3-请求数要尽量少"><a href="#3-请求数要尽量少" class="headerlink" title="3. 请求数要尽量少"></a>3. 请求数要尽量少</h2><p>当用户请求的网页内容完成基础加载后，浏览器的页面渲染流程实际上还会触发一系列次级资源请求。这些被统称为”附加请求”的资源不仅包含基础的CSS样式表和JavaScript脚本文件，还涉及页面中的各类图像素材、异步数据请求（如Ajax技术实现的动态内容加载）等关键元素。</p>
+<p>从网页性能优化的角度考虑，应当尽可能压缩这类附加请求的总数量。其根本原因在于每个网络请求的发起都会产生多维度的性能损耗：首先在连接建立阶段需要完成完整的TCP三次握手协议，若涉及HTTPS加密通信还会增加TLS协商的额外开销；其次，受限于浏览器对同域名并发请求数的限制（通常为6-8个），以及部分资源（特别是JavaScript脚本）因可能修改DOM结构而必须采用的串行加载机制，请求队列的堆积会显著延长关键渲染路径；再者，当资源分布在多个不同域名时（如使用CDN加速或第三方服务），每个新域名都需要经历完整的DNS解析过程，包括递归查询、缓存验证等环节，这在网络状况欠佳时可能产生数百毫秒级的延迟。</p>
+<p>因此，通过减少附加请求总量，可以有效规避上述各环节的潜在性能瓶颈，从而显著降低网络传输开销、提升资源加载效率，并最终改善终端用户的体验感知。</p>
+<h2 id="4-请求路径要尽量短"><a href="#4-请求路径要尽量短" class="headerlink" title="4. 请求路径要尽量短"></a>4. 请求路径要尽量短</h2><p>请求路径特指客户端请求从发起到最终数据返回所经历的系统节点拓扑。从接入层网关到业务逻辑服务，再到数据库集群，每个节点都会引入特定处理时延。缩短调用链路不仅能提升系统可用性（减少单点故障概率），更能产生双重性能增益：其一降低序列化开销（每经过一个RPC节点至少触发两次编解码操作，常见协议如JSON序列化的CPU耗时可达毫秒级），其二压缩网络传输时间（跨机房调用通常产生5-15ms额外延迟）。</p>
+<p>典型优化策略包括但不限于：对业务强耦合的服务实施”物理部署聚合”，通过JVM内方法调用替代跨进程通信，此举可消除协议转换开销（如Dubbo协议头128字节的无效负载）</p>
+<h2 id="5-依赖要尽量少"><a href="#5-依赖要尽量少" class="headerlink" title="5. 依赖要尽量少"></a>5. 依赖要尽量少</h2><p>系统依赖可划分为强依赖（服务不可降级）与弱依赖（具备柔性处理能力）两类，其中强依赖构成系统稳定性关键路径。科学的依赖治理需建立三维管控体系：首先实施”服务分级认证”，构建0-3级金字塔型架构（0级：直接影响核心交易链路；1级：重要业务支撑系统；2级：非关键业务系统；3级：辅助型系统），并遵循”同级或向下兼容”原则——0级系统仅允许依赖同级或更高级服务；其次建立”熔断防护机制”，通过Hystrix等框架实现故障服务的快速隔离，当1级依赖系统（如优惠券服务）响应成功率低于阈值时，自动触发服务降级并返回托底数据；最后采用”异步化改造”，将非必要同步依赖转换为消息队列驱动的异步处理模式。以支付系统为例，其作为0级系统对接的风控服务应保持同级，而日志采集等辅助功能需通过Kafka异步解耦，确保核心链路不受边缘服务故障影响。</p>
+<h1 id="系统设计"><a href="#系统设计" class="headerlink" title="系统设计"></a>系统设计</h1><h2 id="DNS处理"><a href="#DNS处理" class="headerlink" title="DNS处理"></a>DNS处理</h2><p>DNS 层可以做一些和网络相关的防攻击措施，例如CNAME-WAF，这层我们无法写业务，但是可以拦截一些攻击请求。</p>
+<h2 id="前端设计"><a href="#前端设计" class="headerlink" title="前端设计"></a>前端设计</h2><h3 id="前端页面动静分离"><a href="#前端页面动静分离" class="headerlink" title="前端页面动静分离"></a>前端页面动静分离</h3><p>动静分离的首要目的是将动态页面改造成适合缓存的静态页面。这个如今的新系统大多数都能采用这种设计。下面我来介绍几种常用的手段。</p>
+<h4 id="数据拆分"><a href="#数据拆分" class="headerlink" title="数据拆分"></a>数据拆分</h4><ul>
+<li>用户：用户身份信息包括登录状态以及登录画像等，相关要素可以单独拆分出来，通过动态请求进行获取；与之相关的广告推荐，如用户偏好、地域偏好等，同样可以通过异步方式进行加载。</li>
+<li>时间：秒杀时间是由服务端统一管控的，可以通过动态请求进行获取</li>
+</ul>
+<h4 id="数据静态缓存"><a href="#数据静态缓存" class="headerlink" title="数据静态缓存"></a>数据静态缓存</h4><p>三种方式：1、浏览器；2、CDN；3、服务端。这个没什么好说的，都是基础了。</p>
+<h4 id="数据整合"><a href="#数据整合" class="headerlink" title="数据整合"></a>数据整合</h4><p>这里介绍两种方案。</p>
+<ul>
+<li>ESI方案：Web代理服务器上请求动态数据，并将动态数据插入到静态页面中，用户看到页面时已经是一个完整的页面。这种方式对服务端性能要求高，但用户体验较好</li>
+<li>CSI方案：Web代理服务器上只返回静态页面，前端单独发起一个异步JS请求动态数据。这种方式对服务端性能友好，但用户体验稍差。</li>
+</ul>
+<h3 id="接口url动态化"><a href="#接口url动态化" class="headerlink" title="接口url动态化"></a>接口url动态化</h3><p>为了避免有程序访问经验的人通过下单页面直接访问秒杀后台接口来秒杀货品，我们需要将秒杀的url实现动态化，即使是开发整个系统的人都无法在秒杀开始前知道秒杀的url。具体的做法就是通过hash一串随机字符作为秒杀的url，然后前端访问后台获取具体的url，后台校验通过之后才可以继续秒杀。</p>
+<h3 id="前端页面拦截处理"><a href="#前端页面拦截处理" class="headerlink" title="前端页面拦截处理"></a>前端页面拦截处理</h3><p>在用户点击秒杀按钮之后，可以先进行用户行为判断，这样可以拦截掉很多刷接口的秒杀器。</p>
+<h4 id="验证码、拼图、答题方式"><a href="#验证码、拼图、答题方式" class="headerlink" title="验证码、拼图、答题方式"></a>验证码、拼图、答题方式</h4><p>在发起秒杀后端请求之前，先进行验证码、拼图、答题判断，验证成功才可以继续后续流程。</p>
+<h4 id="限制请求频次方式"><a href="#限制请求频次方式" class="headerlink" title="限制请求频次方式"></a>限制请求频次方式</h4><p>限制用户点击秒杀按钮的频率，强制用户等待。这属于前端限流，用户在秒杀按钮点击以后发起请求，那么在接下来的5秒是无法点击(通过设置按钮为disable)。这一小举措开发起来成本很小，但是很有效。</p>
+<h2 id="接入风控"><a href="#接入风控" class="headerlink" title="接入风控"></a>接入风控</h2><p>对于秒杀器等机器秒杀行为，需要在上游做拦截处理，防止它们超高频的请求对秒杀系统造成巨大的流量压力。秒杀系统需要接入营销风控系统，对羊毛党、黄牛党等营销作弊行为进行风险监控、预警、识别、过滤、阻断。这样秒杀系统的压力就转移到风控系统了，减少了自身压力。</p>
+<h2 id="服务端设计"><a href="#服务端设计" class="headerlink" title="服务端设计"></a>服务端设计</h2><p>秒杀系统高可用设计，有隔离、削峰限流、缓存热点处理、熔断降级、扩容等一系列措施。</p>
+<h3 id="隔离设计"><a href="#隔离设计" class="headerlink" title="隔离设计"></a>隔离设计</h3><p>通过秒杀流量的隔离，我们能够把巨大瞬时流量的影响范围控制在隔离的秒杀环境里。</p>
+<ul>
+<li>业务隔离：把秒杀做成一种营销活动，卖家要参加秒杀这种营销活动需要单独报名，从技术上来说，卖家报名后对我们来说就有了已知热点，因此可以提前做好预热。</li>
+<li>系统隔离：系统隔离更多的是运行时的隔离，可以通过分组部署的方式和另外99%分开。秒杀可以申请单独的域名，目的也是让请求落到不同的集群中。</li>
+<li>数据隔离：秒杀所调用的数据大部分都是热点数据，比如会启用单独的Cache集群或者MySQL数据库来放热点数据，目的也是不想0.01%的数据有机会影响99.99%数据。</li>
+</ul>
+<h3 id="削峰限流"><a href="#削峰限流" class="headerlink" title="削峰限流"></a>削峰限流</h3><p>限流是一种有损技术削峰。<br>验证码、拼图、答题以及异步化消息队列可以归为无损削峰。</p>
+<h4 id="限流"><a href="#限流" class="headerlink" title="限流"></a>限流</h4><p>限流是系统自我保护的最直接手段，再厉害的系统，总有所能承载的能力上限，一旦流量突破这个上限，就会引起实例宕机，进而发生系统雪崩，带来灾难性后果。<br>可以使用Sentinel、Hystrix、Ratelimiter等做限流。</p>
+<h4 id="削峰"><a href="#削峰" class="headerlink" title="削峰"></a>削峰</h4><p>产品方式的削峰：验证码、拼图、答题。</p>
+<p>技术方式的削峰：异步化消息队列。</p>
+<h3 id="热点处理"><a href="#热点处理" class="headerlink" title="热点处理"></a>热点处理</h3><p>热点数据分为“静态热点数据”和“动态热点数据”。</p>
+<table>
+<thead>
+<tr>
+<th>静态热点数据</th>
+<th>动态热点数据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>能够提前预测的热点数据</td>
+<td>不能被提前预测到的，系统在运行过程中临时产生的热点</td>
+</tr>
+<tr>
+<td>例如，我们可以通过卖家报名的方式提前筛选出来，通过报名系统对这些热点商品进行打标。另外，我们还可以通过大数据分析来提前发现热点商品，比如我们分析历史成交记录用户的购物车记录，来发现哪些商品可能更热门、更好卖，这些都是可以提前分析出来的热点。</td>
+<td>例如，卖家在抖音上做了广告，然后商品一下就火了，导致它在短时间内被大量购买。</td>
+</tr>
+</tbody></table>
+<h4 id="缓存热点数据"><a href="#缓存热点数据" class="headerlink" title="缓存热点数据"></a>缓存热点数据</h4><p>优化热点数据最有效的办法就是缓存热点数据，如果热点数据做了动静分离，那么可以长期缓存静态数据。但是，缓存热点数据更多的是“临时”缓存，即不管是静态数据还是动态数据，都用业个队列短暂地缓存数秒钟，由于队列长度有限，可以采用LRU淘汰算法替换。</p>
+<h4 id="限制热点数据"><a href="#限制热点数据" class="headerlink" title="限制热点数据"></a>限制热点数据</h4><p>限制更多的是一种保护机制，限制的办法也有很多，例如对被访问商品的ID做一致性Hash，然后根据Hash做分桶，每个分桶设置一个处理队列，这样可以把热点商品限制在一个请求队列里，防止因某些热点商品占用太多的服务器资源，而使其他请求始终得不到服务器的处理资源。</p>
+<h3 id="限购"><a href="#限购" class="headerlink" title="限购"></a>限购</h3><p>限购之于库存，就像秒杀之于下单，前者都是后者的过滤网和保护伞。<br>限购的主要功能就是做商品的限制性购买，一般限制的维度主要包括两方面。</p>
+<h4 id="商品维度限购"><a href="#商品维度限购" class="headerlink" title="商品维度限购"></a>商品维度限购</h4><p>最基本的限制就是商品活动库存的限制，即每次参加秒杀活动的商品投放量。如果再细分，还可以支持针对不同地区做投放的场景，比如我只想在北京、上海、广州、深圳这些一线城市投放，那么就只有收货地址是这些城市的用户才能参与抢购，而且各地区库存量是隔离的，互不影响。</p>
+<h4 id="个人维度限购"><a href="#个人维度限购" class="headerlink" title="个人维度限购"></a>个人维度限购</h4><p>以个人维度来做限制，这里不单单指同一用户ID，还会从同一手机号、同一收货地址、同一设备IP等维度来做限制。比如限制同一手机号每天只能下1单，每单只能购买1件，并且一个月内只能购买2件等。个人维度的限购，体现了秒杀的公平性。</p>
+<h3 id="减库存"><a href="#减库存" class="headerlink" title="减库存"></a>减库存</h3><p>减库存一般有三种方式：下单减库存，付款减库存，预扣库存。</p>
+<p>而秒杀这个场景，应该采用哪种方案比较好呢？</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>下单减库存</th>
+<th>付款减库存</th>
+<th>预扣库存</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>定义</td>
+<td>即当买家下单后，在商品的总库存中减去买家购买数量</td>
+<td>即买家下单后，并不立即减库存，而是等到有用户付款后才真正减库存，否则库存一直保留给其他买家</td>
+<td>买家下单后，库存为其保留一定的时间(如10分钟)，超过这个时间，库存将会自动释放，释放后其他买家就可以继续购买。</td>
+</tr>
+<tr>
+<td>问题</td>
+<td>竞争对手通过恶意下单的方式将该卖家的商品全部下单，让这款商品的库存减为零，但是不付款，从而影响卖家正常的商品销售。</td>
+<td>“付款减库存”因为下单时不会减库存，所以也就可能出现下单成功数远远超过真正库存数的情况，会导致很多买家下单成功但是付不了款，买家的购物体验自然比较差</td>
+<td>针对恶意下单这种情况，虽然把有效的付款时间设置为10分钟，但是恶意买家完全可以在10分钟后再次下单，或者采用一次下单很多件的方式把库存减完。</td>
+</tr>
+</tbody></table>
+<p>由于参加秒杀的商品，一般都是“抢到就是赚到”，所以成功下单后却不付款的情况比较少，再加上卖家对秒杀商品的库存有严格限制，所以秒杀商品采用“下单减库存”更加合理。<br>库存超卖的问题主要是由两个原因引起的，一个是查询和扣减不是原子操作，另一个是并发请求无序。</p>
+<h4 id="库存不能扣减为负数"><a href="#库存不能扣减为负数" class="headerlink" title="库存不能扣减为负数"></a>库存不能扣减为负数</h4><p>要保证大并发请求时库存数据不能扣减为负数，有以下几个方案：</p>
+<ul>
+<li>在应用程序中通过事务来判断，即保证减后库存不能为负数，否则就回滚</li>
+<li>直接设置数据库的字段数据为无符号整数，这样减后库存字段值小于零时会直接执行SQL语句来报错</li>
+<li>使用CASE WHEN判断语句，例如这样的SQL语句：<br><code>UPDATE item SET inventory = CASE WHEN inventory &gt;= xxx THEN inventory-xxx ELSE inventory END</code></li>
+</ul>
+<h4 id="缓存中减库存"><a href="#缓存中减库存" class="headerlink" title="缓存中减库存"></a>缓存中减库存</h4><p>秒杀商品的减库存逻辑非常单一，比如没有复杂的SKU库存和总库存这种联动关系的，可以把秒杀商品减库存直接放到缓存系统中实现，也就是直接在缓存中减库存。</p>
+<h4 id="数据库中减库存"><a href="#数据库中减库存" class="headerlink" title="数据库中减库存"></a>数据库中减库存</h4><p>如果有比较复杂的减库存逻辑，或者需要使用事务，还是必须在数据库中完成减库存。由于 MySQL存储数据的特点，同一数据在数据库里肯定是一行存储（MySQL），因此会有大量线程来竞争InnoDB行锁，而并发度越高时等待线程会越多，TPS会下降，响应时间（RT）会上升，数据库的吞吐量就会严重受影响。</p>
+<p>解决并发锁的问题，有两种办法：</p>
+<ul>
+<li>应用层做排队: 按照商品维度设置队列顺序执行，这样能减少同一台机器对数据库同一行记录进行操作的并发度，同时也能控制单个商品占用数据库连接的数量，防止热点商品占用太多的数据库连接。</li>
+<li>数据库层做排队: 应用层只能做到单机的排队，但是应用机器数本身很多，这种排队方式控制并发的能力仍然有限，所以如果能在数据库层做全局排队是最理想的。阿里的数据库团队开发了针对这种MySQL的InnoDB层上的补丁程序(patch），可以在数据库层上对单行记录做到并发排队。</li>
+</ul>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>秒杀系统的设计本质是一场高并发场景下的“攻防战”，既要保障极致的性能与稳定性，又要兼顾业务公平性与数据一致性。本文从秒杀的业务与技术特点出发，系统性地梳理了四大核心挑战——瞬时流量、热点问题、超卖风险与接口防刷，并提出了五大架构原则：<strong>请求拦截上游化、数据精简、请求收敛、链路缩短、依赖解耦</strong>。</p>
+<p>在系统设计层面，通过动静分离、动态URL、前端拦截与风控接入，将无效请求层层过滤；借助业务隔离、削峰限流、热点缓存与预扣库存策略，精准控制核心资源；最终结合异步队列、分布式锁与原子化操作，保障库存与交易的最终一致性。</p>
+<p>秒杀系统的设计没有“银弹”，需根据业务规模动态权衡技术方案。但核心逻辑始终不变：<strong>化瞬时洪峰为涓涓细流，以最小代价支撑最大并发</strong>。希望本文总结的实践经验，能为初涉高并发系统设计的开发者提供清晰的解题思路，在面对类似场景时，快速构建出可靠、弹性、高效的秒杀架构。</p>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>原文作者：<a href="https://re0.top">Zer0e</a>
+            <p>原文链接：<a href="https://re0.top/2025/03/15/seckill-system-design/">https://re0.top/2025/03/15/seckill-system-design/</a>
+            <p>发表日期：<a href="https://re0.top/2025/03/15/seckill-system-design/">March 15th 2025, 3:53:23 pm</a>
+            <p>更新日期：<a href="https://re0.top/2025/03/15/seckill-system-design/">March 15th 2025, 6:15:37 pm</a>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2025/03/02/2025-migrate-vpc/" title= "某客户云上迁移实践">
+                    <div class="prevTitle">某客户云上迁移实践</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:zcluslloye@gmail.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/zer0e" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+            
+                <a href="https://t.me/zer009" class="iconfont-archer telegram" target="_blank" title=telegram></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+	<!-- <div class="copyright">
+		<span id="hexo-power">Hosted by <a href="https://pages.coding.me" target="_blank">Coding Pages</a></span>
+	</div> -->
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+        <br>
+        <a href="https://icp.gov.moe/?keyword=20254096" target="_blank">萌ICP备20254096号</a>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E7%A7%92%E6%9D%80"><span class="toc-number">2.</span> <span class="toc-text">什么是秒杀</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A7%92%E6%9D%80%E7%9A%84%E7%89%B9%E7%82%B9"><span class="toc-number">3.</span> <span class="toc-text">秒杀的特点</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A7%92%E6%9D%80%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%8C%91%E6%88%98"><span class="toc-number">4.</span> <span class="toc-text">秒杀系统的挑战</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%B7%A8%E5%A4%A7%E7%9A%84%E7%9E%AC%E6%97%B6%E6%B5%81%E9%87%8F"><span class="toc-number">4.1.</span> <span class="toc-text">1. 巨大的瞬时流量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E7%83%AD%E7%82%B9%E9%97%AE%E9%A2%98"><span class="toc-number">4.2.</span> <span class="toc-text">2. 热点问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E8%B6%85%E5%8D%96%E9%97%AE%E9%A2%98"><span class="toc-number">4.3.</span> <span class="toc-text">3. 超卖问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%8E%A5%E5%8F%A3%E9%98%B2%E5%88%B7%E9%97%AE%E9%A2%98"><span class="toc-number">4.4.</span> <span class="toc-text">4. 接口防刷问题</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A7%92%E6%9D%80%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E5%8E%9F%E5%88%99"><span class="toc-number">5.</span> <span class="toc-text">秒杀系统架构原则</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%B0%BD%E9%87%8F%E5%B0%86%E8%AF%B7%E6%B1%82%E6%8B%A6%E6%88%AA%E5%9C%A8%E4%B8%8A%E6%B8%B8"><span class="toc-number">5.1.</span> <span class="toc-text">1. 尽量将请求拦截在上游</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E6%95%B0%E6%8D%AE%E8%A6%81%E5%B0%BD%E9%87%8F%E5%B0%91"><span class="toc-number">5.2.</span> <span class="toc-text">2. 数据要尽量少</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E8%AF%B7%E6%B1%82%E6%95%B0%E8%A6%81%E5%B0%BD%E9%87%8F%E5%B0%91"><span class="toc-number">5.3.</span> <span class="toc-text">3. 请求数要尽量少</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E8%AF%B7%E6%B1%82%E8%B7%AF%E5%BE%84%E8%A6%81%E5%B0%BD%E9%87%8F%E7%9F%AD"><span class="toc-number">5.4.</span> <span class="toc-text">4. 请求路径要尽量短</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E4%BE%9D%E8%B5%96%E8%A6%81%E5%B0%BD%E9%87%8F%E5%B0%91"><span class="toc-number">5.5.</span> <span class="toc-text">5. 依赖要尽量少</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1"><span class="toc-number">6.</span> <span class="toc-text">系统设计</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#DNS%E5%A4%84%E7%90%86"><span class="toc-number">6.1.</span> <span class="toc-text">DNS处理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E7%AB%AF%E8%AE%BE%E8%AE%A1"><span class="toc-number">6.2.</span> <span class="toc-text">前端设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E7%AB%AF%E9%A1%B5%E9%9D%A2%E5%8A%A8%E9%9D%99%E5%88%86%E7%A6%BB"><span class="toc-number">6.2.1.</span> <span class="toc-text">前端页面动静分离</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%8B%86%E5%88%86"><span class="toc-number">6.2.1.1.</span> <span class="toc-text">数据拆分</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E9%9D%99%E6%80%81%E7%BC%93%E5%AD%98"><span class="toc-number">6.2.1.2.</span> <span class="toc-text">数据静态缓存</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%95%B4%E5%90%88"><span class="toc-number">6.2.1.3.</span> <span class="toc-text">数据整合</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3url%E5%8A%A8%E6%80%81%E5%8C%96"><span class="toc-number">6.2.2.</span> <span class="toc-text">接口url动态化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E7%AB%AF%E9%A1%B5%E9%9D%A2%E6%8B%A6%E6%88%AA%E5%A4%84%E7%90%86"><span class="toc-number">6.2.3.</span> <span class="toc-text">前端页面拦截处理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%AA%8C%E8%AF%81%E7%A0%81%E3%80%81%E6%8B%BC%E5%9B%BE%E3%80%81%E7%AD%94%E9%A2%98%E6%96%B9%E5%BC%8F"><span class="toc-number">6.2.3.1.</span> <span class="toc-text">验证码、拼图、答题方式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%99%90%E5%88%B6%E8%AF%B7%E6%B1%82%E9%A2%91%E6%AC%A1%E6%96%B9%E5%BC%8F"><span class="toc-number">6.2.3.2.</span> <span class="toc-text">限制请求频次方式</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E5%85%A5%E9%A3%8E%E6%8E%A7"><span class="toc-number">6.3.</span> <span class="toc-text">接入风控</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF%E8%AE%BE%E8%AE%A1"><span class="toc-number">6.4.</span> <span class="toc-text">服务端设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9A%94%E7%A6%BB%E8%AE%BE%E8%AE%A1"><span class="toc-number">6.4.1.</span> <span class="toc-text">隔离设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8A%E5%B3%B0%E9%99%90%E6%B5%81"><span class="toc-number">6.4.2.</span> <span class="toc-text">削峰限流</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%99%90%E6%B5%81"><span class="toc-number">6.4.2.1.</span> <span class="toc-text">限流</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%89%8A%E5%B3%B0"><span class="toc-number">6.4.2.2.</span> <span class="toc-text">削峰</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%83%AD%E7%82%B9%E5%A4%84%E7%90%86"><span class="toc-number">6.4.3.</span> <span class="toc-text">热点处理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E7%83%AD%E7%82%B9%E6%95%B0%E6%8D%AE"><span class="toc-number">6.4.3.1.</span> <span class="toc-text">缓存热点数据</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%99%90%E5%88%B6%E7%83%AD%E7%82%B9%E6%95%B0%E6%8D%AE"><span class="toc-number">6.4.3.2.</span> <span class="toc-text">限制热点数据</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%90%E8%B4%AD"><span class="toc-number">6.4.4.</span> <span class="toc-text">限购</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%95%86%E5%93%81%E7%BB%B4%E5%BA%A6%E9%99%90%E8%B4%AD"><span class="toc-number">6.4.4.1.</span> <span class="toc-text">商品维度限购</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%AA%E4%BA%BA%E7%BB%B4%E5%BA%A6%E9%99%90%E8%B4%AD"><span class="toc-number">6.4.4.2.</span> <span class="toc-text">个人维度限购</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%8F%E5%BA%93%E5%AD%98"><span class="toc-number">6.4.5.</span> <span class="toc-text">减库存</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BA%93%E5%AD%98%E4%B8%8D%E8%83%BD%E6%89%A3%E5%87%8F%E4%B8%BA%E8%B4%9F%E6%95%B0"><span class="toc-number">6.4.5.1.</span> <span class="toc-text">库存不能扣减为负数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E4%B8%AD%E5%87%8F%E5%BA%93%E5%AD%98"><span class="toc-number">6.4.5.2.</span> <span class="toc-text">缓存中减库存</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E5%87%8F%E5%BA%93%E5%AD%98"><span class="toc-number">6.4.5.3.</span> <span class="toc-text">数据库中减库存</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">7.</span> <span class="toc-text">总结</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 112
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2025 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/15</span><a class="archive-post-title" href= "/2025/03/15/seckill-system-design/" >秒杀系统设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/02</span><a class="archive-post-title" href= "/2025/03/02/2025-migrate-vpc/" >某客户云上迁移实践</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2024 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/31</span><a class="archive-post-title" href= "/2024/12/31/2024-summary/" >2024年度总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/31</span><a class="archive-post-title" href= "/2024/10/31/game-email-architecture/" >游戏邮件系统设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2024/10/14/2024-october/" >10月随笔</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/31</span><a class="archive-post-title" href= "/2024/08/31/2024-end-of-august/" >写于8月最后一天</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2024/08/15/2024-08-15-replay/" >2024面试复盘13</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/14</span><a class="archive-post-title" href= "/2024/08/14/2024-08-14-replay/" >2024面试复盘12</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2024/08/12/2024-08-12-replay/" >2024面试复盘11</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/05</span><a class="archive-post-title" href= "/2024/08/05/2024-08-05-replay/" >2024面试复盘10</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/02</span><a class="archive-post-title" href= "/2024/08/02/2024-08-02-replay/" >2024面试复盘9</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2024/08/01/2024-08-01-replay/" >2024面试复盘8</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2024/07/30/2024-07-30-replay/" >2024面试复盘7</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/27</span><a class="archive-post-title" href= "/2024/07/27/devops12/" >【架构之路12】es-k8s搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2024/07/26/devops11/" >【架构之路11】sa-token框架上手体验</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2024/07/25/devops10/" >【架构之路10】sentinel限流上手</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2024/07/24/devops9/" >【架构之路9】flink-cdc学习与使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2024/07/23/devops8/" >【架构之路8】apisix-ingress-controller搭建与使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/22</span><a class="archive-post-title" href= "/2024/07/22/devops7/" >【架构之路7】tidb集群搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/22</span><a class="archive-post-title" href= "/2024/07/22/2024-07-22-replay/" >2024面试复盘6</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/19</span><a class="archive-post-title" href= "/2024/07/19/devops6/" >【架构之路6】k8s-LoadBalancer搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/17</span><a class="archive-post-title" href= "/2024/07/17/2024-07-17-replay/" >2024面试复盘5</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2024/07/16/devops5/" >【架构之路5】搭建redis集群</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2024/07/16/2024-07-16-replay/" >2024面试复盘4</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2024/07/15/2024-07-15-replay/" >2024面试复盘3</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/12</span><a class="archive-post-title" href= "/2024/07/12/devops4/" >【架构之路4】k8s对接ceph-rbd</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span><a class="archive-post-title" href= "/2024/07/11/devops3/" >【架构之路3】k8s对接cephfs</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span><a class="archive-post-title" href= "/2024/07/11/devops2/" >【架构之路2】ceph集群搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2024/07/10/devops1/" >【架构之路1】k8s集群搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2024/07/10/devops0/" >从0.5开始的运维架构之路0</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2024/06/24/2024-06-24-replay/" >2024面试复盘2</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/23</span><a class="archive-post-title" href= "/2024/06/23/2024-06-23-replay/" >2024面试复盘1</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2024/06/11/2024-resign/" >写于6月离职之后</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2024/01/01/2023-summary/" >2023年度总结</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/31</span><a class="archive-post-title" href= "/2022/12/31/2022-2023/" >2022年度总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2022/04/08/devtools/" >devtools协议分析与自动化录制实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2022/01/01/2022-first/" >由于代码架构设计不佳而引发的异常消失</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/08</span><a class="archive-post-title" href= "/2021/06/08/zbot/" >zbot架构畅谈</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/05</span><a class="archive-post-title" href= "/2021/04/05/bsgamesdk-re/" >对bsgamesdk的签名逆向分析</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span><a class="archive-post-title" href= "/2020/12/13/autoConfiguration/" >浅谈Spring Boot自动配置</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href= "/2020/11/01/transaction_isolation/" >回顾数据库事务隔离级别</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/09</span><a class="archive-post-title" href= "/2020/10/09/snowflake/" >浅谈雪花算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/design_patterns/" >谈谈设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/composite_pattern/" >设计模式之组合模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/flyweight_pattern/" >设计模式之享元模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span><a class="archive-post-title" href= "/2020/09/14/builder_pattern/" >设计模式之构建模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2020/09/13/arraylist_resize/" >ArrayList扩容之后内存地址会发生改变吗？</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2020/09/13/jmm/" >浅谈Java内存模型</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2020/09/08/visitor_pattern/" >设计模式之访问者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2020/09/08/template_method_pattern/" >设计模式之模板方法模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/memento_pattern/" >设计模式之备忘录模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/state_pattern/" >设计模式之状态模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2020/09/05/interpreter_pattern/" >设计模式之解释器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2020/09/05/chain_of_responsibility_pattern/" >设计模式之责任链模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2020/09/04/bridge_patterns/" >设计模式之桥接模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2020/09/02/prototype_pattern/" >设计模式之原型模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/29</span><a class="archive-post-title" href= "/2020/08/29/lambda/" >由lambda表达式引发的思考</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/27</span><a class="archive-post-title" href= "/2020/08/27/iterator_pattern/" >设计模式之迭代器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/27</span><a class="archive-post-title" href= "/2020/08/27/strategy_pattern/" >设计模式之策略模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/22</span><a class="archive-post-title" href= "/2020/08/22/adapter_pattern/" >设计模式之适配器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/19</span><a class="archive-post-title" href= "/2020/08/19/sql_concurrent/" >谈一道数据库更新的并发问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span><a class="archive-post-title" href= "/2020/08/17/decorator_pattern/" >设计模式之装饰器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span><a class="archive-post-title" href= "/2020/08/17/command_pattern/" >设计模式之命令模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/16</span><a class="archive-post-title" href= "/2020/08/16/facade_pattern/" >设计模式之外观模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/14</span><a class="archive-post-title" href= "/2020/08/14/lock_class/" >谈谈锁的种类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/13</span><a class="archive-post-title" href= "/2020/08/13/abstract_factory_pattern/" >设计模式之抽象工厂模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2020/08/12/mediator_pattern/" >设计模式之中介者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2020/08/12/factory_pattern/" >设计模式之工厂模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2020/08/10/spring_aop/" >浅谈Spring AOP</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2020/08/10/proxy_pattern/" >设计模式之代理模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/08</span><a class="archive-post-title" href= "/2020/08/08/observer/" >设计模式之观察者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/07</span><a class="archive-post-title" href= "/2020/08/07/singleton/" >设计模式之单例模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/06</span><a class="archive-post-title" href= "/2020/08/06/spring_ioc/" >谈谈Spring IoC</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2020/07/24/java_thread_pool/" >浅谈Java线程池</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/20</span><a class="archive-post-title" href= "/2020/07/20/dp3/" >浅谈动态规划Ⅲ</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/04</span><a class="archive-post-title" href= "/2020/07/04/database_master_slave/" >浅谈数据库主从复制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2020/06/24/load_balancing_algorithm/" >常见的负载均衡算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2020/06/15/load_balancing/" >浅谈负载均衡</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/14</span><a class="archive-post-title" href= "/2020/06/14/high_concurrency/" >浅谈高并发引起的问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/dp2/" >浅谈动态规划Ⅱ</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span><a class="archive-post-title" href= "/2020/05/13/topk/" >TopK问题与快速选择算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2020/04/29/binary_search/" >几种二分查找的模板与理解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/05</span><a class="archive-post-title" href= "/2020/04/05/dp1/" >浅谈动态规划</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2020/03/30/tree-traversal2/" >二叉树的广度优先(层次)遍历</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2020/03/30/tree-traversal/" >二叉树的前中后序遍历</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/24</span><a class="archive-post-title" href= "/2020/03/24/celery/" >初探celery任务队列</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/22</span><a class="archive-post-title" href= "/2020/03/22/java-reflection/" >理解Java反射</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span><a class="archive-post-title" href= "/2020/03/11/python-sync/" >浅谈python异步编程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/04</span><a class="archive-post-title" href= "/2020/03/04/python-copy/" >浅谈python中的引用与拷贝</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span><a class="archive-post-title" href= "/2020/02/10/spring-annotation/" >Springboot常用注解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/05</span><a class="archive-post-title" href= "/2020/01/05/dns-cache-pollution/" >DNS投毒分析</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href= "/2019/11/12/2019-11-12/" >谈一谈最近</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2019/04/01/ngrok/" >使用ngrok实现内网远程桌面</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href= "/2018/11/12/hctf2018wp/" >HCTF2018 web部分Writeup</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2018/11/02/js-prototype/" >浅谈JavaScript中的原型链</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2018/10/10/xssbot1/" >从零开始完成xssbot</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/12</span><a class="archive-post-title" href= "/2018/07/12/csp/" >浅谈CSP内容安全策略</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/07</span><a class="archive-post-title" href= "/2018/06/07/mergesort/" >经典算法之归并排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/02</span><a class="archive-post-title" href= "/2018/06/02/quicksort/" >经典算法之快速排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/28</span><a class="archive-post-title" href= "/2018/05/28/linux-shell/" >Linux下反弹shell的几种方式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/11</span><a class="archive-post-title" href= "/2018/05/11/selectsort/" >经典算法之选择排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2018/04/24/docker/" >docker常用命令汇总</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/11</span><a class="archive-post-title" href= "/2018/04/11/bubblesort/" >经典算法之冒泡排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2018/03/30/php-weak1/" >PHP弱类型总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/29</span><a class="archive-post-title" href= "/2018/03/29/second-sqli/" >记一次有趣的二次注入</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/23</span><a class="archive-post-title" href= "/2018/03/23/polynomial/" >单向链表的学习</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2018/03/18/hgame-misc/" >misc入门总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/14</span><a class="archive-post-title" href= "/2018/03/14/shuffle/" >常见的洗牌算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/hgame-web/" >CTF入门(坑)总结——web篇</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span><a class="archive-post-title" href= "/2018/03/10/maze/" >使用递归算法解决迷宫问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span><a class="archive-post-title" href= "/2018/03/10/resolve-number/" >实现整数的所有划分数</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span><a class="archive-post-title" href= "/2018/03/10/talk-about-blog/" >谈一谈博客</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="编程"><span class="iconfont-archer">&#xe606;</span>编程</span>
+    
+        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
+    
+        <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
+    
+        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
+    
+        <span class="sidebar-tag-name" data-tags="面经"><span class="iconfont-archer">&#xe606;</span>面经</span>
+    
+        <span class="sidebar-tag-name" data-tags="设计模式"><span class="iconfont-archer">&#xe606;</span>设计模式</span>
+    
+        <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="Android"><span class="iconfont-archer">&#xe606;</span>Android</span>
+    
+        <span class="sidebar-tag-name" data-tags="数据库"><span class="iconfont-archer">&#xe606;</span>数据库</span>
+    
+        <span class="sidebar-tag-name" data-tags="运维"><span class="iconfont-archer">&#xe606;</span>运维</span>
+    
+        <span class="sidebar-tag-name" data-tags="从0.5开始的运维架构之路"><span class="iconfont-archer">&#xe606;</span>从0.5开始的运维架构之路</span>
+    
+        <span class="sidebar-tag-name" data-tags="web"><span class="iconfont-archer">&#xe606;</span>web</span>
+    
+        <span class="sidebar-tag-name" data-tags="自动化测试"><span class="iconfont-archer">&#xe606;</span>自动化测试</span>
+    
+        <span class="sidebar-tag-name" data-tags="linux"><span class="iconfont-archer">&#xe606;</span>linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="misc"><span class="iconfont-archer">&#xe606;</span>misc</span>
+    
+        <span class="sidebar-tag-name" data-tags="CTF"><span class="iconfont-archer">&#xe606;</span>CTF</span>
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
+    
+        <span class="sidebar-tag-name" data-tags="分布式"><span class="iconfont-archer">&#xe606;</span>分布式</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Zer0e"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    <script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"model":{"jsonPath":"/live2dw/assets/koharu.model.json"},"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>
+
+

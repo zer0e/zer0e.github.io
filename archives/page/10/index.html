@@ -346,6 +346,65 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href = "/2020/01/05/dns-cache-pollution/" >
+            
+                <span>DNS投毒分析</span>
+        </a>
+        <div class="abstract-content">
+            前言最近因为研究了下DNSsec技术突然想起来著名的DNS投毒，就是DNS缓存污染，今天趁着有点时间研究下某知名防火墙对DNS是怎么进行污染的。
+原理由于DNS采用UDP协议来进行查询和应答，由于UDP是无连接的，所以当我们发送一个DNS请求时，如果有多个DNS响应包时，操作系统一般是以最先收到的响应包为准，这就使得了如果攻击者在正...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/01/05</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "web">web</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2019/11/12/2019-11-12/" >
+            
+                <span>谈一谈最近</span>
+        </a>
+        <div class="abstract-content">
+            几个月没写文章，谈一谈最近一年都在干些啥事吧。从18年末开始，我就很少参加CTF比赛，不管大的小的，虽然没有参加，但还是有在业余的时候看看一些大型比赛的解题思路和漏洞报告。这一年来，也是学了不少东西，主要是使用python写了两个脚本，一个抢课脚本，一个群体签到软件，主要是感觉挺好玩的。18年末到19年1月左右，主要是深入学习了计算...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2019/11/12</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "随笔">随笔</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href = "/2019/04/01/ngrok/" >
             
                 <span>使用ngrok实现内网远程桌面</span>
@@ -583,69 +642,10 @@ Bashbash是linux最基本的东西，用bash来反弹shell是必须要清楚的�
         </div>
     </article>
     
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2018/05/11/selectsort/" >
-            
-                <span>经典算法之选择排序</span>
-        </a>
-        <div class="abstract-content">
-            最近都没时间写文章，想想还是得偶尔空出点时间来写文章学习点东西。讲讲选择排序。选择排序和冒泡排序都是比较基本的排序算法，下面就来简单说说选择排序的实现方法。设数组的下标为[0…n-1]，i=0。刚开始整个数组都处于无序状态，在无序区中找到一个最小的数放在第i个位置，则现在[0..i]处于有序区，i++并重复步骤，直到i==n-1，则...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/05/11</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "算法">算法</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2018/04/24/docker/" >
-            
-                <span>docker常用命令汇总</span>
-        </a>
-        <div class="abstract-content">
-            最近事有点多，一直没啥时间写文章。但是忙不能成为不学习的理由，还是抽空写下文章吧。因为出题目的原因，docker也开始频繁使用了，之前看了两本docker相关的书，但都不满意书的内容，可能是写的太杂太乱。借这个机会总结一下常用的命令方便自己忘记的时候查找吧。搜索docker镜像：
-12docker search [镜像名]docke...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/04/24</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "linux">linux</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
     <!-- paginator  -->
     
     <nav class="page-nav">
-        <a class="extend prev" rel="prev" href="/archives/page/9/">&amp;#60; PREV</a><a class="page-number" href="/archives/">1</a><span class="space">&hellip;</span><a class="page-number" href="/archives/page/8/">8</a><a class="page-number" href="/archives/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/archives/page/11/">11</a><a class="extend next" rel="next" href="/archives/page/11/">NEXT &amp;#62;</a>
+        <a class="extend prev" rel="prev" href="/archives/page/9/">&amp;#60; PREV</a><a class="page-number" href="/archives/">1</a><span class="space">&hellip;</span><a class="page-number" href="/archives/page/8/">8</a><a class="page-number" href="/archives/page/9/">9</a><span class="page-number current">10</span><a class="page-number" href="/archives/page/11/">11</a><a class="page-number" href="/archives/page/12/">12</a><a class="extend next" rel="next" href="/archives/page/11/">NEXT &amp;#62;</a>
     </nav>
     
 </main>
@@ -1521,9 +1521,23 @@ Bashbash是linux最基本的东西，用bash来反弹shell是必须要清楚的�
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 110
+        Total : 112
         </div>
         <!-- search  -->
         
@@ -1533,6 +1547,25 @@ Bashbash是linux最基本的东西，用bash来反弹shell是必须要清楚的�
     
     
     
+    
+    <div class="archive-year"> 2025 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/15</span><a class="archive-post-title" href= "/2025/03/15/seckill-system-design/" >秒杀系统设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/02</span><a class="archive-post-title" href= "/2025/03/02/2025-migrate-vpc/" >某客户云上迁移实践</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
     
     <div class="archive-year"> 2024 </div>
     <ul class="year-list">
@@ -2137,27 +2170,33 @@ Bashbash是linux最基本的东西，用bash来反弹shell是必须要清楚的�
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
-        <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
-    
         <span class="sidebar-tag-name" data-tags="编程"><span class="iconfont-archer">&#xe606;</span>编程</span>
     
         <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
+    
+        <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
     
         <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
     
         <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
     
+        <span class="sidebar-tag-name" data-tags="面经"><span class="iconfont-archer">&#xe606;</span>面经</span>
+    
         <span class="sidebar-tag-name" data-tags="设计模式"><span class="iconfont-archer">&#xe606;</span>设计模式</span>
+    
+        <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
     
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
         <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
     
-        <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
-    
         <span class="sidebar-tag-name" data-tags="Android"><span class="iconfont-archer">&#xe606;</span>Android</span>
     
         <span class="sidebar-tag-name" data-tags="数据库"><span class="iconfont-archer">&#xe606;</span>数据库</span>
+    
+        <span class="sidebar-tag-name" data-tags="运维"><span class="iconfont-archer">&#xe606;</span>运维</span>
+    
+        <span class="sidebar-tag-name" data-tags="从0.5开始的运维架构之路"><span class="iconfont-archer">&#xe606;</span>从0.5开始的运维架构之路</span>
     
         <span class="sidebar-tag-name" data-tags="web"><span class="iconfont-archer">&#xe606;</span>web</span>
     
@@ -2165,19 +2204,13 @@ Bashbash是linux最基本的东西，用bash来反弹shell是必须要清楚的�
     
         <span class="sidebar-tag-name" data-tags="linux"><span class="iconfont-archer">&#xe606;</span>linux</span>
     
-        <span class="sidebar-tag-name" data-tags="CTF"><span class="iconfont-archer">&#xe606;</span>CTF</span>
-    
         <span class="sidebar-tag-name" data-tags="misc"><span class="iconfont-archer">&#xe606;</span>misc</span>
+    
+        <span class="sidebar-tag-name" data-tags="CTF"><span class="iconfont-archer">&#xe606;</span>CTF</span>
     
         <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
     
         <span class="sidebar-tag-name" data-tags="分布式"><span class="iconfont-archer">&#xe606;</span>分布式</span>
-    
-        <span class="sidebar-tag-name" data-tags="运维"><span class="iconfont-archer">&#xe606;</span>运维</span>
-    
-        <span class="sidebar-tag-name" data-tags="从0.5开始的运维架构之路"><span class="iconfont-archer">&#xe606;</span>从0.5开始的运维架构之路</span>
-    
-        <span class="sidebar-tag-name" data-tags="面经"><span class="iconfont-archer">&#xe606;</span>面经</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
