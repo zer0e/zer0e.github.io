@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://re0.top/"/>
-  <updated>2025-03-15T10:39:34.389Z</updated>
+  <updated>2025-09-03T14:20:56.095Z</updated>
   <id>https://re0.top/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>写于2025年生日前</title>
+    <link href="https://re0.top/2025/09/03/2025-birthday/"/>
+    <id>https://re0.top/2025/09/03/2025-birthday/</id>
+    <published>2025-09-03T14:14:24.000Z</published>
+    <updated>2025-09-03T14:20:56.095Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="回望"><a href="#回望" class="headerlink" title="回望"></a>回望</h1><p>又是一年过去，2025年又过去了8个月。去年生日前我也写过一篇文章，那时候离职超两个月，心态有点差，和朋友去外面走了走，聊了聊天，虽然也是苦闷但也不至于特别丧。<br>十月份过后，我入职了新公司，以全新的起点、全新的挑战去面对没听说过的岗位，那时候还是比较期待的。入职后马上就开始熟悉工作，技术上从云网络入手，逐步扩散到云上的大部分产品，那段时间学习还是比较快的。后面跟随一位大佬做客户迁移工作，现在想想有做的好的地方，也有不好的地方，但总之都顺利完成任务了。  </p><p>今年4月，组织架构调整，另一个团队合并到我所在的团队，可能老板认为我是比较不错的，因此被他拉着去做另一份他的重点工作。随后便开始接触故障应急、客户稳定性、故障演练等等一些工作，现在回想，也许老板那时候只想多拉点人来干这块吧，很苦，尤其是应急值班，一有大故障那真的要命，不仅如此，有夜班oncalll还睡不踏实，真的非常难受。  </p><p>今年5月，我开始跟随两位大佬做客户稳定性相关的工作，但说是客户稳定性，但其实我能做的有限，能和客户交流的有限，而且比较有局限性，不是从客户架构的全局视角出发，而是从某个点切入分析问题。负责对客交流架构还是交给另一位大佬讲述，我负责打下手。仔细想想，我也就让客户将业务监控接入了工单系统，有问题可以第一时间排查，也没有特别有亮点的地方。  </p><p>另一块客户稳定性工作是故障演练，这块我自认为研究的还是比较深入的，当然我指的不是理论方面，而是从实际故障注入的角度来说，包括开源的chaosblade工具，也深入了代码。故障演练这块给几个客户去现场讲述发展与体系，也演示了具体效果，还给一些客户进行了培训。总之这块收获颇丰。</p><h1 id="现状"><a href="#现状" class="headerlink" title="现状"></a>现状</h1><p>最近有位同事离职了。现在团队可以分为两块业务A和B，后面合并过来的是B业务。他就属于B业务的一员。至于离职原因我认为还是因为和我的老板不对付，并且值班压力大。说实话我挺理解他的，他属于边缘人，现在要求越来越多，他也担心哪天出了问题。但我说实话完全不是事，出问题再说呗，上次心理老师问我，你觉得如果领导责备会对你有什么影响吗？是走人还是说绩效不好？说实话我都不在意。<br>所以我觉得能过就过吧，而且他属于裸辞，说实话，经历过去年那段时期，我对裸辞还是比较谨慎的。如今工作更难找了，但是我也理解他所处的位置，不走的话更难受。<br>目前团队现状就是老板过于傻x，整天整细节和微操，他不参活事照样干的顺利。至于我个人成长只能说还行，也有提升但是不接触代码后感觉少了什么，虽然偶尔也会写写脚本，但感觉还是差了点啥。<br>故障应急值班是真的累，睡不踏实，周末有时候也不敢出门，这是目前最难受的一点。</p><h1 id="未来"><a href="#未来" class="headerlink" title="未来"></a>未来</h1><p>也和几位大佬聊了一下，不太推荐我在现在这个岗位，技术上还不错，还年轻应该出去多拼拼。其实道理我也都明白，但是总感觉还能带给我什么，除了领导过于傻x以外，并且值班压力大，其他真的也能自由学到很多东西，这也是让我很纠结的一个点。不过今天就是我入职的296天了，马上就一年了，机会还是要多看看，看能否去一个更好的地方。<br>今年是我27岁，马上就奔3了，一没事业，二没家庭，感觉还是在漂泊，不知道方向何在，但总是默默勉励自己还可以，未来会好起来的。</p><h1 id="题外话"><a href="#题外话" class="headerlink" title="题外话"></a>题外话</h1><p>之前去上海的那个朋友从大厂离职了，家里人介绍后去了家国企，不得不感叹还是得关系硬啊，可惜家里没权没关系，都得自己拼自己博机会，只是有时候想，这打工何时才是个头啊。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;回望&quot;&gt;&lt;a href=&quot;#回望&quot; class=&quot;headerlink&quot; title=&quot;回望&quot;&gt;&lt;/a&gt;回望&lt;/h1&gt;&lt;p&gt;又是一年过去，2025年又过去了8个月。去年生日前我也写过一篇文章，那时候离职超两个月，心态有点差，和朋友去外面走了走，聊了聊天，虽然也是苦
+      
+    
+    </summary>
+    
+    
+      <category term="随想" scheme="https://re0.top/tags/%E9%9A%8F%E6%83%B3/"/>
+    
+  </entry>
   
   <entry>
     <title>秒杀系统设计</title>
@@ -111,9 +134,9 @@
     
       <category term="编程" scheme="https://re0.top/tags/%E7%BC%96%E7%A8%8B/"/>
     
-      <category term="随想" scheme="https://re0.top/tags/%E9%9A%8F%E6%83%B3/"/>
-    
       <category term="架构" scheme="https://re0.top/tags/%E6%9E%B6%E6%9E%84/"/>
+    
+      <category term="随想" scheme="https://re0.top/tags/%E9%9A%8F%E6%83%B3/"/>
     
   </entry>
   
@@ -533,34 +556,6 @@
       <category term="运维" scheme="https://re0.top/tags/%E8%BF%90%E7%BB%B4/"/>
     
       <category term="从0.5开始的运维架构之路" scheme="https://re0.top/tags/%E4%BB%8E0-5%E5%BC%80%E5%A7%8B%E7%9A%84%E8%BF%90%E7%BB%B4%E6%9E%B6%E6%9E%84%E4%B9%8B%E8%B7%AF/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>2024面试复盘6</title>
-    <link href="https://re0.top/2024/07/22/2024-07-22-replay/"/>
-    <id>https://re0.top/2024/07/22/2024-07-22-replay/</id>
-    <published>2024-07-22T07:00:00.000Z</published>
-    <updated>2024-07-25T05:27:43.318Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>pdd二面，面试官说他们是单休，可怕。</p><h1 id="复盘"><a href="#复盘" class="headerlink" title="复盘"></a>复盘</h1><h2 id="项目相关"><a href="#项目相关" class="headerlink" title="项目相关"></a>项目相关</h2><p>项目说了蛮久的，可能有二三十分钟。</p><h2 id="互斥锁和自旋锁"><a href="#互斥锁和自旋锁" class="headerlink" title="互斥锁和自旋锁"></a>互斥锁和自旋锁</h2><p>自旋锁(Spin lock)和互斥锁(Mutex)两者都是为了保证多个线程在访问共享资源时的同步，防止数据竞争和不一致。</p><p><strong>互斥锁</strong>：</p><ul><li>线程在尝试获取锁时，如果锁已经被其他线程持有，线程会被阻塞并进入等待队列。</li><li>操作系统负责管理线程的阻塞和唤醒。</li><li>线程被唤醒后再次尝试获取锁，直到成功为止。</li><li>在锁被占用时，线程被阻塞，不会占用CPU资源。</li><li>阻塞和唤醒线程有一定的上下文切换开销。</li></ul><p><strong>自旋锁</strong>：</p><ul><li>线程在尝试获取锁时，如果锁已经被其他线程持有，线程不会阻塞，而是持续循环检查锁的状态（忙等待）。</li><li>自旋过程消耗CPU时间，直到锁被释放。</li><li>自旋锁通常由硬件原语（如原子操作）实现，不涉及操作系统的线程管理。</li><li>在锁被占用时，线程持续忙等待，占用CPU资源。</li><li>避免了线程阻塞和唤醒的上下文切换开销，但可能会导致CPU资源浪费。</li></ul><h2 id="AQS和ABA问题"><a href="#AQS和ABA问题" class="headerlink" title="AQS和ABA问题"></a>AQS和ABA问题</h2><p>AQS相关白复习了，见<a href="https://re0.top/2024/06/24/2024-06-24-replay/#%E5%B9%B6%E5%8F%91%E5%8C%85%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%EF%BC%8CAQS%E5%8E%9F%E7%90%86%EF%BC%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%EF%BC%9F">这里</a>。</p><p>ABA问题的解决方法：</p><ul><li><strong>版本号机制</strong>：在变量前增加一个版本号，每次变量修改时同时更新版本号。CAS操作时同时检查版本号和变量值，确保变量没有被其他线程修改过。</li><li><strong>引用计数</strong>：某些情况下，可以通过引用计数来跟踪变量的状态变化。</li></ul><p>Java中的<code>AtomicStampedReference</code>类和<code>AtomicMarkableReference</code>类提供了解决ABA问题的机制，前者通过增加版本戳来避免ABA问题，后者通过标记位来实现类似效果。</p><p>mysql中可以通过版本号机制来解决ABA问题。</p><h2 id="线程池的核心参数和拒绝策略"><a href="#线程池的核心参数和拒绝策略" class="headerlink" title="线程池的核心参数和拒绝策略"></a>线程池的核心参数和拒绝策略</h2><p>这个之前复盘过，但是拒接策略还是忘了一个。</p><p><code>ThreadPoolExecutor</code> 3 个最重要的参数：</p><ul><li><code>corePoolSize</code> : 任务队列未达到队列容量时，最大可以同时运行的线程数量。</li><li><code>maximumPoolSize</code> : 任务队列中存放的任务达到队列容量的时候，当前可以同时运行的线程数量变为最大线程数。</li><li><code>workQueue</code>: 新任务来的时候会先判断当前运行的线程数量是否达到核心线程数，如果达到的话，新任务就会被存放在队列中。</li></ul><p><code>ThreadPoolExecutor</code>其他常见参数 :</p><ul><li><code>keepAliveTime</code>:线程池中的线程数量大于 <code>corePoolSize</code> 的时候，如果这时没有新的任务提交，核心线程外的线程不会立即销毁，而是会等待，直到等待的时间超过了 <code>keepAliveTime</code>才会被回收销毁。</li><li><code>unit</code> : <code>keepAliveTime</code> 参数的时间单位。</li><li><code>threadFactory</code> :executor 创建新线程的时候会用到。</li><li><code>handler</code> :拒绝策略（后面会单独详细介绍一下）。</li></ul><p><code>ThreadPoolExecutor.AbortPolicy</code>：抛出 <code>RejectedExecutionException</code>来拒绝新任务的处理。</p><p><code>ThreadPoolExecutor.CallerRunsPolicy</code>：调用执行自己的线程运行任务，也就是直接在调用<code>execute</code>方法的线程中运行(<code>run</code>)被拒绝的任务，如果执行程序已关闭，则会丢弃该任务。因此这种策略会降低对于新任务提交速度，影响程序的整体性能。如果你的应用程序可以承受此延迟并且你要求任何一个任务请求都要被执行的话，你可以选择这个策略。</p><p><code>ThreadPoolExecutor.DiscardPolicy</code>：不处理新任务，直接丢弃掉。</p><p><code>ThreadPoolExecutor.DiscardOldestPolicy</code>：此策略将丢弃最早的未处理的任务请求。</p><h2 id="mysql事务解决了什么问题（没有事务会怎么样）"><a href="#mysql事务解决了什么问题（没有事务会怎么样）" class="headerlink" title="mysql事务解决了什么问题（没有事务会怎么样）"></a>mysql事务解决了什么问题（没有事务会怎么样）</h2><p>其实就是ACID（原子性、一致性、隔离性和持久性）。</p><p><strong>原子性</strong>：确保操作的全有或全无，防止部分操作成功导致的数据不一致。</p><p><strong>一致性</strong>：确保数据库从一个一致状态转换到另一个一致状态，维持数据的完整性。</p><p><strong>隔离性</strong>：防止并发事务相互干扰，解决脏读、不可重复读和幻读问题。</p><p><strong>持久性</strong>：确保已提交的数据永久保存，防止数据丢失。</p><p>原子性关注事务的完整性，而一致性关注数据的完整性。</p><h2 id="mysql如何调优"><a href="#mysql如何调优" class="headerlink" title="mysql如何调优"></a>mysql如何调优</h2><p>这个其实范围比较广，我回答的是从索引和业务层面优化。其实之前也做过复盘，抄过来。</p><p>使用explain检查sql。</p><p>优化手段：</p><ol><li>避免使用select * ，原因是会消耗更多CPU，增加带宽，无法使用mysql优化器覆盖索引的优化。</li><li>分页优化。使用子查询或内连接，使用子查询的id作为主查询的条件。</li></ol><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SELECT `score`, `name` FROM `cus_order`</span><br><span class="line">WHERE id &gt;= (SELECT id FROM `cus_order` LIMIT 1000000, 1)</span><br><span class="line">LIMIT 10;</span><br></pre></td></tr></table></figure><ol start="3"><li><p><strong>尽量避免多表做 join</strong></p></li><li><p><strong>建议不要使用外键与级联</strong></p></li><li><p><strong>选择合适的字段类型</strong>。某些字符串可以转换成数字类型存储比如可以将 IP 地址转换成整型数据；对于非负型的数据 (如自增 ID,整型 IP，年龄) 来说,要优先使用无符号整型来存储；小数值类型（比如年龄、状态表示如 0/1）优先使用 TINYINT 类型；对于日期类型来说， 一定不要用字符串存储日期。可以考虑 DATETIME、TIMESTAMP 和 数值型时间戳；金额字段用 decimal，避免精度丢失；尽量使用自增 id 作为主键；不建议使用 NULL 作为列默认值；</p></li></ol><p>这里补充下如何正确使用索引</p><p><strong>选择合适的字段创建索引</strong></p><ul><li>不为 NULL 的字段 ：索引字段的数据应该尽量不为 NULL，因为对于数据为 NULL 的字段，数据库较难优化。如果字段频繁被查询，但又避免不了为 NULL，建议使用 0,1,true,false 这样语义较为清晰的短值或短字符作为替代。</li><li>被频繁查询的字段 ：我们创建索引的字段应该是查询操作非常频繁的字段。</li><li>被作为条件查询的字段 ：被作为 WHERE 条件查询的字段，应该被考虑建立索引。</li><li>频繁需要排序的字段 ：索引已经排序，这样查询可以利用索引的排序，加快排序查询时间。</li><li>被经常频繁用于连接的字段 ：经常用于连接的字段可能是一些外键列，对于外键列并不一定要建立外键，只是说该列涉及到表与表的关系。对于频繁被连接查询的字段，可以考虑建立索引，提高多表连接查询的效率。</li></ul><p><strong>被频繁更新的字段应该慎重建立索引</strong></p><p>虽然索引能带来查询上的效率，但是维护索引的成本也是不小的。 如果一个字段不被经常查询，反而被经常修改，那么就更不应该在这种字段上建立索引了。</p><p><strong>尽可能的考虑建立联合索引而不是单列索引</strong></p><p>因为索引是需要占用磁盘空间的，可以简单理解为每个索引都对应着一颗 B+树。如果一个表的字段过多，索引过多，那么当这个表的数据达到一个体量后，索引占用的空间也是很多的，且修改索引时，耗费的时间也是较多的。如果是联合索引，多个字段在一个索引上，那么将会节约很大磁盘空间，且修改数据的操作效率也会提升。</p><p><strong>注意避免冗余索引</strong></p><p>冗余索引指的是索引的功能相同，能够命中索引(a, b)就肯定能命中索引(a) ，那么索引(a)就是冗余索引。如（name,city ）和（name ）这两个索引就是冗余索引，能够命中前者的查询肯定是能够命中后者的 在大多数情况下，都应该尽量扩展已有的索引而不是创建新索引。</p><p><strong>考虑在字符串类型的字段上使用前缀索引代替普通索引</strong></p><p>前缀索引仅限于字符串类型，较普通索引会占用更小的空间，所以可以考虑使用前缀索引带替普通索引。</p><p><strong>避免索引失效</strong></p><ul><li>创建了组合索引，但查询条件未准守最左匹配原则;</li><li>在索引列上进行计算、函数、类型转换等操作;</li><li>以 % 开头的 LIKE 查询比如 LIKE ‘%abc’;;</li><li>查询条件中使用 OR，且 OR 的前后条件中有一个列没有索引，涉及的索引都不会被使用到;</li><li>IN 的取值范围较大时会导致索引失效，走全表扫描(NOT IN 和 IN 的失效场景相同);</li><li>发生<a href="https://javaguide.cn/database/mysql/index-invalidation-caused-by-implicit-conversion.html">隐式转换</a>;</li></ul><h2 id="如果有一张表中有一百亿数据怎么处理"><a href="#如果有一张表中有一百亿数据怎么处理" class="headerlink" title="如果有一张表中有一百亿数据怎么处理"></a>如果有一张表中有一百亿数据怎么处理</h2><p>分库分表。之前刚讲过。面试的时候回答了手动hash分片，或者用Sharding-JDBC或tidb。</p><p>再把之前<a href="https://re0.top/2024/07/15/2024-07-15-replay/#%E6%9C%89%E4%BA%86%E8%A7%A3%E8%BF%87%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E5%90%97%EF%BC%9F%E6%97%A2%E7%84%B6%E4%BD%A0%E4%BB%AC%E7%94%A8tidb-%E9%82%A3%E8%8A%82%E7%82%B9%E6%89%A9%E5%AE%B9%E4%BA%86%E8%A7%A3%E8%BF%87%E5%90%97%EF%BC%9F">文章</a>抄过来。</p><blockquote><p>分表算法一般有直接取模，hash取模，一致性hash等方案，前两种方法存在一个问题就是当后期需要扩容的时候，那么由于基数改变，必然涉及到数据的重新迁移。所以一般来说是使用一致性Hash方式。一致性哈希可以按照常用的hash算法来将对应的key哈希到一个具有2^32次方个节点的空间中，形成成一个顺时针首尾相接的闭合的环形。所以当添加一个新的数据库节点时，只有增加服务器的位置和逆时针方向第一个数据库节点之间的键会受影响。虽然数据会收到部分影响，但是会稍微好点。当然前期就应该规划好数据量级，提前做好分库分表。</p><p>全局id的生成一般有UUID，雪花算法，当然也有tidb使用的预先分配id方案，例如节点1插入数据id范围为1-3000，节点2为3001-6000以此类推。</p><p>市面上主流的分库分表中间件有ShardingSphere，TDDL，Mycat。<a href="https://shardingsphere.apache.org/document/4.1.0/cn/manual/sharding-jdbc/">ShardingSphere</a>用的人可能会多一些。ShardingSphere包括Sharding-JDBC和Sharding-Proxy，JDBC是项目里使用的，Proxy则代理数据库连接，JDBC使用较为简单，只需在项目里引用，并添加多个数据源即可实现分库分表。Proxy 版则可以屏蔽应用层面配置多个数据源，能更好的管理数据库。</p></blockquote><h2 id="缓存和数据库如何保证一致性"><a href="#缓存和数据库如何保证一致性" class="headerlink" title="缓存和数据库如何保证一致性"></a>缓存和数据库如何保证一致性</h2><p>这个我回答的还是不错的（自认为），哈哈哈哈。</p><p>首先强调了一下一致性是最终一致性，强一致性要如何保证。然后把Cache Aside Pattern说了一下。把之前复盘的抄过来。</p><blockquote><p>缓存不一致业界一般采用的是Cache Aside Pattern, 即旁路缓存方案。这种方案包括读与写两种实践，对于读请求，先读缓存再读DB，如果cache命中，返回数据，未命中则访问DB,并将数据写回缓存。对于写请求，先操作数据库修改，再删除缓存。</p><p>为什么要删除缓存？原因是因为如果是写缓存的话，与正常的缓存miss流程相冲突，无法保证时序性。</p><p>为什么先操作数据库后删除缓存？其实不管是谁先谁后，都有可能会出现并发问题，但是写数据库的操作会比读数据库的速度慢，因此当A线程读了老数据并写入cache，B线程更改了数据库数据，并删除缓存，假设先删除缓存，那么有可能是删了个寂寞，老数据依旧被A写入缓存。当然这就是一个概率问题。</p><p>数据库和缓存是很难做到强一致性的，只能退而求其次追求最终一致性。那么就可以使用双写方案，即常说的延时双删，但是具体延迟多久这个得根据业务确定，取决于读业务所需的时间。</p></blockquote><h2 id="算法题：给定一个包含m-n的元素矩阵-按照顺时针螺旋顺序输出"><a href="#算法题：给定一个包含m-n的元素矩阵-按照顺时针螺旋顺序输出" class="headerlink" title="算法题：给定一个包含m*n的元素矩阵 按照顺时针螺旋顺序输出"></a>算法题：给定一个包含m*n的元素矩阵 按照顺时针螺旋顺序输出</h2><p>GPT让我自愧不如。</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> List&lt;Integer&gt; <span class="title">helper</span><span class="params">(<span class="keyword">int</span>[][] matrix)</span> </span>&#123;</span><br><span class="line">    List&lt;Integer&gt; result = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    <span class="keyword">if</span> (matrix == <span class="keyword">null</span> || matrix.length == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> rows = matrix.length;</span><br><span class="line">    <span class="keyword">int</span> cols = matrix[<span class="number">0</span>].length;</span><br><span class="line">    <span class="keyword">int</span> left = <span class="number">0</span>, right = cols - <span class="number">1</span>, top = <span class="number">0</span>, bottom = rows - <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (left &lt;= right &amp;&amp; top &lt;= bottom) &#123;</span><br><span class="line">        <span class="comment">// Traverse from left to right</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> col = left; col &lt;= right; col++) &#123;</span><br><span class="line">            result.add(matrix[top][col]);</span><br><span class="line">        &#125;</span><br><span class="line">        top++;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Traverse from top to bottom</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> row = top; row &lt;= bottom; row++) &#123;</span><br><span class="line">            result.add(matrix[row][right]);</span><br><span class="line">        &#125;</span><br><span class="line">        right--;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (top &lt;= bottom) &#123;</span><br><span class="line">            <span class="comment">// Traverse from right to left</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> col = right; col &gt;= left; col--) &#123;</span><br><span class="line">                result.add(matrix[bottom][col]);</span><br><span class="line">            &#125;</span><br><span class="line">            bottom--;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (left &lt;= right) &#123;</span><br><span class="line">            <span class="comment">// Traverse from bottom to top</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> row = bottom; row &gt;= top; row--) &#123;</span><br><span class="line">                result.add(matrix[row][left]);</span><br><span class="line">            &#125;</span><br><span class="line">            left++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;pdd二面，面试官说他们是单休，可怕。&lt;/p&gt;
-&lt;h1 id=&quot;复盘&quot;&gt;&lt;a href=&quot;#复盘&quot; class=&quot;headerlink&quot; t
-      
-    
-    </summary>
-    
-    
-      <category term="编程" scheme="https://re0.top/tags/%E7%BC%96%E7%A8%8B/"/>
-    
-      <category term="随想" scheme="https://re0.top/tags/%E9%9A%8F%E6%83%B3/"/>
-    
-      <category term="面经" scheme="https://re0.top/tags/%E9%9D%A2%E7%BB%8F/"/>
     
   </entry>
   
