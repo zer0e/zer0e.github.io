@@ -413,16 +413,16 @@ height:50vh;
 <li>接收者(Receiver)：负责具体执行一个命令。 </li>
 </ul>
 <p>我们先简单实现一个命令模式demo。<br>先创建Receiver对象，设置action方法，即收到命令会执行什么。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Receiver</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">action</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;执行命令&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Receiver</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">action</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;执行命令&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   
 
 <p>接着我们创建command接口与它的具体实现。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Command</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">execute</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ConcreteCommand</span> <span class="keyword">implements</span> <span class="title">Command</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Receiver receiver = <span class="keyword">null</span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ConcreteCommand</span><span class="params">(Receiver receiver)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//这里我们把具体接收者当作参数传给具体命令类</span></span><br><span class="line">        <span class="keyword">this</span>.receiver = receiver;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        receiver.action();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Command</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConcreteCommand</span> <span class="keyword">implements</span> <span class="title class_">Command</span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">Receiver</span> <span class="variable">receiver</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ConcreteCommand</span><span class="params">(Receiver receiver)</span> &#123;</span><br><span class="line">        <span class="comment">//这里我们把具体接收者当作参数传给具体命令类</span></span><br><span class="line">        <span class="built_in">this</span>.receiver = receiver;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        receiver.action();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   
 
 <p>然后是创建请求者，这里把命令当作参数传给请求者。  </p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Invoker</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Command command = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Invoker</span><span class="params">(Command command)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.command = command;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">action</span><span class="params">()</span></span>&#123;</span><br><span class="line">        command.execute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Invoker</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">Command</span> <span class="variable">command</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Invoker</span><span class="params">(Command command)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.command = command;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">action</span><span class="params">()</span>&#123;</span><br><span class="line">        command.execute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   
 
 <p>最后是客户端调用</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Client</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//创建接收者</span></span><br><span class="line">        Receiver receiver = <span class="keyword">new</span> Receiver();</span><br><span class="line">        <span class="comment">//创建具体命令，设置它的接收者</span></span><br><span class="line">        Command command = <span class="keyword">new</span> ConcreteCommand(receiver);</span><br><span class="line">        <span class="comment">//创建请求类，把命令传入</span></span><br><span class="line">        Invoker invoker = <span class="keyword">new</span> Invoker(command);</span><br><span class="line">        invoker.action();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Client</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">//创建接收者</span></span><br><span class="line">        <span class="type">Receiver</span> <span class="variable">receiver</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Receiver</span>();</span><br><span class="line">        <span class="comment">//创建具体命令，设置它的接收者</span></span><br><span class="line">        <span class="type">Command</span> <span class="variable">command</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ConcreteCommand</span>(receiver);</span><br><span class="line">        <span class="comment">//创建请求类，把命令传入</span></span><br><span class="line">        <span class="type">Invoker</span> <span class="variable">invoker</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Invoker</span>(command);</span><br><span class="line">        invoker.action();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   
 
 <p>这里invoker的值传入，是通过构造方法注入，但实际中，我们的invoker对象往往需要接收许多个命令，这时我们在invoker中就可以设置set方法，将command对象通过setCommand方法注入，实现一个invoker对象循环使用的目的。  </p>
 <h2 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h2><p>命令模式的优点就是调用者与接受者之间没有依赖关系，调用者实现功能只需要调用Command类中的execute方法就可以，不必关心接受者是谁，怎么接收。其次就是命令模式易扩展，实现command接口就可以实现新命令，在装配时，把具体的对象设置到命令中就可以使用这个命令，而invoker与Client已有代码不用发生改变。<br>缺点在于命令模式可能会导致具体命令类过多，不易维护。  </p>
@@ -431,10 +431,10 @@ height:50vh;
     <!-- license  -->
     
         <div class="license-wrapper">
-            <p>原文作者：<a href="https://re0.top">Zer0e</a>
-            <p>原文链接：<a href="https://re0.top/2020/08/17/command_pattern/">https://re0.top/2020/08/17/command_pattern/</a>
-            <p>发表日期：<a href="https://re0.top/2020/08/17/command_pattern/">八月 17日 2020, 3:00:00 下午</a>
-            <p>更新日期：<a href="https://re0.top/2020/08/17/command_pattern/">August 17th 2020, 3:31:29 pm</a>
+            <p>原文作者：<a href="https://blog.zer0e.com">Zer0e</a>
+            <p>原文链接：<a href="https://blog.zer0e.com/2020/08/17/command_pattern/">https://blog.zer0e.com/2020/08/17/command_pattern/</a>
+            <p>发表日期：<a href="https://blog.zer0e.com/2020/08/17/command_pattern/">August 17th 2020, 3:00:00 pm</a>
+            <p>更新日期：<a href="https://blog.zer0e.com/2020/08/17/command_pattern/">August 17th 2020, 3:31:29 pm</a>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -588,10 +588,6 @@ top:50vh;
     <div class="sidebar-content sidebar-content-show-archive">
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
     
     
     
@@ -3086,23 +3082,25 @@ top:50vh;
     
         <span class="sidebar-tag-name" data-tags="编程"><span class="iconfont-archer">&#xe606;</span>编程</span>
     
-        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
-    
-        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
+        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
     
         <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
     
-        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
+        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
     
         <span class="sidebar-tag-name" data-tags="面经"><span class="iconfont-archer">&#xe606;</span>面经</span>
     
         <span class="sidebar-tag-name" data-tags="设计模式"><span class="iconfont-archer">&#xe606;</span>设计模式</span>
     
+        <span class="sidebar-tag-name" data-tags="生活琐事"><span class="iconfont-archer">&#xe606;</span>生活琐事</span>
+    
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
-        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
-    
         <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
     
         <span class="sidebar-tag-name" data-tags="Android"><span class="iconfont-archer">&#xe606;</span>Android</span>
     
@@ -3125,8 +3123,6 @@ top:50vh;
         <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
     
         <span class="sidebar-tag-name" data-tags="分布式"><span class="iconfont-archer">&#xe606;</span>分布式</span>
-    
-        <span class="sidebar-tag-name" data-tags="生活琐事"><span class="iconfont-archer">&#xe606;</span>生活琐事</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>

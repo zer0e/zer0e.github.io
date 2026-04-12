@@ -412,16 +412,16 @@ height:50vh;
 </ul>
 <p>那这个模式常见的场景就是可以替代条件语句，if，switch等等，避免语句过长。</p>
 <h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><p>这个模式还是比较简单的，我们就写写上面提到的几个角色<br>我们先定义state接口：  </p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">State</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handle</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">State</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">handle</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   
 
 <p>然后是具体的state</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ConcreteStateA</span> <span class="keyword">implements</span> <span class="title">State</span></span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handle</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;对应StateA的操作&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ConcreteStateB</span> <span class="keyword">implements</span> <span class="title">State</span></span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handle</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;对应StateB的操作&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConcreteStateA</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">handle</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;对应StateA的操作&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConcreteStateB</span> <span class="keyword">implements</span> <span class="title class_">State</span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">handle</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;对应StateB的操作&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   
 
 <p>然后定义环境，用于客户端的调用</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Context</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> State state;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setState</span><span class="params">(State state)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.state = state;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 用户需要的接口方法</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">request</span><span class="params">()</span></span>&#123;</span><br><span class="line">        state.handle();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Context</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> State state;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setState</span><span class="params">(State state)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.state = state;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 用户需要的接口方法</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">request</span><span class="params">()</span>&#123;</span><br><span class="line">        state.handle();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   
 
 <p>最后编写客户端调用</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Client</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Context context = <span class="keyword">new</span> Context();</span><br><span class="line">        State stateA = <span class="keyword">new</span> ConcreteStateA();</span><br><span class="line">        State stateB = <span class="keyword">new</span> ConcreteStateB();</span><br><span class="line"></span><br><span class="line">        context.setState(stateA);</span><br><span class="line">        context.request();</span><br><span class="line"></span><br><span class="line">        context.setState(stateB);</span><br><span class="line">        context.request();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Client</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Context</span> <span class="variable">context</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Context</span>();</span><br><span class="line">        <span class="type">State</span> <span class="variable">stateA</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ConcreteStateA</span>();</span><br><span class="line">        <span class="type">State</span> <span class="variable">stateB</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ConcreteStateB</span>();</span><br><span class="line"></span><br><span class="line">        context.setState(stateA);</span><br><span class="line">        context.request();</span><br><span class="line"></span><br><span class="line">        context.setState(stateB);</span><br><span class="line">        context.request();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>   
 
 <p>可以发现，通过设置context的状态可以实现不同的操作。看上去就像context对象本身发生改变一样。  </p>
 <h2 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h2><p>最后来讲讲优缺点。<br>状态模式的优点有，把实现的细节隐藏，客户端只需要设置状态，无需关心内部的实现，并且可以去除大量的逻辑判断语句，可读性更高。<br>而缺点在于当状态增多时，类的数量会增加，并且当增加新的状态类时，context可能会做出修改，不符合开闭原则。  </p>
@@ -430,10 +430,10 @@ height:50vh;
     <!-- license  -->
     
         <div class="license-wrapper">
-            <p>原文作者：<a href="https://re0.top">Zer0e</a>
-            <p>原文链接：<a href="https://re0.top/2020/09/06/state_pattern/">https://re0.top/2020/09/06/state_pattern/</a>
-            <p>发表日期：<a href="https://re0.top/2020/09/06/state_pattern/">九月 6日 2020, 3:00:00 下午</a>
-            <p>更新日期：<a href="https://re0.top/2020/09/06/state_pattern/">September 6th 2020, 3:32:06 pm</a>
+            <p>原文作者：<a href="https://blog.zer0e.com">Zer0e</a>
+            <p>原文链接：<a href="https://blog.zer0e.com/2020/09/06/state_pattern/">https://blog.zer0e.com/2020/09/06/state_pattern/</a>
+            <p>发表日期：<a href="https://blog.zer0e.com/2020/09/06/state_pattern/">September 6th 2020, 3:00:00 pm</a>
+            <p>更新日期：<a href="https://blog.zer0e.com/2020/09/06/state_pattern/">September 6th 2020, 3:32:06 pm</a>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -587,10 +587,6 @@ top:50vh;
     <div class="sidebar-content sidebar-content-show-archive">
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
     
     
     
@@ -3085,23 +3081,25 @@ top:50vh;
     
         <span class="sidebar-tag-name" data-tags="编程"><span class="iconfont-archer">&#xe606;</span>编程</span>
     
-        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
-    
-        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
+        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
     
         <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
     
-        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
+        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
     
         <span class="sidebar-tag-name" data-tags="面经"><span class="iconfont-archer">&#xe606;</span>面经</span>
     
         <span class="sidebar-tag-name" data-tags="设计模式"><span class="iconfont-archer">&#xe606;</span>设计模式</span>
     
+        <span class="sidebar-tag-name" data-tags="生活琐事"><span class="iconfont-archer">&#xe606;</span>生活琐事</span>
+    
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
-        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
-    
         <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
     
         <span class="sidebar-tag-name" data-tags="Android"><span class="iconfont-archer">&#xe606;</span>Android</span>
     
@@ -3124,8 +3122,6 @@ top:50vh;
         <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
     
         <span class="sidebar-tag-name" data-tags="分布式"><span class="iconfont-archer">&#xe606;</span>分布式</span>
-    
-        <span class="sidebar-tag-name" data-tags="生活琐事"><span class="iconfont-archer">&#xe606;</span>生活琐事</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>

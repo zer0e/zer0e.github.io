@@ -574,7 +574,7 @@ height:50vh;
 </tr>
 </tbody></table>
 <p>由于 MVCC 的存在，对于一般的 <code>SELECT</code> 语句，InnoDB 不会加任何锁。不过， 你可以通过以下语句显式加共享锁或排他锁。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 共享锁 可以在 MySQL <span class="number">5.7</span> 和 MySQL <span class="number">8.0</span> 中使用</span><br><span class="line"><span class="keyword">SELECT</span> ... LOCK <span class="keyword">IN</span> SHARE MODE;</span><br><span class="line"># 共享锁 可以在 MySQL <span class="number">8.0</span> 中使用</span><br><span class="line"><span class="keyword">SELECT</span> ... <span class="keyword">FOR</span> SHARE;</span><br><span class="line"># 排他锁</span><br><span class="line"><span class="keyword">SELECT</span> ... <span class="keyword">FOR</span> UPDATE;</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 共享锁 可以在 MySQL <span class="number">5.7</span> 和 MySQL <span class="number">8.0</span> 中使用</span><br><span class="line"><span class="keyword">SELECT</span> ... LOCK <span class="keyword">IN</span> SHARE MODE;</span><br><span class="line"># 共享锁 可以在 MySQL <span class="number">8.0</span> 中使用</span><br><span class="line"><span class="keyword">SELECT</span> ... <span class="keyword">FOR</span> SHARE;</span><br><span class="line"># 排他锁</span><br><span class="line"><span class="keyword">SELECT</span> ... <span class="keyword">FOR</span> <span class="keyword">UPDATE</span>;</span><br></pre></td></tr></table></figure>
 
 <h3 id="意向锁"><a href="#意向锁" class="headerlink" title="意向锁"></a>意向锁</h3><p>如果需要用到表锁的话，如何判断表中的记录没有行锁呢，一行一行遍历肯定是不行，性能太差。我们需要用到一个叫做意向锁的东东来快速判断是否可以对某个表使用表锁。</p>
 <p>意向锁是表级锁，共有两种：</p>
@@ -624,7 +624,7 @@ height:50vh;
 </tr>
 </tbody></table>
 <h3 id="快照读和当前读"><a href="#快照读和当前读" class="headerlink" title="快照读和当前读"></a>快照读和当前读</h3><p><strong>快照读</strong>（一致性非锁定读）就是单纯的 <code>SELECT</code> 语句，但不包括下面这两类 <code>SELECT</code> 语句。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> ... <span class="keyword">FOR</span> UPDATE</span><br><span class="line"># 共享锁 可以在 MySQL <span class="number">5.7</span> 和 MySQL <span class="number">8.0</span> 中使用</span><br><span class="line"><span class="keyword">SELECT</span> ... LOCK <span class="keyword">IN</span> SHARE MODE;</span><br><span class="line"># 共享锁 可以在 MySQL <span class="number">8.0</span> 中使用</span><br><span class="line"><span class="keyword">SELECT</span> ... <span class="keyword">FOR</span> SHARE;</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> ... <span class="keyword">FOR</span> <span class="keyword">UPDATE</span></span><br><span class="line"># 共享锁 可以在 MySQL <span class="number">5.7</span> 和 MySQL <span class="number">8.0</span> 中使用</span><br><span class="line"><span class="keyword">SELECT</span> ... LOCK <span class="keyword">IN</span> SHARE MODE;</span><br><span class="line"># 共享锁 可以在 MySQL <span class="number">8.0</span> 中使用</span><br><span class="line"><span class="keyword">SELECT</span> ... <span class="keyword">FOR</span> SHARE;</span><br></pre></td></tr></table></figure>
 
 <p>快照即记录的历史版本，每行记录可能存在多个历史版本（多版本技术）。</p>
 <p>快照读的情况下，如果读取的记录正在执行 UPDATE/DELETE 操作，读取操作不会因此去等待记录上 X 锁的释放，而是会去读取行的一个快照。</p>
@@ -636,7 +636,7 @@ height:50vh;
 <p>快照读比较适合对于数据一致性要求不是特别高且追求极致性能的业务场景。</p>
 <p><strong>当前读</strong> （一致性锁定读）就是给行记录加 X 锁或 S 锁。</p>
 <p>当前读的一些常见 SQL 语句类型如下：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># 对读的记录加一个X锁</span><br><span class="line">SELECT...FOR UPDATE</span><br><span class="line"># 对读的记录加一个S锁</span><br><span class="line">SELECT...LOCK <span class="keyword">IN</span> SHARE MODE</span><br><span class="line"># 对读的记录加一个S锁</span><br><span class="line">SELECT...FOR SHARE</span><br><span class="line"># 对修改的记录加一个X锁</span><br><span class="line">INSERT...</span><br><span class="line">UPDATE...</span><br><span class="line">DELETE...</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># 对读的记录加一个X锁</span><br><span class="line">SELECT...FOR <span class="keyword">UPDATE</span></span><br><span class="line"># 对读的记录加一个S锁</span><br><span class="line">SELECT...LOCK <span class="keyword">IN</span> SHARE MODE</span><br><span class="line"># 对读的记录加一个S锁</span><br><span class="line">SELECT...FOR SHARE</span><br><span class="line"># 对修改的记录加一个X锁</span><br><span class="line">INSERT...</span><br><span class="line">UPDATE...</span><br><span class="line">DELETE...</span><br></pre></td></tr></table></figure>
 
 <h3 id="自增锁"><a href="#自增锁" class="headerlink" title="自增锁"></a>自增锁</h3><p>关系型数据库设计表的时候，通常会有一列作为自增主键。InnoDB 中的自增主键会涉及一种比较特殊的表级锁— <strong>自增锁（AUTO-INC Locks）</strong> 。</p>
 <p>更准确点来说，不仅仅是自增主键，<code>AUTO_INCREMENT</code>的列都会涉及到自增锁，毕竟非主键也可以设置自增长。</p>
@@ -755,7 +755,7 @@ height:50vh;
 <h2 id="redis中hash结构有哪些使用场景"><a href="#redis中hash结构有哪些使用场景" class="headerlink" title="redis中hash结构有哪些使用场景"></a>redis中hash结构有哪些使用场景</h2><ol>
 <li>存储用户信息。用户的基本信息（如用户名、邮箱、年龄等）可以通过哈希结构存储在一个键中:</li>
 </ol>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">user:<span class="number">1001</span> -&gt; &#123;</span><br><span class="line">    <span class="attr">&quot;name&quot;</span>: <span class="string">&quot;Alice&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;email&quot;</span>: <span class="string">&quot;alice@example.com&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;age&quot;</span>: <span class="string">&quot;30&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">user<span class="punctuation">:</span><span class="number">1001</span> -&gt; <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Alice&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;email&quot;</span><span class="punctuation">:</span> <span class="string">&quot;alice@example.com&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;age&quot;</span><span class="punctuation">:</span> <span class="string">&quot;30&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
 
 <ol start="2">
 <li>会话管理。例如存储session。</li>
@@ -790,10 +790,10 @@ height:50vh;
     <!-- license  -->
     
         <div class="license-wrapper">
-            <p>原文作者：<a href="https://re0.top">Zer0e</a>
-            <p>原文链接：<a href="https://re0.top/2024/08/14/2024-08-14-replay/">https://re0.top/2024/08/14/2024-08-14-replay/</a>
-            <p>发表日期：<a href="https://re0.top/2024/08/14/2024-08-14-replay/">八月 14日 2024, 8:00:00 晚上</a>
-            <p>更新日期：<a href="https://re0.top/2024/08/14/2024-08-14-replay/">August 14th 2024, 8:28:21 pm</a>
+            <p>原文作者：<a href="https://blog.zer0e.com">Zer0e</a>
+            <p>原文链接：<a href="https://blog.zer0e.com/2024/08/14/2024-08-14-replay/">https://blog.zer0e.com/2024/08/14/2024-08-14-replay/</a>
+            <p>发表日期：<a href="https://blog.zer0e.com/2024/08/14/2024-08-14-replay/">August 14th 2024, 8:00:00 pm</a>
+            <p>更新日期：<a href="https://blog.zer0e.com/2024/08/14/2024-08-14-replay/">August 14th 2024, 8:28:21 pm</a>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -947,10 +947,6 @@ top:50vh;
     <div class="sidebar-content sidebar-content-show-archive">
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
     
     
     
@@ -3445,23 +3441,25 @@ top:50vh;
     
         <span class="sidebar-tag-name" data-tags="编程"><span class="iconfont-archer">&#xe606;</span>编程</span>
     
-        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
-    
-        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
+        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
     
         <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
     
-        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
+        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
     
         <span class="sidebar-tag-name" data-tags="面经"><span class="iconfont-archer">&#xe606;</span>面经</span>
     
         <span class="sidebar-tag-name" data-tags="设计模式"><span class="iconfont-archer">&#xe606;</span>设计模式</span>
     
+        <span class="sidebar-tag-name" data-tags="生活琐事"><span class="iconfont-archer">&#xe606;</span>生活琐事</span>
+    
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
-        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
-    
         <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
     
         <span class="sidebar-tag-name" data-tags="Android"><span class="iconfont-archer">&#xe606;</span>Android</span>
     
@@ -3484,8 +3482,6 @@ top:50vh;
         <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
     
         <span class="sidebar-tag-name" data-tags="分布式"><span class="iconfont-archer">&#xe606;</span>分布式</span>
-    
-        <span class="sidebar-tag-name" data-tags="生活琐事"><span class="iconfont-archer">&#xe606;</span>生活琐事</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>

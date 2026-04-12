@@ -402,17 +402,17 @@ height:50vh;
             <main class="main post-page">
     <article class="article-entry">
         <p>最近都没时间写文章，想想还是得偶尔空出点时间来写文章学习点东西。<br>讲讲选择排序。<br>选择排序和冒泡排序都是比较基本的排序算法，下面就来简单说说选择排序的实现方法。<br>设数组的下标为[0…n-1]，i=0。刚开始整个数组都处于无序状态，在无序区中找到一个最小的数放在第i个位置，则现在[0..i]处于有序区，i++并重复步骤，直到i==n-1，则排序完成。</p>
-<h2 id="源码部分"><a href="#源码部分" class="headerlink" title="源码部分"></a>源码部分</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">selectsort</span><span class="params">(<span class="keyword">int</span> a[],<span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i,j,MinIndex;</span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;n;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        MinIndex = i;</span><br><span class="line">        <span class="keyword">for</span>(j=i+<span class="number">1</span>;j&lt;n;k++)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(a[j]&lt;a[MinIndex])</span><br><span class="line">                MinIndex = j;</span><br><span class="line">        &#125;</span><br><span class="line">        Swap(a[i],a[MinIndex]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//Swap的实现</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Swap</span><span class="params">(<span class="keyword">int</span> &amp;a, <span class="keyword">int</span> &amp;b)</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="keyword">int</span> c = a;  </span><br><span class="line">    a = b;  </span><br><span class="line">    b = c;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
+<h2 id="源码部分"><a href="#源码部分" class="headerlink" title="源码部分"></a>源码部分</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">selectsort</span><span class="params">(<span class="type">int</span> a[],<span class="type">int</span> n)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> i,j,MinIndex;</span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;n;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        MinIndex = i;</span><br><span class="line">        <span class="keyword">for</span>(j=i+<span class="number">1</span>;j&lt;n;k++)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(a[j]&lt;a[MinIndex])</span><br><span class="line">                MinIndex = j;</span><br><span class="line">        &#125;</span><br><span class="line">        Swap(a[i],a[MinIndex]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//Swap的实现</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">Swap</span><span class="params">(<span class="type">int</span> &amp;a, <span class="type">int</span> &amp;b)</span>  </span><br><span class="line">&#123;  </span><br><span class="line">    <span class="type">int</span> c = a;  </span><br><span class="line">    a = b;  </span><br><span class="line">    b = c;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
 <p>选择排序和冒泡排序的时间复杂度都是n^2,并且都是稳定的排序，但当数组长度过大时，效率反而低下。下次讲讲时间复杂度也是n^2的插入排序法。</p>
 
     </article>
     <!-- license  -->
     
         <div class="license-wrapper">
-            <p>原文作者：<a href="https://re0.top">Zer0e</a>
-            <p>原文链接：<a href="https://re0.top/2018/05/11/selectsort/">https://re0.top/2018/05/11/selectsort/</a>
-            <p>发表日期：<a href="https://re0.top/2018/05/11/selectsort/">五月 11日 2018, 7:20:28 晚上</a>
-            <p>更新日期：<a href="https://re0.top/2018/05/11/selectsort/">June 3rd 2018, 3:03:57 pm</a>
+            <p>原文作者：<a href="https://blog.zer0e.com">Zer0e</a>
+            <p>原文链接：<a href="https://blog.zer0e.com/2018/05/11/selectsort/">https://blog.zer0e.com/2018/05/11/selectsort/</a>
+            <p>发表日期：<a href="https://blog.zer0e.com/2018/05/11/selectsort/">May 11th 2018, 7:20:28 pm</a>
+            <p>更新日期：<a href="https://blog.zer0e.com/2018/05/11/selectsort/">June 3rd 2018, 3:03:57 pm</a>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -566,10 +566,6 @@ top:50vh;
     <div class="sidebar-content sidebar-content-show-archive">
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
     
     
     
@@ -3064,23 +3060,25 @@ top:50vh;
     
         <span class="sidebar-tag-name" data-tags="编程"><span class="iconfont-archer">&#xe606;</span>编程</span>
     
-        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
-    
-        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
+        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
     
         <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
     
-        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
+        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
     
         <span class="sidebar-tag-name" data-tags="面经"><span class="iconfont-archer">&#xe606;</span>面经</span>
     
         <span class="sidebar-tag-name" data-tags="设计模式"><span class="iconfont-archer">&#xe606;</span>设计模式</span>
     
+        <span class="sidebar-tag-name" data-tags="生活琐事"><span class="iconfont-archer">&#xe606;</span>生活琐事</span>
+    
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
-        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
-    
         <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
     
         <span class="sidebar-tag-name" data-tags="Android"><span class="iconfont-archer">&#xe606;</span>Android</span>
     
@@ -3103,8 +3101,6 @@ top:50vh;
         <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
     
         <span class="sidebar-tag-name" data-tags="分布式"><span class="iconfont-archer">&#xe606;</span>分布式</span>
-    
-        <span class="sidebar-tag-name" data-tags="生活琐事"><span class="iconfont-archer">&#xe606;</span>生活琐事</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>

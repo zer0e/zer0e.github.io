@@ -418,7 +418,7 @@ height:50vh;
 
 <h2 id="修改k8s集群的rbd驱动配置文件"><a href="#修改k8s集群的rbd驱动配置文件" class="headerlink" title="修改k8s集群的rbd驱动配置文件"></a>修改k8s集群的rbd驱动配置文件</h2><p>老样子，安装rbd驱动后，ceph-csi-rbd命名空间下会有ceph-csi-config的configMap，修改它。</p>
 <p>这里我直接通过kubepi网页直接修改了，很方便，修改它的config.json，把下面的东西粘贴进去。</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">&quot;clusterID&quot;</span>: <span class="string">&quot;ed91a6b4-3df6-11ef-9d94-000c29a7737d&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;monitors&quot;</span>: [</span><br><span class="line">          <span class="string">&quot;192.168.28.138:6789&quot;</span>,</span><br><span class="line">          <span class="string">&quot;192.168.28.139:6789&quot;</span>,</span><br><span class="line">          <span class="string">&quot;192.168.28.140:6789&quot;</span></span><br><span class="line">        ]</span><br><span class="line">      &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">[</span></span><br><span class="line">      <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;clusterID&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ed91a6b4-3df6-11ef-9d94-000c29a7737d&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;monitors&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">          <span class="string">&quot;192.168.28.138:6789&quot;</span><span class="punctuation">,</span></span><br><span class="line">          <span class="string">&quot;192.168.28.139:6789&quot;</span><span class="punctuation">,</span></span><br><span class="line">          <span class="string">&quot;192.168.28.140:6789&quot;</span></span><br><span class="line">        <span class="punctuation">]</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">]</span></span><br></pre></td></tr></table></figure>
 
 <p>增加secret.yaml</p>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Secret</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">csi-rbd-secret</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">ceph-csi-rbd</span></span><br><span class="line"><span class="attr">stringData:</span></span><br><span class="line">  <span class="attr">userID:</span> <span class="string">k8s</span></span><br><span class="line">  <span class="attr">userKey:</span> <span class="string">AQAx4JBm6BItDBAAQue62g4QOmdDD27/PFZmQQ==</span></span><br></pre></td></tr></table></figure>
@@ -453,10 +453,10 @@ height:50vh;
     <!-- license  -->
     
         <div class="license-wrapper">
-            <p>原文作者：<a href="https://re0.top">Zer0e</a>
-            <p>原文链接：<a href="https://re0.top/2024/07/12/devops4/">https://re0.top/2024/07/12/devops4/</a>
-            <p>发表日期：<a href="https://re0.top/2024/07/12/devops4/">七月 12日 2024, 9:30:00 晚上</a>
-            <p>更新日期：<a href="https://re0.top/2024/07/12/devops4/">July 12th 2024, 8:06:35 pm</a>
+            <p>原文作者：<a href="https://blog.zer0e.com">Zer0e</a>
+            <p>原文链接：<a href="https://blog.zer0e.com/2024/07/12/devops4/">https://blog.zer0e.com/2024/07/12/devops4/</a>
+            <p>发表日期：<a href="https://blog.zer0e.com/2024/07/12/devops4/">July 12th 2024, 9:30:00 pm</a>
+            <p>更新日期：<a href="https://blog.zer0e.com/2024/07/12/devops4/">July 12th 2024, 8:06:35 pm</a>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -610,10 +610,6 @@ top:50vh;
     <div class="sidebar-content sidebar-content-show-archive">
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
     
     
     
@@ -3108,23 +3104,25 @@ top:50vh;
     
         <span class="sidebar-tag-name" data-tags="编程"><span class="iconfont-archer">&#xe606;</span>编程</span>
     
-        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
-    
-        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
+        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
     
         <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
     
-        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
+        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
     
         <span class="sidebar-tag-name" data-tags="面经"><span class="iconfont-archer">&#xe606;</span>面经</span>
     
         <span class="sidebar-tag-name" data-tags="设计模式"><span class="iconfont-archer">&#xe606;</span>设计模式</span>
     
+        <span class="sidebar-tag-name" data-tags="生活琐事"><span class="iconfont-archer">&#xe606;</span>生活琐事</span>
+    
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
-        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
-    
         <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
     
         <span class="sidebar-tag-name" data-tags="Android"><span class="iconfont-archer">&#xe606;</span>Android</span>
     
@@ -3147,8 +3145,6 @@ top:50vh;
         <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
     
         <span class="sidebar-tag-name" data-tags="分布式"><span class="iconfont-archer">&#xe606;</span>分布式</span>
-    
-        <span class="sidebar-tag-name" data-tags="生活琐事"><span class="iconfont-archer">&#xe606;</span>生活琐事</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>

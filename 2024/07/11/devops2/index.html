@@ -441,7 +441,7 @@ height:50vh;
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y python3</span><br></pre></td></tr></table></figure>
 
 <p>然后拉去代码，拉不下来记得export代理地址。CEPH_RELEASE版本可以参考<a target="_blank" rel="noopener" href="https://docs.ceph.com/en/latest/releases/#active-releases">这里</a>.</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CEPH_RELEASE=18.2.2</span><br><span class="line">curl --silent --remote-name --location https://download.ceph.com/rpm-<span class="variable">$&#123;CEPH_RELEASE&#125;</span>/el9/noarch/cephadm</span><br><span class="line">chmod +x cephadm</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CEPH_RELEASE=18.2.2</span><br><span class="line">curl --silent --remote-name --location https://download.ceph.com/rpm-<span class="variable">$&#123;CEPH_RELEASE&#125;</span>/el9/noarch/cephadm</span><br><span class="line"><span class="built_in">chmod</span> +x cephadm</span><br></pre></td></tr></table></figure>
 
 <p>接下来是添加仓库，官网这里是安装的18.2，所以添加的是reef仓库，我这里安装的是15.x所以是octopus仓库</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./cephadm add-repo --release octopus</span><br><span class="line">./cephadm install</span><br></pre></td></tr></table></figure>
@@ -492,10 +492,10 @@ height:50vh;
     <!-- license  -->
     
         <div class="license-wrapper">
-            <p>原文作者：<a href="https://re0.top">Zer0e</a>
-            <p>原文链接：<a href="https://re0.top/2024/07/11/devops2/">https://re0.top/2024/07/11/devops2/</a>
-            <p>发表日期：<a href="https://re0.top/2024/07/11/devops2/">七月 11日 2024, 4:30:00 下午</a>
-            <p>更新日期：<a href="https://re0.top/2024/07/11/devops2/">July 11th 2024, 8:38:54 pm</a>
+            <p>原文作者：<a href="https://blog.zer0e.com">Zer0e</a>
+            <p>原文链接：<a href="https://blog.zer0e.com/2024/07/11/devops2/">https://blog.zer0e.com/2024/07/11/devops2/</a>
+            <p>发表日期：<a href="https://blog.zer0e.com/2024/07/11/devops2/">July 11th 2024, 4:30:00 pm</a>
+            <p>更新日期：<a href="https://blog.zer0e.com/2024/07/11/devops2/">July 11th 2024, 8:38:54 pm</a>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -649,10 +649,6 @@ top:50vh;
     <div class="sidebar-content sidebar-content-show-archive">
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
     
     
     
@@ -3147,23 +3143,25 @@ top:50vh;
     
         <span class="sidebar-tag-name" data-tags="编程"><span class="iconfont-archer">&#xe606;</span>编程</span>
     
-        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
-    
-        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
+        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
     
         <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
     
-        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
+        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
     
         <span class="sidebar-tag-name" data-tags="面经"><span class="iconfont-archer">&#xe606;</span>面经</span>
     
         <span class="sidebar-tag-name" data-tags="设计模式"><span class="iconfont-archer">&#xe606;</span>设计模式</span>
     
+        <span class="sidebar-tag-name" data-tags="生活琐事"><span class="iconfont-archer">&#xe606;</span>生活琐事</span>
+    
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
-        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
-    
         <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
     
         <span class="sidebar-tag-name" data-tags="Android"><span class="iconfont-archer">&#xe606;</span>Android</span>
     
@@ -3186,8 +3184,6 @@ top:50vh;
         <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
     
         <span class="sidebar-tag-name" data-tags="分布式"><span class="iconfont-archer">&#xe606;</span>分布式</span>
-    
-        <span class="sidebar-tag-name" data-tags="生活琐事"><span class="iconfont-archer">&#xe606;</span>生活琐事</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
