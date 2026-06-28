@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://blog.zer0e.com/"/>
-  <updated>2026-06-10T14:28:15.150Z</updated>
+  <updated>2026-06-28T07:41:30.008Z</updated>
   <id>https://blog.zer0e.com/</id>
   
   <author>
@@ -15,6 +15,35 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>去TM的AI其一：何为QKV和KVCache</title>
+    <link href="https://blog.zer0e.com/2026/06/28/ai-infra-1/"/>
+    <id>https://blog.zer0e.com/2026/06/28/ai-infra-1/</id>
+    <published>2026-06-28T02:14:24.000Z</published>
+    <updated>2026-06-28T07:41:30.008Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>新的一个系列，讲讲AI的基础知识，主要是给自己看的。至于标题只能说懂得都懂，去TMD的AI。但话这么说，AI又必须得学习，相恨相杀了属于是。<br>第一篇打算讲讲Transformer架构中的很重要的概念，QKV，以及对应的优化KV Cache。当然，正文是AI写的（服了）。  </p><h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><h2 id="什么是QKV"><a href="#什么是QKV" class="headerlink" title="什么是QKV?"></a>什么是QKV?</h2><p>QKV是Transformer架构中最核心的概念之一,它代表着三个重要的角色:</p><ul><li><strong>Q (Query)</strong>: 查询向量 - “我在找什么?”</li><li><strong>K (Key)</strong>: 键向量 - “我有什么特征?”</li><li><strong>V (Value)</strong>: 值向量 - “我实际的内容是什么?”</li></ul><h3 id="一个生活中的例子"><a href="#一个生活中的例子" class="headerlink" title="一个生活中的例子"></a>一个生活中的例子</h3><p>想象你在图书馆找书:</p><ol><li><strong>Query(Q)</strong>: 你的搜索需求(比如”我想找人工智能的书”)</li><li><strong>Key(K)</strong>: 每本书的书名和标签</li><li><strong>Value(V)</strong>: 书的实际内容</li></ol><p>当你说”我想找AI的书”(Query),系统会把你的需求和每本书的标签(Key)做匹配,匹配度越高,那本书的内容(Value)对你的影响就越大。</p><h3 id="QKV在模型中是如何工作的"><a href="#QKV在模型中是如何工作的" class="headerlink" title="QKV在模型中是如何工作的?"></a>QKV在模型中是如何工作的?</h3><p>在大语言模型中,每个词都会被转换成这三个向量。让我们看一个简单的架构图:</p><pre class="mermaid">graph TB    A[输入文本] --> B[词嵌入]    B --> C[分割成Q/K/V]    C --> D1[Query向量]    C --> D2[Key向量]    C --> D3[Value向量]    D1 --> E[计算注意力分数]    D2 --> E    E --> F[Softmax归一化]    F --> G[加权求和]    D3 --> G    G --> H[输出结果]</pre><p><strong>核心流程</strong>:</p><ol><li>输入文本经过Embedding层转换</li><li>通过三个不同的线性变换,生成Q、K、V</li><li>Q和K做点积,计算注意力分数(Q·K^T)</li><li>经过Softmax归一化</li><li>用这些分数对V加权求和,得到最终输出</li></ol><p>数学表达式:</p><p>$$<br>\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V<br>$$</p><h2 id="多头注意力-让模型”多管齐下”"><a href="#多头注意力-让模型”多管齐下”" class="headerlink" title="多头注意力:让模型”多管齐下”"></a>多头注意力:让模型”多管齐下”</h2><p>单一的QKV就像只从一个角度理解问题,而大模型使用的是<strong>多头注意力(Multi-Head Attention)</strong>:</p><pre class="mermaid">graph TB    A[输入] --> B1[Head 1: Q1/K1/V1]    A --> B2[Head 2: Q2/K2/V2]    A --> B3[Head 3: Q3/K3/V3]    B1 --> C1[注意力输出1]    B2 --> C2[注意力输出2]    B3 --> C3[注意力输出3]    C1 --> D[拼接]    C2 --> D    C3 --> D    D --> E[线性变换]    E --> F[最终输出]</pre><p><strong>为什么要多头?</strong></p><ul><li><strong>Head 1</strong>: 可能关注语法关系</li><li><strong>Head 2</strong>: 可能关注语义相似性</li><li><strong>Head 3</strong>: 可能关注实体关系</li></ul><p>就像从不同专家的角度分析问题,最后综合判断,效果自然更好。</p><h3 id="多头注意力是从什么角度去计算的"><a href="#多头注意力是从什么角度去计算的" class="headerlink" title="多头注意力是从什么角度去计算的"></a>多头注意力是从什么角度去计算的</h3><p>Multi-Head Attention 的核心思想是从不同的子空间（subspace）并行地计算注意力，每个 Head 关注不同的特征维度。<br>具体计算方式：</p><ul><li>假设原始维度是 512，如果有 8 个 Head</li><li>每个 Head 处理 512/8 = 64 维</li><li>每个 Head 有自己独立的 Q、K、V 权重矩阵<br>为什么要这样设计？</li></ul><h2 id="KV-Cache-大模型的”记忆加速器”"><a href="#KV-Cache-大模型的”记忆加速器”" class="headerlink" title="KV Cache:大模型的”记忆加速器”"></a>KV Cache:大模型的”记忆加速器”</h2><h3 id="为什么需要KV-Cache"><a href="#为什么需要KV-Cache" class="headerlink" title="为什么需要KV Cache?"></a>为什么需要KV Cache?</h3><p>大模型生成文本是<strong>一个字一个字</strong>输出的。假设你要生成”人工智能是未来的发展方向”:</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">第1步: &quot;人工&quot; → 预测下一个字</span><br><span class="line">第2步: &quot;人工智能&quot; → 预测下一个字  </span><br><span class="line">第3步: &quot;人工智能是&quot; → 预测下一个字</span><br><span class="line">...</span><br></pre></td></tr></table></figure><p><strong>问题来了</strong>: 每次生成新字时,模型都要重新计算前面所有字的K和V。这就像每次考试都要从小学重新学起,太浪费了!</p><h3 id="KV-Cache的解决方案"><a href="#KV-Cache的解决方案" class="headerlink" title="KV Cache的解决方案"></a>KV Cache的解决方案</h3><p><strong>核心思想</strong>: 把已经计算过的K和V缓存起来,新来的字只需要计算自己的K和V,然后追加到缓存中。</p><pre class="mermaid">graph LR    A[第1轮计算] --> B[计算所有Token的K/V]    B --> C[存入KV Cache]    C --> D[第2轮计算]    D --> E[只计算新Token的K/V]    E --> F[追加到Cache]    F --> G[使用完整Cache做Attention]</pre><h3 id="KV-Cache工作原理"><a href="#KV-Cache工作原理" class="headerlink" title="KV Cache工作原理"></a>KV Cache工作原理</h3><p>假设生成序列 “今天天气真好”:</p><p><strong>没有KV Cache</strong>:</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">步骤1: 计算 [今] 的 Q/K/V</span><br><span class="line">步骤2: 重新计算 [今,天] 的 Q/K/V  ← 重复计算!</span><br><span class="line">步骤3: 重新计算 [今,天,天] 的 Q/K/V  ← 重复计算!</span><br><span class="line">步骤4: 重新计算 [今,天,天,气] 的 Q/K/V  ← 重复计算!</span><br></pre></td></tr></table></figure><p><strong>有KV Cache</strong>:</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">步骤1: 计算 [今] 的 Q/K/V → 缓存K/V</span><br><span class="line">步骤2: 只计算 [天] 的 Q/K/V → 追加到缓存</span><br><span class="line">步骤3: 只计算 [天] 的 Q/K/V → 追加到缓存</span><br><span class="line">步骤4: 只计算 [气] 的 Q/K/V → 追加到缓存</span><br></pre></td></tr></table></figure><h3 id="性能提升有多大"><a href="#性能提升有多大" class="headerlink" title="性能提升有多大?"></a>性能提升有多大?</h3><p>对于长度为 $n$ 的序列:</p><ul><li><strong>无Cache</strong>: 计算复杂度是 $O(n^2)$</li><li><strong>有Cache</strong>: 计算复杂度降低到 $O(n)$</li></ul><p>实际效果:</p><ul><li><strong>推理速度提升</strong>: 2-4倍</li><li><strong>内存占用</strong>: 增加(需要存储KV Cache),但换来速度大幅提升</li><li><strong>适用场景</strong>: 特别适合长文本生成</li></ul><h3 id="KV-Cache的架构图"><a href="#KV-Cache的架构图" class="headerlink" title="KV Cache的架构图"></a>KV Cache的架构图</h3><pre class="mermaid">graph TB    A[新Token输入] --> B[计算新Token的K/V]    B --> C[KV Cache]    D[历史Token的K/V] --> C    C --> E[拼接完整K/V]    A --> F[计算新Token的Q]    F --> G[Attention计算]    E --> G    G --> H[输出预测]</pre><h2 id="深入理解-QKV的数学本质"><a href="#深入理解-QKV的数学本质" class="headerlink" title="深入理解:QKV的数学本质"></a>深入理解:QKV的数学本质</h2><p>让我们用更直观的方式理解QKV的计算过程:</p><h3 id="1-Q和K的点积-计算相似度"><a href="#1-Q和K的点积-计算相似度" class="headerlink" title="1. Q和K的点积:计算相似度"></a>1. Q和K的点积:计算相似度</h3><p>$$<br>\text{Score}_{ij} = Q_i \cdot K_j<br>$$</p><p>这表示第 $i$ 个位置的Query和第 $j$ 个位置的Key的匹配程度。</p><h3 id="2-缩放操作-防止数值过大"><a href="#2-缩放操作-防止数值过大" class="headerlink" title="2. 缩放操作:防止数值过大"></a>2. 缩放操作:防止数值过大</h3><p>$$<br>\text{Scaled Score}_{ij} = \frac{Q_i \cdot K_j}{\sqrt{d_k}}<br>$$</p><p>除以 $\sqrt{d_k}$ 是为了防止点积结果过大,导致softmax梯度消失。</p><h3 id="3-Softmax-转换成概率分布"><a href="#3-Softmax-转换成概率分布" class="headerlink" title="3. Softmax:转换成概率分布"></a>3. Softmax:转换成概率分布</h3><div>$$\text{Attention Weight}_{ij} = \frac{e^{\text{Scaled Score}_{ij}}}{\sum_k e^{\text{Scaled Score}_{ik}}}$$</div><p>这样所有权重加起来等于1,可以理解为”关注程度”的分布。</p><h3 id="4-加权求和-得到最终表示"><a href="#4-加权求和-得到最终表示" class="headerlink" title="4. 加权求和:得到最终表示"></a>4. 加权求和:得到最终表示</h3><div>$$\text{Output}_i = \sum_j \text{Attention Weight}_{ij} \cdot V_j$$</div><h2 id="KV-Cache的实际应用"><a href="#KV-Cache的实际应用" class="headerlink" title="KV Cache的实际应用"></a>KV Cache的实际应用</h2><h3 id="在GPT中的应用"><a href="#在GPT中的应用" class="headerlink" title="在GPT中的应用"></a>在GPT中的应用</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 伪代码示例</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">KVCache</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="variable language_">self</span>.keys = []</span><br><span class="line">        <span class="variable language_">self</span>.values = []</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">update</span>(<span class="params">self, new_key, new_value</span>):</span><br><span class="line">        <span class="variable language_">self</span>.keys.append(new_key)</span><br><span class="line">        <span class="variable language_">self</span>.values.append(new_value)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">get_attention</span>(<span class="params">self, query</span>):</span><br><span class="line">        <span class="comment"># 使用所有缓存的K/V计算注意力</span></span><br><span class="line">        scores = query @ torch.cat(<span class="variable language_">self</span>.keys).T</span><br><span class="line">        weights = softmax(scores)</span><br><span class="line">        output = weights @ torch.cat(<span class="variable language_">self</span>.values)</span><br><span class="line">        <span class="keyword">return</span> output</span><br></pre></td></tr></table></figure><h3 id="内存优化技巧"><a href="#内存优化技巧" class="headerlink" title="内存优化技巧"></a>内存优化技巧</h3><p>KV Cache虽然快,但占用内存。常见的优化方法:</p><ol><li><strong>PagedAttention</strong>: 像操作系统管理内存一样,分页管理KV Cache</li><li><strong>KV Cache量化</strong>: 用INT8或FP4存储,减少内存</li><li><strong>滑动窗口</strong>: 只保留最近的KV Cache</li></ol><pre class="mermaid">graph LR    A[PagedAttention] --> B[将KV Cache分页]    B --> C[按需加载]    C --> D[提高内存利用率]        E[量化] --> F[FP16→INT8]    F --> G[内存减少50%]        H[滑动窗口] --> I[只保留最近N个Token]    I --> J[内存使用恒定]</pre><h2 id="总结-一图看懂全貌"><a href="#总结-一图看懂全貌" class="headerlink" title="总结:一图看懂全貌"></a>总结:一图看懂全貌</h2><p>让我们用一个完整的流程图把所有概念串起来:</p><pre class="mermaid">graph TB    A[输入序列] --> B[Embedding层]    B --> C[多头注意力]        subgraph "每个Attention Head"        C --> D1[生成Q]        C --> D2[生成K]        C --> D3[生成V]        D1 --> E[Q·K^T计算相似度]        D2 --> E        E --> F[Softmax归一化]        F --> G[加权V得到输出]        D3 --> G    end        G --> H[拼接所有Head]    H --> I[线性变换]        subgraph "KV Cache机制"        J[存储历史K/V] --> K[新Token只计算自己的K/V]        K --> L[追加到Cache]        L --> M[使用完整Cache加速计算]    end</pre><h3 id="核心要点回顾"><a href="#核心要点回顾" class="headerlink" title="核心要点回顾"></a>核心要点回顾</h3><table><thead><tr><th>概念</th><th>作用</th><th>比喻</th></tr></thead><tbody><tr><td><strong>Q (Query)</strong></td><td>表示”我在找什么”</td><td>你的搜索关键词</td></tr><tr><td><strong>K (Key)</strong></td><td>表示”我有什么特征”</td><td>书籍的标签</td></tr><tr><td><strong>V (Value)</strong></td><td>表示”我的实际内容”</td><td>书籍的内容</td></tr><tr><td><strong>Attention</strong></td><td>计算关联度并加权求和</td><td>根据匹配度决定参考哪些书</td></tr><tr><td><strong>Multi-Head</strong></td><td>多个角度同时分析</td><td>多个专家会诊</td></tr><tr><td><strong>KV Cache</strong></td><td>缓存历史K/V,加速推理</td><td>记住学过的知识,不用重学</td></tr></tbody></table><h1 id="碎碎念"><a href="#碎碎念" class="headerlink" title="碎碎念"></a>碎碎念</h1><p>我个人也刷了很多视频还有文章学习这个概念，今天正文感觉有点知识流经大脑的感觉了。很多概念还是很模糊，尤其牵涉到数学。让我多看几遍。<br>PS.顺带还把博客支持了流程图还有公式的渲染。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;新的一个系列，讲讲AI的基础知识，主要是给自己看的。至于标题只能说懂得都懂，去TMD的AI。但话这么说，AI又必须得学习，相恨相杀了属于是。
+      
+    
+    </summary>
+    
+    
+      <category term="编程" scheme="https://blog.zer0e.com/tags/%E7%BC%96%E7%A8%8B/"/>
+    
+      <category term="架构" scheme="https://blog.zer0e.com/tags/%E6%9E%B6%E6%9E%84/"/>
+    
+      <category term="AI" scheme="https://blog.zer0e.com/tags/AI/"/>
+    
+      <category term="技术" scheme="https://blog.zer0e.com/tags/%E6%8A%80%E6%9C%AF/"/>
+    
+  </entry>
   
   <entry>
     <title>【架构之路13】节点与api-server网络不通后发生了什么</title>
@@ -262,11 +291,11 @@
     </summary>
     
     
+      <category term="随想" scheme="https://blog.zer0e.com/tags/%E9%9A%8F%E6%83%B3/"/>
+    
       <category term="编程" scheme="https://blog.zer0e.com/tags/%E7%BC%96%E7%A8%8B/"/>
     
       <category term="架构" scheme="https://blog.zer0e.com/tags/%E6%9E%B6%E6%9E%84/"/>
-    
-      <category term="随想" scheme="https://blog.zer0e.com/tags/%E9%9A%8F%E6%83%B3/"/>
     
   </entry>
   
@@ -337,9 +366,9 @@
     </summary>
     
     
-      <category term="编程" scheme="https://blog.zer0e.com/tags/%E7%BC%96%E7%A8%8B/"/>
-    
       <category term="随想" scheme="https://blog.zer0e.com/tags/%E9%9A%8F%E6%83%B3/"/>
+    
+      <category term="编程" scheme="https://blog.zer0e.com/tags/%E7%BC%96%E7%A8%8B/"/>
     
       <category term="面经" scheme="https://blog.zer0e.com/tags/%E9%9D%A2%E7%BB%8F/"/>
     
@@ -364,9 +393,9 @@
     </summary>
     
     
-      <category term="编程" scheme="https://blog.zer0e.com/tags/%E7%BC%96%E7%A8%8B/"/>
-    
       <category term="随想" scheme="https://blog.zer0e.com/tags/%E9%9A%8F%E6%83%B3/"/>
+    
+      <category term="编程" scheme="https://blog.zer0e.com/tags/%E7%BC%96%E7%A8%8B/"/>
     
       <category term="面经" scheme="https://blog.zer0e.com/tags/%E9%9D%A2%E7%BB%8F/"/>
     
@@ -391,9 +420,9 @@
     </summary>
     
     
-      <category term="编程" scheme="https://blog.zer0e.com/tags/%E7%BC%96%E7%A8%8B/"/>
-    
       <category term="随想" scheme="https://blog.zer0e.com/tags/%E9%9A%8F%E6%83%B3/"/>
+    
+      <category term="编程" scheme="https://blog.zer0e.com/tags/%E7%BC%96%E7%A8%8B/"/>
     
       <category term="面经" scheme="https://blog.zer0e.com/tags/%E9%9D%A2%E7%BB%8F/"/>
     
@@ -419,9 +448,9 @@
     </summary>
     
     
-      <category term="编程" scheme="https://blog.zer0e.com/tags/%E7%BC%96%E7%A8%8B/"/>
-    
       <category term="随想" scheme="https://blog.zer0e.com/tags/%E9%9A%8F%E6%83%B3/"/>
+    
+      <category term="编程" scheme="https://blog.zer0e.com/tags/%E7%BC%96%E7%A8%8B/"/>
     
       <category term="面经" scheme="https://blog.zer0e.com/tags/%E9%9D%A2%E7%BB%8F/"/>
     
@@ -447,9 +476,9 @@
     </summary>
     
     
-      <category term="编程" scheme="https://blog.zer0e.com/tags/%E7%BC%96%E7%A8%8B/"/>
-    
       <category term="随想" scheme="https://blog.zer0e.com/tags/%E9%9A%8F%E6%83%B3/"/>
+    
+      <category term="编程" scheme="https://blog.zer0e.com/tags/%E7%BC%96%E7%A8%8B/"/>
     
       <category term="面经" scheme="https://blog.zer0e.com/tags/%E9%9D%A2%E7%BB%8F/"/>
     
@@ -474,9 +503,9 @@
     </summary>
     
     
-      <category term="编程" scheme="https://blog.zer0e.com/tags/%E7%BC%96%E7%A8%8B/"/>
-    
       <category term="随想" scheme="https://blog.zer0e.com/tags/%E9%9A%8F%E6%83%B3/"/>
+    
+      <category term="编程" scheme="https://blog.zer0e.com/tags/%E7%BC%96%E7%A8%8B/"/>
     
       <category term="面经" scheme="https://blog.zer0e.com/tags/%E9%9D%A2%E7%BB%8F/"/>
     
@@ -502,41 +531,11 @@
     </summary>
     
     
-      <category term="编程" scheme="https://blog.zer0e.com/tags/%E7%BC%96%E7%A8%8B/"/>
-    
       <category term="随想" scheme="https://blog.zer0e.com/tags/%E9%9A%8F%E6%83%B3/"/>
     
-      <category term="面经" scheme="https://blog.zer0e.com/tags/%E9%9D%A2%E7%BB%8F/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>【架构之路12】es-k8s搭建</title>
-    <link href="https://blog.zer0e.com/2024/07/27/devops12/"/>
-    <id>https://blog.zer0e.com/2024/07/27/devops12/</id>
-    <published>2024-07-27T06:30:00.000Z</published>
-    <updated>2024-07-27T06:47:16.018Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>遥想一年前，搭建es时还需要先挂载卷然后hung住容器拷贝配置文件，后面是自己做了镜像。</p><p>再到后面切换到k8s后，有了configMap搭建稍微简单了一些。</p><p>再到现在，由于要使用es做数据分析，决定搭建一个es节点测试使用。</p><p>翻看文档发现官方其实针对k8s有<a href="https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-eck.html">ECK</a>来辅助在k8s上搭建es集群。有点类似之前文章提到的tidb operator。</p><p>今天来快速搭建一个es和kibana.</p><h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><p>分别创建CRDs和RBAC.</p><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">kubectl</span> <span class="string">create</span> <span class="string">-f</span> <span class="string">https://download.elastic.co/downloads/eck/2.13.0/crds.yaml</span></span><br><span class="line"><span class="string">kubectl</span> <span class="string">apply</span> <span class="string">-f</span> <span class="string">https://download.elastic.co/downloads/eck/2.13.0/operator.yaml</span></span><br></pre></td></tr></table></figure><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">customresourcedefinition.apiextensions.k8s.io/agents.agent.k8s.elastic.co created</span><br><span class="line">customresourcedefinition.apiextensions.k8s.io/apmservers.apm.k8s.elastic.co created</span><br><span class="line">customresourcedefinition.apiextensions.k8s.io/beats.beat.k8s.elastic.co created</span><br><span class="line">customresourcedefinition.apiextensions.k8s.io/elasticmapsservers.maps.k8s.elastic.co created</span><br><span class="line">customresourcedefinition.apiextensions.k8s.io/elasticsearches.elasticsearch.k8s.elastic.co created</span><br><span class="line">customresourcedefinition.apiextensions.k8s.io/enterprisesearches.enterprisesearch.k8s.elastic.co created</span><br><span class="line">customresourcedefinition.apiextensions.k8s.io/kibanas.kibana.k8s.elastic.co created</span><br><span class="line">customresourcedefinition.apiextensions.k8s.io/logstashes.logstash.k8s.elastic.co created</span><br></pre></td></tr></table></figure><h2 id="es搭建"><a href="#es搭建" class="headerlink" title="es搭建"></a>es搭建</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">elasticsearch.k8s.elastic.co/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Elasticsearch</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">es</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">elastic-system</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">version:</span> <span class="number">8.14</span><span class="number">.3</span></span><br><span class="line">  <span class="attr">nodeSets:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">default</span></span><br><span class="line">    <span class="attr">count:</span> <span class="number">1</span></span><br><span class="line">    <span class="attr">config:</span></span><br><span class="line">      <span class="attr">node.store.allow_mmap:</span> <span class="literal">false</span></span><br><span class="line">    <span class="attr">volumeClaimTemplates:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">metadata:</span></span><br><span class="line">        <span class="attr">name:</span> <span class="string">elasticsearch-data</span></span><br><span class="line">      <span class="attr">spec:</span></span><br><span class="line">        <span class="attr">accessModes:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="string">ReadWriteOnce</span></span><br><span class="line">        <span class="attr">resources:</span></span><br><span class="line">          <span class="attr">requests:</span></span><br><span class="line">            <span class="attr">storage:</span> <span class="string">20Gi</span></span><br><span class="line">        <span class="attr">storageClassName:</span> <span class="string">csi-rbd-sc</span></span><br></pre></td></tr></table></figure><p>定义也十分简单，之后apply即可。</p><p>定义一个service</p><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">es-http</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">elastic-system</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">http</span></span><br><span class="line">      <span class="attr">protocol:</span> <span class="string">TCP</span></span><br><span class="line">      <span class="attr">port:</span> <span class="number">9200</span></span><br><span class="line">      <span class="attr">targetPort:</span> <span class="number">9200</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">common.k8s.elastic.co/type:</span> <span class="string">elasticsearch</span></span><br><span class="line">    <span class="attr">elasticsearch.k8s.elastic.co/cluster-name:</span> <span class="string">es</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">LoadBalancer</span></span><br></pre></td></tr></table></figure><p>获取下账号密码</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get secret es-es-elastic-user -n elastic-system -o go-template=&#x27;&#123;&#123;.data.elastic | base64decode&#125;&#125;&#x27;</span><br></pre></td></tr></table></figure><p>访问下应该是正常的。</p><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;es-es-default-0&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;cluster_name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;es&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;cluster_uuid&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sxMRMy15QACkzxpSPeTlzA&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;version&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;number&quot;</span><span class="punctuation">:</span> <span class="string">&quot;8.14.3&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;build_flavor&quot;</span><span class="punctuation">:</span> <span class="string">&quot;default&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;build_type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;docker&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;build_hash&quot;</span><span class="punctuation">:</span> <span class="string">&quot;d55f984299e0e88dee72ebd8255f7ff130859ad0&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;build_date&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2024-07-07T22:04:49.882652950Z&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;build_snapshot&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;lucene_version&quot;</span><span class="punctuation">:</span> <span class="string">&quot;9.10.0&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;minimum_wire_compatibility_version&quot;</span><span class="punctuation">:</span> <span class="string">&quot;7.17.0&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;minimum_index_compatibility_version&quot;</span><span class="punctuation">:</span> <span class="string">&quot;7.0.0&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;tagline&quot;</span><span class="punctuation">:</span> <span class="string">&quot;You Know, for Search&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure><h2 id="kibana"><a href="#kibana" class="headerlink" title="kibana"></a>kibana</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">kibana.k8s.elastic.co/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Kibana</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kibana</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">elastic-system</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">version:</span> <span class="number">8.14</span><span class="number">.3</span></span><br><span class="line">  <span class="attr">count:</span> <span class="number">1</span></span><br><span class="line">  <span class="attr">elasticsearchRef:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">es</span></span><br><span class="line">  <span class="attr">http:</span></span><br><span class="line">    <span class="attr">service:</span></span><br><span class="line">      <span class="attr">spec:</span></span><br><span class="line">        <span class="attr">type:</span> <span class="string">LoadBalancer</span></span><br><span class="line">        <span class="attr">ports:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">5601</span></span><br><span class="line">            <span class="attr">targetPort:</span> <span class="number">5601</span></span><br><span class="line">    <span class="attr">tls:</span></span><br><span class="line">      <span class="attr">selfSignedCertificate:</span></span><br><span class="line">        <span class="attr">disabled:</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure><p>这个没什么难度，直接就起来了。</p><h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>使用ECK十分快速的在k8s上启动了一个es集群，如果后续需要扩容的话，直接修改副本的数量即可，十分简单。</p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h1 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h1&gt;&lt;p&gt;遥想一年前，搭建es时还需要先挂载卷然后hung住容器拷贝配置文件，后面是自己做了镜像。&lt;/p&gt;
-&lt;p&gt;再到后面切换到k8s后，有了conf
-      
-    
-    </summary>
-    
-    
       <category term="编程" scheme="https://blog.zer0e.com/tags/%E7%BC%96%E7%A8%8B/"/>
     
-      <category term="架构" scheme="https://blog.zer0e.com/tags/%E6%9E%B6%E6%9E%84/"/>
-    
-      <category term="运维" scheme="https://blog.zer0e.com/tags/%E8%BF%90%E7%BB%B4/"/>
-    
-      <category term="从0.5开始的运维架构之路" scheme="https://blog.zer0e.com/tags/%E4%BB%8E0-5%E5%BC%80%E5%A7%8B%E7%9A%84%E8%BF%90%E7%BB%B4%E6%9E%B6%E6%9E%84%E4%B9%8B%E8%B7%AF/"/>
+      <category term="面经" scheme="https://blog.zer0e.com/tags/%E9%9D%A2%E7%BB%8F/"/>
     
   </entry>
   

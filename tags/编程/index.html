@@ -1,5 +1,26 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+    <!-- Mermaid 图表渲染 -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+   
+    <script>
+        if (window.mermaid) {
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'neutral',
+                securityLevel: 'loose'
+            });
+        }
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']]
+            }
+            };
+    </script>
+    <!-- MathJax 数学公式渲染 -->
+    <script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
     <!-- title -->
 
 
@@ -346,6 +367,42 @@
     
     
     <article class="index-post">
+        <a class="abstract-title" href = "/2026/06/28/ai-infra-1/" >
+            
+                <span>去TM的AI其一：何为QKV和KVCache</span>
+        </a>
+        <div class="abstract-content">
+            前言新的一个系列，讲讲AI的基础知识，主要是给自己看的。至于标题只能说懂得都懂，去TMD的AI。但话这么说，AI又必须得学习，相恨相杀了属于是。第一篇打算讲讲Transformer架构中的很重要的概念，QKV，以及对应的优化KV Cache。当然，正文是AI写的（服了）。  
+正文什么是QKV?QKV是Transformer架构中最...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/06/28</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "AI">AI</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "技术">技术</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
         <a class="abstract-title" href = "/2026/06/07/devops13/" >
             
                 <span>【架构之路13】节点与api-server网络不通后发生了什么</span>
@@ -465,11 +522,11 @@
             
             <div class= abstract-tags >
     
+        <a class="post-tag" href="javascript:void(0);" data-tags = "随想">随想</a>
+    
         <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "随想">随想</a>
     
 </div>
             
@@ -499,9 +556,9 @@
             
             <div class= abstract-tags >
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
         <a class="post-tag" href="javascript:void(0);" data-tags = "随想">随想</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags = "面经">面经</a>
     
@@ -533,9 +590,9 @@ redo logredo log（重做日志）是 InnoDB...
             
             <div class= abstract-tags >
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
         <a class="post-tag" href="javascript:void(0);" data-tags = "随想">随想</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags = "面经">面经</a>
     
@@ -583,9 +640,9 @@ UDP
             
             <div class= abstract-tags >
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
         <a class="post-tag" href="javascript:void(0);" data-tags = "随想">随想</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags = "面经">面经</a>
     
@@ -620,9 +677,9 @@ UDP
             
             <div class= abstract-tags >
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
         <a class="post-tag" href="javascript:void(0);" data-tags = "随想">随想</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags = "面经">面经</a>
     
@@ -656,44 +713,9 @@ Java代码的加载和执行过程涉及多个步骤，包括编译、类加载�
             
             <div class= abstract-tags >
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
         <a class="post-tag" href="javascript:void(0);" data-tags = "随想">随想</a>
     
-        <a class="post-tag" href="javascript:void(0);" data-tags = "面经">面经</a>
-    
-</div>
-            
-        </div>
-    </article>
-    
-    
-    
-    
-    
-    
-    <article class="index-post">
-        <a class="abstract-title" href = "/2024/08/01/2024-08-01-replay/" >
-            
-                <span>2024面试复盘8</span>
-        </a>
-        <div class="abstract-content">
-            复盘反射是什么 怎么用刚开始我愣了一下，在大学的时候我其实也写过关于反射的文章，结果忘得差不多了。
-其实就是借助class对象获取类信息的方式称作反射。
-123456//1Class c1 = Cat.class; //任何类都有隐含的静态成员class用于获取Class对象//2Class c2 = cat.getClass();...
-        </div>
-        <div class="abstract-post-meta">
-            <!-- date  -->
-            <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/08/01</span>
-            </div>
-            <!-- tags  -->
-            
-            <div class= abstract-tags >
-    
         <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
-    
-        <a class="post-tag" href="javascript:void(0);" data-tags = "随想">随想</a>
     
         <a class="post-tag" href="javascript:void(0);" data-tags = "面经">面经</a>
     
@@ -2676,9 +2698,36 @@ Java代码的加载和执行过程涉及多个步骤，包括编译、类加载�
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 118
+        Total : 119
         </div>
         <!-- search  -->
         
@@ -2691,6 +2740,11 @@ Java代码的加载和执行过程涉及多个步骤，包括编译、类加载�
     
     <div class="archive-year"> 2026 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2026/06/28/ai-infra-1/" >去TM的AI其一：何为QKV和KVCache</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -3350,19 +3404,17 @@ Java代码的加载和执行过程涉及多个步骤，包括编译、类加载�
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
+        <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
+    
+        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
+    
         <span class="sidebar-tag-name" data-tags="编程"><span class="iconfont-archer">&#xe606;</span>编程</span>
+    
+        <span class="sidebar-tag-name" data-tags="面经"><span class="iconfont-archer">&#xe606;</span>面经</span>
     
         <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
     
         <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
-    
-        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
-    
-        <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
-    
-        <span class="sidebar-tag-name" data-tags="面经"><span class="iconfont-archer">&#xe606;</span>面经</span>
-    
-        <span class="sidebar-tag-name" data-tags="生活琐事"><span class="iconfont-archer">&#xe606;</span>生活琐事</span>
     
         <span class="sidebar-tag-name" data-tags="思考"><span class="iconfont-archer">&#xe606;</span>思考</span>
     
@@ -3370,25 +3422,29 @@ Java代码的加载和执行过程涉及多个步骤，包括编译、类加载�
     
         <span class="sidebar-tag-name" data-tags="设计模式"><span class="iconfont-archer">&#xe606;</span>设计模式</span>
     
+        <span class="sidebar-tag-name" data-tags="生活琐事"><span class="iconfont-archer">&#xe606;</span>生活琐事</span>
+    
         <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
     
-        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
+        <span class="sidebar-tag-name" data-tags="技术"><span class="iconfont-archer">&#xe606;</span>技术</span>
     
         <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
     
-        <span class="sidebar-tag-name" data-tags="web"><span class="iconfont-archer">&#xe606;</span>web</span>
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
     
         <span class="sidebar-tag-name" data-tags="Android"><span class="iconfont-archer">&#xe606;</span>Android</span>
     
         <span class="sidebar-tag-name" data-tags="数据库"><span class="iconfont-archer">&#xe606;</span>数据库</span>
     
+        <span class="sidebar-tag-name" data-tags="web"><span class="iconfont-archer">&#xe606;</span>web</span>
+    
         <span class="sidebar-tag-name" data-tags="运维"><span class="iconfont-archer">&#xe606;</span>运维</span>
     
         <span class="sidebar-tag-name" data-tags="从0.5开始的运维架构之路"><span class="iconfont-archer">&#xe606;</span>从0.5开始的运维架构之路</span>
     
-        <span class="sidebar-tag-name" data-tags="自动化测试"><span class="iconfont-archer">&#xe606;</span>自动化测试</span>
-    
         <span class="sidebar-tag-name" data-tags="linux"><span class="iconfont-archer">&#xe606;</span>linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="自动化测试"><span class="iconfont-archer">&#xe606;</span>自动化测试</span>
     
         <span class="sidebar-tag-name" data-tags="misc"><span class="iconfont-archer">&#xe606;</span>misc</span>
     
