@@ -1,0 +1,3887 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <!-- Mermaid 图表渲染 -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+   
+    <script>
+        if (window.mermaid) {
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'neutral',
+                securityLevel: 'loose'
+            });
+        }
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']]
+            }
+            };
+    </script>
+    <!-- MathJax 数学公式渲染 -->
+    <script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Zer0e">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Zer0e">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>去TM的AI其六：什么是投机解码 (Speculative Decoding) · Zer0e&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Zer0e&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">去TM的AI其六：什么是投机解码 (Speculative Decoding)</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Zer0e's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            去TM的AI其六：什么是投机解码 (Speculative Decoding)
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "AI">AI</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "技术">技术</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">3.7k</span>阅读时长: <span class="post-count reading-time">15 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2026/08/16</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="什么是投机解码-Speculative-Decoding"><a href="#什么是投机解码-Speculative-Decoding" class="headerlink" title="什么是投机解码 (Speculative Decoding)"></a>什么是投机解码 (Speculative Decoding)</h1><p>投机解码（Speculative Decoding）是大语言模型推理加速领域的一项创新技术，它通过”先猜后验”的策略，在保持生成质量不变的前提下，将推理速度提升 <strong>2-3 倍</strong>。这项技术由 Google 等团队在 2023 年提出，迅速成为推理优化的重要方向。</p>
+<h2 id="为什么要提出投机解码？"><a href="#为什么要提出投机解码？" class="headerlink" title="为什么要提出投机解码？"></a>为什么要提出投机解码？</h2><h3 id="传统自回归生成的瓶颈"><a href="#传统自回归生成的瓶颈" class="headerlink" title="传统自回归生成的瓶颈"></a>传统自回归生成的瓶颈</h3><p>大语言模型生成文本时采用的是<strong>自回归（Auto-regressive）</strong>方式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">第1步: 输入 &quot;今天天气&quot; → 模型计算 → 输出 &quot;真&quot;</span><br><span class="line">第2步: 输入 &quot;今天天气真&quot; → 模型计算 → 输出 &quot;好&quot;</span><br><span class="line">第3步: 输入 &quot;今天天气真好&quot; → 模型计算 → 输出 &quot;，&quot;</span><br><span class="line">第4步: 输入 &quot;今天天气真好，&quot; → 模型计算 → 输出 &quot;适合&quot;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p><strong>问题在哪里？</strong></p>
+<p>每个 token 的生成都需要：</p>
+<ol>
+<li>将完整序列输入模型</li>
+<li>执行一次完整的前向传播（Forward Pass）</li>
+<li>从输出分布中采样一个 token</li>
+<li>重复上述过程</li>
+</ol>
+<pre class="mermaid">flowchart TD
+    A[输入序列] --> B["模型前向传播<br/>计算成本高"]
+    B --> C["采样 1 个 token"]
+    C --> D[追加到序列]
+    D --> B
+    
+    style B fill:#ffcdd2
+    style C fill:#ffe0b2
+    
+    E[生成 N 个 token] --> F["需要 N 次前向传播<br/>速度受限"]
+    style F fill:#ff8a65,color:#fff</pre>
+
+<p><strong>核心瓶颈：串行生成，每次只能产生 1 个 token</strong></p>
+<p>对于一个 1000 token 的生成任务，即使模型计算再快，也至少需要 1000 次串行推理步骤。这就是<strong>延迟瓶颈</strong>。</p>
+<h3 id="投机解码的核心洞察"><a href="#投机解码的核心洞察" class="headerlink" title="投机解码的核心洞察"></a>投机解码的核心洞察</h3><p><strong>关键发现：很多 token 的生成是”可预测”的</strong></p>
+<p>比如：</p>
+<ul>
+<li>“人工”后面大概率是”智能”</li>
+<li>“今天天气”后面很可能是”真好”</li>
+<li>“hello”后面通常是”world”</li>
+</ul>
+<p><strong>投机解码的想法：用一个小的”草稿模型”快速猜测多个 token，然后用大模型一次性验证</strong></p>
+<pre class="mermaid">flowchart TD
+    A[传统方式] --> B1["大模型逐个生成<br/>1000 次前向传播"]
+    A --> B2["速度慢<br/>延迟高"]
+    
+    C[投机解码] --> D1["小模型快速猜测 K 个"]
+    C --> D2["大模型并行验证 K 个"]
+    C --> D3["大幅减少前向传播次数"]
+    
+    B1 -.优化.-> D1
+    B2 -.优化.-> D3
+    
+    style A fill:#ffebee
+    style C fill:#e8f5e9
+    style D1 fill:#66bb6a,color:#fff
+    style D2 fill:#42a5f5,color:#fff
+    style D3 fill:#ffa726,color:#fff</pre>
+
+
+<h2 id="投机解码的核心思想"><a href="#投机解码的核心思想" class="headerlink" title="投机解码的核心思想"></a>投机解码的核心思想</h2><p>投机解码采用<strong>Draft then Verify（先草稿后验证）</strong>的策略：</p>
+<h3 id="两模型架构"><a href="#两模型架构" class="headerlink" title="两模型架构"></a>两模型架构</h3><ol>
+<li><p><strong>草稿模型（Draft Model）</strong></p>
+<ul>
+<li>小模型（如 1B-3B 参数）</li>
+<li>快速生成多个候选 token</li>
+<li>可以是 distilled 模型或同一模型的早期层</li>
+</ul>
+</li>
+<li><p><strong>目标模型（Target Model）</strong></p>
+<ul>
+<li>大模型（如 7B-70B 参数）</li>
+<li>验证草稿的准确性</li>
+<li>保证生成质量</li>
+</ul>
+</li>
+</ol>
+<h3 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h3><pre class="mermaid">flowchart TD
+    subgraph Phase1["阶段1: 草稿生成"]
+        A1[输入序列] --> B1[草稿模型]
+        B1 --> C1["快速生成 K 个 token<br/>x₁, x₂, ..., x_K"]
+    end
+    
+    subgraph Phase2["阶段2: 并行验证"]
+        A2[输入 + K 个草稿 token] --> B2[目标模型]
+        B2 --> C2["一次性计算 K 个位置的分布"]
+        C2 --> D2["验证每个草稿 token<br/>是否匹配目标分布"]
+    end
+    
+    subgraph Phase3["阶段3: 接受或拒绝"]
+        A3[验证结果] --> B3{草稿是否正确?}
+        B3 -->|接受| C3[保留正确的 token]
+        B3 -->|拒绝| D3[从目标分布重新采样]
+        C3 --> E3[继续下一轮]
+        D3 --> E3
+    end
+    
+    Phase1 --> Phase2
+    Phase2 --> Phase3
+    
+    style Phase1 fill:#fff3e0
+    style Phase2 fill:#e3f2fd
+    style Phase3 fill:#e8f5e9
+    style C1 fill:#ffcc80
+    style C2 fill:#90caf9
+    style C3 fill:#a5d6a7
+    style D3 fill:#ef9a9a</pre>
+
+
+<h2 id="投机解码的详细算法"><a href="#投机解码的详细算法" class="headerlink" title="投机解码的详细算法"></a>投机解码的详细算法</h2><h3 id="算法步骤"><a href="#算法步骤" class="headerlink" title="算法步骤"></a>算法步骤</h3><p>假设置信度阈值为 $p$，草稿长度为 $K$：</p>
+<p><strong>步骤 1：草稿生成</strong></p>
+<p>草稿模型自回归生成 $K$ 个 token：</p>
+<p>$$\hat{x}_1, \hat{x}_2, …, \hat{x}_K \sim P_{\text{draft}}(x | x_{1:t})$$</p>
+<p><strong>步骤 2：并行验证</strong></p>
+<p>目标模型一次性计算这 $K$ 个位置的概率分布：</p>
+<p>$$P_{\text{target}}(x_1 | x_{1:t}),\ P_{\text{target}}(x_2 | x_{1:t}, \hat{x}_1),\ …,\ P_{\text{target}}(x_K | x_{1:t}, \hat{x}_{1:K-1})$$</p>
+<p><strong>步骤 3：投机接受</strong></p>
+<p>对于第 $i$ 个草稿 token $\hat{x}_{i}$，计算接受概率：</p>
+<p>$$\alpha_i = \min\left(1,\ \frac{P_{\text{target}}(\hat{x}_i | x_{1:t+i-1})}{P_{\text{draft}}(\hat{x}_i | x_{1:t+i-1})}\right)$$</p>
+<p>以概率 $\alpha_{i}$ 接受 $\hat{x}_{i}$，否则拒绝并从目标分布重新采样。</p>
+<pre class="mermaid">flowchart TD
+    A[草稿 token x̂ᵢ] --> B["计算 P_target(x̂ᵢ)"]
+    A --> C["计算 P_draft(x̂ᵢ)"]
+    B --> D["α = min(1, P_target / P_draft)"]
+    C --> D
+    
+    D --> E{随机数 r < α?}
+    E -->|是| F["✅ 接受 x̂ᵢ"]
+    E -->|否| G["❌ 拒绝<br/>从 P_target 采样"]
+    
+    F --> H[继续验证下一个]
+    G --> I[终止验证,从该位置继续]
+    
+    style D fill:#ffe0b2
+    style E fill:#ce93d8
+    style F fill:#a5d6a7
+    style G fill:#ef9a9a</pre>
+
+<h3 id="一个具体示例"><a href="#一个具体示例" class="headerlink" title="一个具体示例"></a>一个具体示例</h3><p>假设我们要生成”人工智能是未来的”：</p>
+<p><strong>传统方式：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">输入: &quot;人工&quot;</span><br><span class="line">→ 大模型推理 1 次 → &quot;智能&quot;</span><br><span class="line">→ 大模型推理 1 次 → &quot;是&quot;</span><br><span class="line">→ 大模型推理 1 次 → &quot;未来&quot;</span><br><span class="line">→ 大模型推理 1 次 → &quot;的&quot;</span><br><span class="line">总计: 4 次大模型推理</span><br></pre></td></tr></table></figure>
+
+<p><strong>投机解码（K=3）：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">输入: &quot;人工&quot;</span><br><span class="line">→ 小模型快速生成 3 个草稿: [&quot;智能&quot;, &quot;是&quot;, &quot;未来&quot;]</span><br><span class="line">→ 大模型一次性验证 3 个位置</span><br><span class="line">  - &quot;智能&quot;: P_target=0.85, P_draft=0.70, α=1.0 → ✅ 接受</span><br><span class="line">  - &quot;是&quot;: P_target=0.92, P_draft=0.60, α=1.0 → ✅ 接受</span><br><span class="line">  - &quot;未来&quot;: P_target=0.45, P_draft=0.80, α=0.56 → ❌ 拒绝,重新采样</span><br><span class="line">→ 实际接受 2 个 token,第 3 个重新采样</span><br><span class="line">总计: 1 次小模型推理 + 1 次大模型推理 = 生成 3 个 token</span><br><span class="line">加速比: ~3x</span><br></pre></td></tr></table></figure>
+
+<pre class="mermaid">flowchart LR
+    subgraph Traditional["传统方式"]
+        A1["大模型×4<br/>4 次推理"] --> B1["输出 4 个 token"]
+    end
+    
+    subgraph Speculative["投机解码"]
+        A2["小模型×1"] --> B2["草稿 3 个 token"]
+        B2 --> C2["大模型×1 验证"]
+        C2 --> D2["接受 2 个 + 采样 1 个"]
+    end
+    
+    style Traditional fill:#ffebee
+    style Speculative fill:#e8f5e9
+    style A1 fill:#ffcdd2
+    style C2 fill:#66bb6a,color:#fff
+    style D2 fill:#42a5f5,color:#fff</pre>
+
+
+<h2 id="加速比分析"><a href="#加速比分析" class="headerlink" title="加速比分析"></a>加速比分析</h2><h3 id="理论加速比"><a href="#理论加速比" class="headerlink" title="理论加速比"></a>理论加速比</h3><p>设：</p>
+<ul>
+<li>$K$：草稿长度</li>
+<li>$\alpha$：平均接受率（0 到 1 之间）</li>
+<li>$T_{\text{draft}}$：草稿模型推理时间</li>
+<li>$T_{\text{target}}$：目标模型推理时间</li>
+</ul>
+<p>每轮生成的期望 token 数：</p>
+<p>$$<br>E[\text{tokens per round}] = \sum_{i=1}^{K} \prod_{j=1}^{i} \alpha_j \approx \frac{1 - \alpha^{K+1}}{1 - \alpha}<br>$$</p>
+<p>加速比：</p>
+<p>$$<br>\text{Speedup} \approx \frac{K \cdot T_{\text{target}}}{T_{\text{draft}} + T_{\text{target}}} \cdot \alpha_{\text{avg}}<br>$$</p>
+<h3 id="实际性能数据"><a href="#实际性能数据" class="headerlink" title="实际性能数据"></a>实际性能数据</h3><p>以 LLaMA-70B（目标）+ LLaMA-7B（草稿）为例：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>草稿长度 K</th>
+<th>接受率 α</th>
+<th>加速比</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>代码生成</td>
+<td>4</td>
+<td>0.85</td>
+<td><strong>3.2x</strong></td>
+</tr>
+<tr>
+<td>中文文本</td>
+<td>3</td>
+<td>0.75</td>
+<td><strong>2.5x</strong></td>
+</tr>
+<tr>
+<td>数学推导</td>
+<td>2</td>
+<td>0.60</td>
+<td><strong>1.8x</strong></td>
+</tr>
+<tr>
+<td>创意写作</td>
+<td>3</td>
+<td>0.65</td>
+<td><strong>2.1x</strong></td>
+</tr>
+</tbody></table>
+<pre class="mermaid">flowchart TD
+    A[投机解码性能] --> B1["代码生成: 3.2x"]
+    A --> B2["中文文本: 2.5x"]
+    A --> B3["创意写作: 2.1x"]
+    A --> B4["数学推导: 1.8x"]
+    
+    B1 --> C["草稿质量越高,加速比越大"]
+    B2 --> C
+    B3 --> C
+    B4 --> C
+    
+    style A fill:#ff7043,color:#fff
+    style B1 fill:#66bb6a,color:#fff
+    style B2 fill:#42a5f5,color:#fff
+    style B3 fill:#ab47bc,color:#fff
+    style B4 fill:#ffa726
+    style C fill:#26c6da</pre>
+
+<p><strong>关键规律：</strong></p>
+<ul>
+<li>草稿模型与目标模型越接近，接受率越高</li>
+<li>结构化强的任务（代码、翻译）接受率更高</li>
+<li>创意性强的任务接受率相对较低</li>
+</ul>
+<h2 id="投机解码的变体"><a href="#投机解码的变体" class="headerlink" title="投机解码的变体"></a>投机解码的变体</h2><h3 id="1-Medusa（多头推测解码）"><a href="#1-Medusa（多头推测解码）" class="headerlink" title="1. Medusa（多头推测解码）"></a>1. Medusa（多头推测解码）</h3><p>Medusa 在目标模型顶部添加多个”解码头”，每个头预测不同位置的 token：</p>
+<pre class="mermaid">flowchart TD
+    A[目标模型 backbone] --> B1[Head 0: 预测 t+1]
+    A --> B2[Head 1: 预测 t+2]
+    A --> B3[Head 2: 预测 t+3]
+    A --> B4[Head 3: 预测 t+4]
+    
+    B1 --> C1[无需草稿模型]
+    B2 --> C1
+    B3 --> C1
+    B4 --> C1
+    
+    C1 --> D[一次性生成多个候选]
+    D --> E[目标模型验证]
+    
+    style A fill:#ffa726
+    style B1 fill:#66bb6a
+    style B2 fill:#66bb6a
+    style B3 fill:#66bb6a
+    style B4 fill:#66bb6a
+    style E fill:#42a5f5,color:#fff</pre>
+
+<p><strong>优势：</strong></p>
+<ul>
+<li>不需要额外的草稿模型</li>
+<li>所有头共享 backbone 表示</li>
+<li>训练成本低</li>
+</ul>
+<h3 id="2-EAGLE（Extra-Acceleration-through-Generation-with-Language-Enhancement）"><a href="#2-EAGLE（Extra-Acceleration-through-Generation-with-Language-Enhancement）" class="headerlink" title="2. EAGLE（Extra Acceleration through Generation with Language Enhancement）"></a>2. EAGLE（Extra Acceleration through Generation with Language Enhancement）</h3><p>EAGLE 通过以下方式进一步优化：</p>
+<ul>
+<li>使用目标模型的隐藏状态作为草稿模型的输入</li>
+<li>动态调整草稿长度</li>
+<li>更好的特征对齐</li>
+</ul>
+<h3 id="3-自投机解码（Self-Speculative-Decoding）"><a href="#3-自投机解码（Self-Speculative-Decoding）" class="headerlink" title="3. 自投机解码（Self-Speculative Decoding）"></a>3. 自投机解码（Self-Speculative Decoding）</h3><p>同一个模型既当草稿模型又当目标模型：</p>
+<ul>
+<li>使用模型的<strong>早期层</strong>作为草稿</li>
+<li>使用<strong>完整模型</strong>作为验证</li>
+<li>无需额外模型，但加速比相对较低</li>
+</ul>
+<pre class="mermaid">flowchart TD
+    A[输入] --> B["模型层 1-10<br/>草稿"]
+    B --> C["生成 K 个 token"]
+    C --> D["模型层 1-32<br/>完整验证"]
+    D --> E[接受或拒绝]
+    
+    style B fill:#ffcc80
+    style D fill:#90caf9
+    style E fill:#a5d6a7</pre>
+
+
+<h2 id="代码实现（简化版）"><a href="#代码实现（简化版）" class="headerlink" title="代码实现（简化版）"></a>代码实现（简化版）</h2><p>下面是一个投机解码的简化实现，帮助理解核心逻辑：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">speculative_decode</span>(<span class="params">draft_model, target_model, input_ids, K=<span class="number">3</span>, max_steps=<span class="number">100</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    投机解码简化实现</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        draft_model: 草稿模型（小模型）</span></span><br><span class="line"><span class="string">        target_model: 目标模型（大模型）</span></span><br><span class="line"><span class="string">        input_ids: 输入序列</span></span><br><span class="line"><span class="string">        K: 草稿长度</span></span><br><span class="line"><span class="string">        max_steps: 最大生成步数</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    generated_tokens = []</span><br><span class="line">    current_ids = input_ids.clone()</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> step <span class="keyword">in</span> <span class="built_in">range</span>(max_steps):</span><br><span class="line">        <span class="comment"># 步骤 1: 草稿模型生成 K 个 token</span></span><br><span class="line">        draft_tokens = []</span><br><span class="line">        draft_probs = []</span><br><span class="line">        </span><br><span class="line">        temp_ids = current_ids.clone()</span><br><span class="line">        <span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(K):</span><br><span class="line">            <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">                draft_output = draft_model(temp_ids)</span><br><span class="line">                draft_logits = draft_output.logits[:, -<span class="number">1</span>, :]</span><br><span class="line">                draft_prob = F.softmax(draft_logits, dim=-<span class="number">1</span>)</span><br><span class="line">                </span><br><span class="line">                <span class="comment"># 采样</span></span><br><span class="line">                draft_token = torch.multinomial(draft_prob, <span class="number">1</span>)</span><br><span class="line">                draft_tokens.append(draft_token.item())</span><br><span class="line">                draft_probs.append(draft_prob)</span><br><span class="line">                </span><br><span class="line">                temp_ids = torch.cat([temp_ids, draft_token], dim=<span class="number">1</span>)</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 步骤 2: 目标模型并行验证</span></span><br><span class="line">        <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">            target_output = target_model(temp_ids)</span><br><span class="line">            target_logits = target_output.logits[:, -K-<span class="number">1</span>:-<span class="number">1</span>, :]</span><br><span class="line">            target_probs = F.softmax(target_logits, dim=-<span class="number">1</span>)</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 步骤 3: 投机接受</span></span><br><span class="line">        accepted_tokens = []</span><br><span class="line">        <span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(K):</span><br><span class="line">            draft_token = draft_tokens[k]</span><br><span class="line">            draft_prob = draft_probs[k][<span class="number">0</span>, draft_token].item()</span><br><span class="line">            target_prob = target_probs[<span class="number">0</span>, k, draft_token].item()</span><br><span class="line">            </span><br><span class="line">            <span class="comment"># 计算接受概率</span></span><br><span class="line">            alpha = <span class="built_in">min</span>(<span class="number">1.0</span>, target_prob / draft_prob)</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">if</span> torch.rand(<span class="number">1</span>).item() &lt; alpha:</span><br><span class="line">                <span class="comment"># 接受</span></span><br><span class="line">                accepted_tokens.append(draft_token)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                <span class="comment"># 拒绝，从目标分布采样</span></span><br><span class="line">                new_token = torch.multinomial(target_probs[<span class="number">0</span>, k], <span class="number">1</span>).item()</span><br><span class="line">                accepted_tokens.append(new_token)</span><br><span class="line">                <span class="keyword">break</span>  <span class="comment"># 拒绝后停止验证</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 追加接受的 token</span></span><br><span class="line">        <span class="keyword">if</span> accepted_tokens:</span><br><span class="line">            accepted_tensor = torch.tensor([accepted_tokens], device=current_ids.device)</span><br><span class="line">            current_ids = torch.cat([current_ids, accepted_tensor], dim=<span class="number">1</span>)</span><br><span class="line">            generated_tokens.extend(accepted_tokens)</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 如果生成了结束符，提前终止</span></span><br><span class="line">        <span class="keyword">if</span> generated_tokens <span class="keyword">and</span> generated_tokens[-<span class="number">1</span>] == target_model.config.eos_token_id:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> generated_tokens</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="投机解码-vs-其他推理加速技术"><a href="#投机解码-vs-其他推理加速技术" class="headerlink" title="投机解码 vs 其他推理加速技术"></a>投机解码 vs 其他推理加速技术</h2><table>
+<thead>
+<tr>
+<th>技术</th>
+<th>加速原理</th>
+<th>加速比</th>
+<th>质量损失</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>投机解码</strong></td>
+<td>小模型猜测+大模型验证</td>
+<td>2-3x</td>
+<td><strong>无</strong></td>
+<td>通用场景</td>
+</tr>
+<tr>
+<td><strong>KV Cache</strong></td>
+<td>缓存历史 K/V</td>
+<td>2-4x</td>
+<td>无</td>
+<td>长序列生成</td>
+</tr>
+<tr>
+<td><strong>Flash Attention</strong></td>
+<td>IO 优化计算</td>
+<td>2-4x</td>
+<td>无</td>
+<td>长序列计算</td>
+</tr>
+<tr>
+<td><strong>量化</strong></td>
+<td>降低精度</td>
+<td>2-3x</td>
+<td>微小</td>
+<td>资源受限</td>
+</tr>
+<tr>
+<td><strong>连续批处理</strong></td>
+<td>动态 batching</td>
+<td>10-20x</td>
+<td>无</td>
+<td>高吞吐服务</td>
+</tr>
+</tbody></table>
+<pre class="mermaid">flowchart TD
+    A[推理加速技术] --> B1["投机解码<br/>算法级优化"]
+    A --> B2["KV Cache<br/>内存优化"]
+    A --> B3["Flash Attention<br/>计算优化"]
+    A --> B4["量化<br/>精度优化"]
+    
+    B1 --> C["质量无损<br/>2-3x 加速"]
+    B2 --> D["质量无损<br/>2-4x 加速"]
+    B3 --> D
+    B4 --> E["微小损失<br/>2-3x 加速"]
+    
+    style A fill:#ff7043,color:#fff
+    style B1 fill:#66bb6a,color:#fff
+    style C fill:#42a5f5,color:#fff</pre>
+
+<p><strong>关键洞察：这些技术可以组合使用！</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">典型的高性能推理栈：</span><br><span class="line">vLLM 框架</span><br><span class="line">  ├── Continuous Batching（吞吐优化）</span><br><span class="line">  ├── PagedAttention（内存管理）</span><br><span class="line">  ├── Flash Attention（计算加速）</span><br><span class="line">  └── Speculative Decoding（延迟优化）← 本文主题</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="实际应用场景"><a href="#实际应用场景" class="headerlink" title="实际应用场景"></a>实际应用场景</h2><h3 id="1-交互式对话"><a href="#1-交互式对话" class="headerlink" title="1. 交互式对话"></a>1. 交互式对话</h3><pre class="mermaid">flowchart LR
+    A[用户输入] --> B[投机解码生成回复]
+    B --> C["响应时间减少 50%"]
+    C --> D[提升用户体验]
+    
+    style A fill:#bbdefb
+    style B fill:#66bb6a,color:#fff
+    style D fill:#ffa726</pre>
+
+<p><strong>效果：</strong></p>
+<ul>
+<li>GPT-4 级别模型的响应时间从 2 秒降到 0.7 秒</li>
+<li>实时对话更流畅</li>
+</ul>
+<h3 id="2-代码补全"><a href="#2-代码补全" class="headerlink" title="2. 代码补全"></a>2. 代码补全</h3><ul>
+<li>IDE 中的代码建议需要极低延迟</li>
+<li>代码具有强结构性，草稿接受率高（0.8-0.9）</li>
+<li>加速比可达 3x 以上</li>
+</ul>
+<h3 id="3-批量翻译"><a href="#3-批量翻译" class="headerlink" title="3. 批量翻译"></a>3. 批量翻译</h3><ul>
+<li>翻译任务模式固定，投机解码效果好</li>
+<li>结合 Continuous Batching 可实现高吞吐</li>
+</ul>
+<h3 id="4-边缘设备部署"><a href="#4-边缘设备部署" class="headerlink" title="4. 边缘设备部署"></a>4. 边缘设备部署</h3><ul>
+<li>小模型在端侧，大模型在云端</li>
+<li>端侧生成草稿，云端验证</li>
+<li>降低云端计算压力</li>
+</ul>
+<h2 id="投机解码的局限性"><a href="#投机解码的局限性" class="headerlink" title="投机解码的局限性"></a>投机解码的局限性</h2><h3 id="1-需要额外的草稿模型"><a href="#1-需要额外的草稿模型" class="headerlink" title="1. 需要额外的草稿模型"></a>1. 需要额外的草稿模型</h3><pre class="mermaid">flowchart TD
+    A[投机解码要求] --> B1["需要训练/选择草稿模型"]
+    A --> B2["草稿模型质量影响加速比"]
+    A --> B3["模型不匹配时效果差"]
+    
+    B1 --> C["增加系统复杂度"]
+    B2 --> C
+    B3 --> C
+    
+    style A fill:#ffcc80
+    style C fill:#ef9a9a</pre>
+
+<h3 id="2-任务依赖性"><a href="#2-任务依赖性" class="headerlink" title="2. 任务依赖性"></a>2. 任务依赖性</h3><ul>
+<li><strong>结构化任务</strong>（代码、翻译）：接受率高，加速明显</li>
+<li><strong>创意任务</strong>（故事、诗歌）：接受率低，加速有限</li>
+</ul>
+<h3 id="3-实现复杂度"><a href="#3-实现复杂度" class="headerlink" title="3. 实现复杂度"></a>3. 实现复杂度</h3><ul>
+<li>需要协调两个模型的推理</li>
+<li>需要处理接受/拒绝逻辑</li>
+<li>推理框架需要专门支持</li>
+</ul>
+<h3 id="4-显存占用"><a href="#4-显存占用" class="headerlink" title="4. 显存占用"></a>4. 显存占用</h3><ul>
+<li>需要同时加载草稿模型和目标模型</li>
+<li>对于超大模型（如 175B），可能显存不足</li>
+</ul>
+<p><strong>解决方案：Medusa</strong>（不需要额外模型）或 <strong>Self-Speculative</strong>（同一模型不同层）</p>
+<h2 id="未来发展方向"><a href="#未来发展方向" class="headerlink" title="未来发展方向"></a>未来发展方向</h2><pre class="mermaid">timeline
+    title 投机解码发展历程
+    2023-01 : Google 提出 Speculative Decoding 理论框架
+    2023-06 : Medusa 发布 多解码头方法
+    2023-09 : EAGLE 提出 隐藏状态对齐优化
+    2024-01 : Self-Speculative Decoding 单模型方案
+    2024-06 : 主流推理框架支持 vLLM/TGI 集成
+    2025-? : 自适应草稿长度 动态优化策略</pre>
+
+<h3 id="研究热点"><a href="#研究热点" class="headerlink" title="研究热点"></a>研究热点</h3><ol>
+<li><p><strong>自适应草稿长度</strong></p>
+<ul>
+<li>根据置信度动态调整 $K$</li>
+<li>高置信度时增加草稿长度</li>
+<li>低置信度时减少草稿长度</li>
+</ul>
+</li>
+<li><p><strong>多草稿并行</strong></p>
+<ul>
+<li>同时生成多组草稿</li>
+<li>选择接受率最高的草稿</li>
+</ul>
+</li>
+<li><p><strong>与量化结合</strong></p>
+<ul>
+<li>草稿模型用 INT4</li>
+<li>目标模型用 FP16</li>
+<li>进一步降低延迟</li>
+</ul>
+</li>
+<li><p><strong>流式生成优化</strong></p>
+<ul>
+<li>Token-by-token 流式输出</li>
+<li>结合 speculative 实现超低延迟</li>
+</ul>
+</li>
+</ol>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>投机解码通过”先猜后验”的策略，在不损失生成质量的前提下，将大语言模型的推理速度提升 <strong>2-3 倍</strong>。</p>
+<pre class="mermaid">flowchart TD
+    A[投机解码核心优势] --> B1["质量无损<br/>数学保证"]
+    A --> B2["延迟降低<br/>2-3x 加速"]
+    A --> B3["通用性强<br/>适用于各种模型"]
+    A --> B4["可组合<br/>与其他加速技术协同"]
+    
+    B1 --> C[高效大模型推理]
+    B2 --> C
+    B3 --> C
+    B4 --> C
+    
+    C --> D1[交互式应用]
+    C --> D2[代码补全]
+    C --> D3[实时翻译]
+    C --> D4[批量生成]
+    
+    style A fill:#ff7043,color:#fff
+    style C fill:#42a5f5,color:#fff
+    style D1 fill:#66bb6a
+    style D2 fill:#ab47bc
+    style D3 fill:#26c6da
+    style D4 fill:#ffa726</pre>
+
+<p><strong>核心价值：</strong></p>
+<ul>
+<li>✅ <strong>数学保证</strong>：接受策略确保生成分布与目标模型完全一致</li>
+<li>✅ <strong>即插即用</strong>：无需修改模型架构，适用于任何自回归模型</li>
+<li>✅ <strong>生态成熟</strong>：vLLM、TGI 等主流框架已集成</li>
+<li>✅ <strong>组合优化</strong>：可与 KV Cache、Flash Attention、量化等技术叠加</li>
+</ul>
+<p>投机解码代表了推理优化的一个重要方向：<strong>通过算法创新，在保持质量的同时突破性能瓶颈</strong>。随着技术的不断演进，它将在大模型落地中发挥越来越重要的作用。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
+<li>Chen, C., et al. (2023). “Accelerating Large Language Model Decoding with Speculative Sampling”</li>
+<li>Leviathan, Y., et al. (2023). “Fast Inference from Transformers via Speculative Decoding”</li>
+<li>Cai, T., et al. (2023). “Medusa: Simple LLM Inference Acceleration Framework with Multiple Decoding Heads”</li>
+<li>Li, Y., et al. (2024). “EAGLE: Speculative Sampling Requires Rethinking Feature Uncertainty”</li>
+<li>vLLM Documentation: Speculative Decoding Integration</li>
+</ol>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>原文作者：<a href="https://blog.zer0e.com">Zer0e</a>
+            <p>原文链接：<a href="https://blog.zer0e.com/2026/08/16/ai-infra-6/">https://blog.zer0e.com/2026/08/16/ai-infra-6/</a>
+            <p>发表日期：<a href="https://blog.zer0e.com/2026/08/16/ai-infra-6/">August 16th 2026, 6:14:24 pm</a>
+            <p>更新日期：<a href="https://blog.zer0e.com/2026/08/16/ai-infra-6/">August 16th 2026, 9:21:50 pm</a>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2026/07/25/ai-infra-5/" title= "AI其五：如何设计用量限流系统">
+                    <div class="prevTitle">AI其五：如何设计用量限流系统</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:zcluslloye@gmail.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/zer0e" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+            
+                <a href="https://t.me/zer0ee" class="iconfont-archer telegram" target="_blank" title=telegram></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+	<!-- <div class="copyright">
+		<span id="hexo-power">Hosted by <a href="https://pages.coding.me" target="_blank">Coding Pages</a></span>
+	</div> -->
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+        <br>
+        <a href="https://icp.gov.moe/?keyword=20254096" target="_blank">萌ICP备20254096号</a>
+    </div>
+    <script defer src="https://umami.zer0e.com/script.js" data-website-id="a6e79cc3-9711-4fb5-9530-e07857543bd3"></script>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81-Speculative-Decoding"><span class="toc-number">1.</span> <span class="toc-text">什么是投机解码 (Speculative Decoding)</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%8F%90%E5%87%BA%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81%EF%BC%9F"><span class="toc-number">1.1.</span> <span class="toc-text">为什么要提出投机解码？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%A0%E7%BB%9F%E8%87%AA%E5%9B%9E%E5%BD%92%E7%94%9F%E6%88%90%E7%9A%84%E7%93%B6%E9%A2%88"><span class="toc-number">1.1.1.</span> <span class="toc-text">传统自回归生成的瓶颈</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81%E7%9A%84%E6%A0%B8%E5%BF%83%E6%B4%9E%E5%AF%9F"><span class="toc-number">1.1.2.</span> <span class="toc-text">投机解码的核心洞察</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">1.2.</span> <span class="toc-text">投机解码的核心思想</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84"><span class="toc-number">1.2.1.</span> <span class="toc-text">两模型架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-number">1.2.2.</span> <span class="toc-text">工作流程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81%E7%9A%84%E8%AF%A6%E7%BB%86%E7%AE%97%E6%B3%95"><span class="toc-number">1.3.</span> <span class="toc-text">投机解码的详细算法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%97%E6%B3%95%E6%AD%A5%E9%AA%A4"><span class="toc-number">1.3.1.</span> <span class="toc-text">算法步骤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E4%B8%AA%E5%85%B7%E4%BD%93%E7%A4%BA%E4%BE%8B"><span class="toc-number">1.3.2.</span> <span class="toc-text">一个具体示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A0%E9%80%9F%E6%AF%94%E5%88%86%E6%9E%90"><span class="toc-number">1.4.</span> <span class="toc-text">加速比分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%90%86%E8%AE%BA%E5%8A%A0%E9%80%9F%E6%AF%94"><span class="toc-number">1.4.1.</span> <span class="toc-text">理论加速比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E6%80%A7%E8%83%BD%E6%95%B0%E6%8D%AE"><span class="toc-number">1.4.2.</span> <span class="toc-text">实际性能数据</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81%E7%9A%84%E5%8F%98%E4%BD%93"><span class="toc-number">1.5.</span> <span class="toc-text">投机解码的变体</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Medusa%EF%BC%88%E5%A4%9A%E5%A4%B4%E6%8E%A8%E6%B5%8B%E8%A7%A3%E7%A0%81%EF%BC%89"><span class="toc-number">1.5.1.</span> <span class="toc-text">1. Medusa（多头推测解码）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-EAGLE%EF%BC%88Extra-Acceleration-through-Generation-with-Language-Enhancement%EF%BC%89"><span class="toc-number">1.5.2.</span> <span class="toc-text">2. EAGLE（Extra Acceleration through Generation with Language Enhancement）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E8%87%AA%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81%EF%BC%88Self-Speculative-Decoding%EF%BC%89"><span class="toc-number">1.5.3.</span> <span class="toc-text">3. 自投机解码（Self-Speculative Decoding）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0%EF%BC%88%E7%AE%80%E5%8C%96%E7%89%88%EF%BC%89"><span class="toc-number">1.6.</span> <span class="toc-text">代码实现（简化版）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81-vs-%E5%85%B6%E4%BB%96%E6%8E%A8%E7%90%86%E5%8A%A0%E9%80%9F%E6%8A%80%E6%9C%AF"><span class="toc-number">1.7.</span> <span class="toc-text">投机解码 vs 其他推理加速技术</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">1.8.</span> <span class="toc-text">实际应用场景</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%BA%A4%E4%BA%92%E5%BC%8F%E5%AF%B9%E8%AF%9D"><span class="toc-number">1.8.1.</span> <span class="toc-text">1. 交互式对话</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%BB%A3%E7%A0%81%E8%A1%A5%E5%85%A8"><span class="toc-number">1.8.2.</span> <span class="toc-text">2. 代码补全</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%89%B9%E9%87%8F%E7%BF%BB%E8%AF%91"><span class="toc-number">1.8.3.</span> <span class="toc-text">3. 批量翻译</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E8%BE%B9%E7%BC%98%E8%AE%BE%E5%A4%87%E9%83%A8%E7%BD%B2"><span class="toc-number">1.8.4.</span> <span class="toc-text">4. 边缘设备部署</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc-number">1.9.</span> <span class="toc-text">投机解码的局限性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E9%9C%80%E8%A6%81%E9%A2%9D%E5%A4%96%E7%9A%84%E8%8D%89%E7%A8%BF%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.9.1.</span> <span class="toc-text">1. 需要额外的草稿模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%BB%BB%E5%8A%A1%E4%BE%9D%E8%B5%96%E6%80%A7"><span class="toc-number">1.9.2.</span> <span class="toc-text">2. 任务依赖性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%AE%9E%E7%8E%B0%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="toc-number">1.9.3.</span> <span class="toc-text">3. 实现复杂度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%98%BE%E5%AD%98%E5%8D%A0%E7%94%A8"><span class="toc-number">1.9.4.</span> <span class="toc-text">4. 显存占用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AA%E6%9D%A5%E5%8F%91%E5%B1%95%E6%96%B9%E5%90%91"><span class="toc-number">1.10.</span> <span class="toc-text">未来发展方向</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A0%94%E7%A9%B6%E7%83%AD%E7%82%B9"><span class="toc-number">1.10.1.</span> <span class="toc-text">研究热点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">1.11.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-number">1.12.</span> <span class="toc-text">参考资料</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 124
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2026 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/16</span><a class="archive-post-title" href= "/2026/08/16/ai-infra-6/" >去TM的AI其六：什么是投机解码 (Speculative Decoding)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2026/07/25/ai-infra-5/" >AI其五：如何设计用量限流系统</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/17</span><a class="archive-post-title" href= "/2026/07/17/ai-infra-4/" >去TM的AI其四：什么是MoE架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/09</span><a class="archive-post-title" href= "/2026/07/09/ai-infra-3/" >去TM的AI其三：什么是多头潜在注意力Multi-Head Latent Attention (MLA)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/05</span><a class="archive-post-title" href= "/2026/07/05/ai-infra-2/" >去TM的AI其二：什么是多头注意力Multi-Head Attention</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2026/06/28/ai-infra-1/" >去TM的AI其一：何为QKV和KVCache</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/07</span><a class="archive-post-title" href= "/2026/06/07/devops13/" >【架构之路13】节点与api-server网络不通后发生了什么</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2026/05/10/202604-ai-think-2/" >AI时代下的一点思考2</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/18</span><a class="archive-post-title" href= "/2026/04/18/202604-ai-think/" >AI时代下的一点思考1</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/07</span><a class="archive-post-title" href= "/2026/03/07/202603-mi-after-sales/" >记一次小米售后</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2025 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span><a class="archive-post-title" href= "/2025/12/13/2025-end/" >2025年末碎碎念</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span><a class="archive-post-title" href= "/2025/09/03/2025-birthday/" >写于2025年生日前</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/15</span><a class="archive-post-title" href= "/2025/03/15/seckill-system-design/" >秒杀系统设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/02</span><a class="archive-post-title" href= "/2025/03/02/2025-migrate-vpc/" >某客户云上迁移实践</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2024 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/31</span><a class="archive-post-title" href= "/2024/12/31/2024-summary/" >2024年度总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/31</span><a class="archive-post-title" href= "/2024/10/31/game-email-architecture/" >游戏邮件系统设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2024/10/14/2024-october/" >10月随笔</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/31</span><a class="archive-post-title" href= "/2024/08/31/2024-end-of-august/" >写于8月最后一天</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2024/08/15/2024-08-15-replay/" >2024面试复盘13</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/14</span><a class="archive-post-title" href= "/2024/08/14/2024-08-14-replay/" >2024面试复盘12</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2024/08/12/2024-08-12-replay/" >2024面试复盘11</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/05</span><a class="archive-post-title" href= "/2024/08/05/2024-08-05-replay/" >2024面试复盘10</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/02</span><a class="archive-post-title" href= "/2024/08/02/2024-08-02-replay/" >2024面试复盘9</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2024/08/01/2024-08-01-replay/" >2024面试复盘8</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2024/07/30/2024-07-30-replay/" >2024面试复盘7</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/27</span><a class="archive-post-title" href= "/2024/07/27/devops12/" >【架构之路12】es-k8s搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2024/07/26/devops11/" >【架构之路11】sa-token框架上手体验</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2024/07/25/devops10/" >【架构之路10】sentinel限流上手</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2024/07/24/devops9/" >【架构之路9】flink-cdc学习与使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2024/07/23/devops8/" >【架构之路8】apisix-ingress-controller搭建与使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/22</span><a class="archive-post-title" href= "/2024/07/22/devops7/" >【架构之路7】tidb集群搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/22</span><a class="archive-post-title" href= "/2024/07/22/2024-07-22-replay/" >2024面试复盘6</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/19</span><a class="archive-post-title" href= "/2024/07/19/devops6/" >【架构之路6】k8s-LoadBalancer搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/17</span><a class="archive-post-title" href= "/2024/07/17/2024-07-17-replay/" >2024面试复盘5</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2024/07/16/devops5/" >【架构之路5】搭建redis集群</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2024/07/16/2024-07-16-replay/" >2024面试复盘4</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2024/07/15/2024-07-15-replay/" >2024面试复盘3</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/12</span><a class="archive-post-title" href= "/2024/07/12/devops4/" >【架构之路4】k8s对接ceph-rbd</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span><a class="archive-post-title" href= "/2024/07/11/devops3/" >【架构之路3】k8s对接cephfs</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span><a class="archive-post-title" href= "/2024/07/11/devops2/" >【架构之路2】ceph集群搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2024/07/10/devops1/" >【架构之路1】k8s集群搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2024/07/10/devops0/" >从0.5开始的运维架构之路0</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2024/06/24/2024-06-24-replay/" >2024面试复盘2</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/23</span><a class="archive-post-title" href= "/2024/06/23/2024-06-23-replay/" >2024面试复盘1</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2024/06/11/2024-resign/" >写于6月离职之后</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2024/01/01/2023-summary/" >2023年度总结</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/31</span><a class="archive-post-title" href= "/2022/12/31/2022-2023/" >2022年度总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2022/04/08/devtools/" >devtools协议分析与自动化录制实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2022/01/01/2022-first/" >由于代码架构设计不佳而引发的异常消失</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/08</span><a class="archive-post-title" href= "/2021/06/08/zbot/" >zbot架构畅谈</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/05</span><a class="archive-post-title" href= "/2021/04/05/bsgamesdk-re/" >对bsgamesdk的签名逆向分析</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span><a class="archive-post-title" href= "/2020/12/13/autoConfiguration/" >浅谈Spring Boot自动配置</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href= "/2020/11/01/transaction_isolation/" >回顾数据库事务隔离级别</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/09</span><a class="archive-post-title" href= "/2020/10/09/snowflake/" >浅谈雪花算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/composite_pattern/" >设计模式之组合模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/design_patterns/" >谈谈设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/flyweight_pattern/" >设计模式之享元模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span><a class="archive-post-title" href= "/2020/09/14/builder_pattern/" >设计模式之构建模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2020/09/13/arraylist_resize/" >ArrayList扩容之后内存地址会发生改变吗？</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2020/09/13/jmm/" >浅谈Java内存模型</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2020/09/08/visitor_pattern/" >设计模式之访问者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2020/09/08/template_method_pattern/" >设计模式之模板方法模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/memento_pattern/" >设计模式之备忘录模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/state_pattern/" >设计模式之状态模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2020/09/05/interpreter_pattern/" >设计模式之解释器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2020/09/05/chain_of_responsibility_pattern/" >设计模式之责任链模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2020/09/04/bridge_patterns/" >设计模式之桥接模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2020/09/02/prototype_pattern/" >设计模式之原型模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/29</span><a class="archive-post-title" href= "/2020/08/29/lambda/" >由lambda表达式引发的思考</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/27</span><a class="archive-post-title" href= "/2020/08/27/iterator_pattern/" >设计模式之迭代器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/27</span><a class="archive-post-title" href= "/2020/08/27/strategy_pattern/" >设计模式之策略模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/22</span><a class="archive-post-title" href= "/2020/08/22/adapter_pattern/" >设计模式之适配器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/19</span><a class="archive-post-title" href= "/2020/08/19/sql_concurrent/" >谈一道数据库更新的并发问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span><a class="archive-post-title" href= "/2020/08/17/decorator_pattern/" >设计模式之装饰器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span><a class="archive-post-title" href= "/2020/08/17/command_pattern/" >设计模式之命令模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/16</span><a class="archive-post-title" href= "/2020/08/16/facade_pattern/" >设计模式之外观模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/14</span><a class="archive-post-title" href= "/2020/08/14/lock_class/" >谈谈锁的种类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/13</span><a class="archive-post-title" href= "/2020/08/13/abstract_factory_pattern/" >设计模式之抽象工厂模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2020/08/12/mediator_pattern/" >设计模式之中介者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2020/08/12/factory_pattern/" >设计模式之工厂模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2020/08/10/spring_aop/" >浅谈Spring AOP</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2020/08/10/proxy_pattern/" >设计模式之代理模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/08</span><a class="archive-post-title" href= "/2020/08/08/observer/" >设计模式之观察者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/07</span><a class="archive-post-title" href= "/2020/08/07/singleton/" >设计模式之单例模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/06</span><a class="archive-post-title" href= "/2020/08/06/spring_ioc/" >谈谈Spring IoC</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2020/07/24/java_thread_pool/" >浅谈Java线程池</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/20</span><a class="archive-post-title" href= "/2020/07/20/dp3/" >浅谈动态规划Ⅲ</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/04</span><a class="archive-post-title" href= "/2020/07/04/database_master_slave/" >浅谈数据库主从复制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2020/06/24/load_balancing_algorithm/" >常见的负载均衡算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2020/06/15/load_balancing/" >浅谈负载均衡</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/14</span><a class="archive-post-title" href= "/2020/06/14/high_concurrency/" >浅谈高并发引起的问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/dp2/" >浅谈动态规划Ⅱ</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span><a class="archive-post-title" href= "/2020/05/13/topk/" >TopK问题与快速选择算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2020/04/29/binary_search/" >几种二分查找的模板与理解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/05</span><a class="archive-post-title" href= "/2020/04/05/dp1/" >浅谈动态规划</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2020/03/30/tree-traversal2/" >二叉树的广度优先(层次)遍历</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2020/03/30/tree-traversal/" >二叉树的前中后序遍历</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/24</span><a class="archive-post-title" href= "/2020/03/24/celery/" >初探celery任务队列</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/22</span><a class="archive-post-title" href= "/2020/03/22/java-reflection/" >理解Java反射</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span><a class="archive-post-title" href= "/2020/03/11/python-sync/" >浅谈python异步编程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/04</span><a class="archive-post-title" href= "/2020/03/04/python-copy/" >浅谈python中的引用与拷贝</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span><a class="archive-post-title" href= "/2020/02/10/spring-annotation/" >Springboot常用注解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/05</span><a class="archive-post-title" href= "/2020/01/05/dns-cache-pollution/" >DNS投毒分析</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href= "/2019/11/12/2019-11-12/" >谈一谈最近</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2019/04/01/ngrok/" >使用ngrok实现内网远程桌面</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href= "/2018/11/12/hctf2018wp/" >HCTF2018 web部分Writeup</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2018/11/02/js-prototype/" >浅谈JavaScript中的原型链</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2018/10/10/xssbot1/" >从零开始完成xssbot</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/12</span><a class="archive-post-title" href= "/2018/07/12/csp/" >浅谈CSP内容安全策略</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/07</span><a class="archive-post-title" href= "/2018/06/07/mergesort/" >经典算法之归并排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/02</span><a class="archive-post-title" href= "/2018/06/02/quicksort/" >经典算法之快速排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/28</span><a class="archive-post-title" href= "/2018/05/28/linux-shell/" >Linux下反弹shell的几种方式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/11</span><a class="archive-post-title" href= "/2018/05/11/selectsort/" >经典算法之选择排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2018/04/24/docker/" >docker常用命令汇总</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/11</span><a class="archive-post-title" href= "/2018/04/11/bubblesort/" >经典算法之冒泡排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2018/03/30/php-weak1/" >PHP弱类型总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/29</span><a class="archive-post-title" href= "/2018/03/29/second-sqli/" >记一次有趣的二次注入</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/23</span><a class="archive-post-title" href= "/2018/03/23/polynomial/" >单向链表的学习</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2018/03/18/hgame-misc/" >misc入门总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/14</span><a class="archive-post-title" href= "/2018/03/14/shuffle/" >常见的洗牌算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/hgame-web/" >CTF入门(坑)总结——web篇</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span><a class="archive-post-title" href= "/2018/03/10/maze/" >使用递归算法解决迷宫问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span><a class="archive-post-title" href= "/2018/03/10/resolve-number/" >实现整数的所有划分数</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span><a class="archive-post-title" href= "/2018/03/10/talk-about-blog/" >谈一谈博客</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
+    
+        <span class="sidebar-tag-name" data-tags="编程"><span class="iconfont-archer">&#xe606;</span>编程</span>
+    
+        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
+    
+        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
+    
+        <span class="sidebar-tag-name" data-tags="面经"><span class="iconfont-archer">&#xe606;</span>面经</span>
+    
+        <span class="sidebar-tag-name" data-tags="生活琐事"><span class="iconfont-archer">&#xe606;</span>生活琐事</span>
+    
+        <span class="sidebar-tag-name" data-tags="思考"><span class="iconfont-archer">&#xe606;</span>思考</span>
+    
+        <span class="sidebar-tag-name" data-tags="AI"><span class="iconfont-archer">&#xe606;</span>AI</span>
+    
+        <span class="sidebar-tag-name" data-tags="设计模式"><span class="iconfont-archer">&#xe606;</span>设计模式</span>
+    
+        <span class="sidebar-tag-name" data-tags="技术"><span class="iconfont-archer">&#xe606;</span>技术</span>
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
+    
+        <span class="sidebar-tag-name" data-tags="Android"><span class="iconfont-archer">&#xe606;</span>Android</span>
+    
+        <span class="sidebar-tag-name" data-tags="web"><span class="iconfont-archer">&#xe606;</span>web</span>
+    
+        <span class="sidebar-tag-name" data-tags="数据库"><span class="iconfont-archer">&#xe606;</span>数据库</span>
+    
+        <span class="sidebar-tag-name" data-tags="运维"><span class="iconfont-archer">&#xe606;</span>运维</span>
+    
+        <span class="sidebar-tag-name" data-tags="从0.5开始的运维架构之路"><span class="iconfont-archer">&#xe606;</span>从0.5开始的运维架构之路</span>
+    
+        <span class="sidebar-tag-name" data-tags="自动化测试"><span class="iconfont-archer">&#xe606;</span>自动化测试</span>
+    
+        <span class="sidebar-tag-name" data-tags="linux"><span class="iconfont-archer">&#xe606;</span>linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="misc"><span class="iconfont-archer">&#xe606;</span>misc</span>
+    
+        <span class="sidebar-tag-name" data-tags="CTF"><span class="iconfont-archer">&#xe606;</span>CTF</span>
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
+    
+        <span class="sidebar-tag-name" data-tags="分布式"><span class="iconfont-archer">&#xe606;</span>分布式</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Zer0e"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
