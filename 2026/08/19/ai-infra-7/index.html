@@ -1,0 +1,3884 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <!-- Mermaid 图表渲染 -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+   
+    <script>
+        if (window.mermaid) {
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'neutral',
+                securityLevel: 'loose'
+            });
+        }
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']]
+            }
+            };
+    </script>
+    <!-- MathJax 数学公式渲染 -->
+    <script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Zer0e">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Zer0e">
+    
+    <meta name="keywords" content="hexo,hexo-theme,hexo-blog">
+    
+    <meta name="description" content="">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title>去TM的AI其七：PD架构下的KV Cache优化 · Zer0e&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Zer0e&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">去TM的AI其七：PD架构下的KV Cache优化</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>Zer0e's Blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:50vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            去TM的AI其七：PD架构下的KV Cache优化
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "编程">编程</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "架构">架构</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "AI">AI</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "技术">技术</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">3.4k</span>阅读时长: <span class="post-count reading-time">14 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2026/08/19</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>如果说 KV Cache 是大模型推理的”记忆加速器”，那么 <strong>PD 分离架构（Prefill-Decode Disaggregation）</strong> 就是把这个加速器搬上了高速公路——但同时也带来了一个新问题：<strong>记忆本身要运输了</strong>。</p>
+<p>今天我们就来聊聊：在 PD 分离架构下，KV Cache 面临哪些挑战，又有哪些优化手段？</p>
+<h2 id="先回顾：LLM-推理的两个阶段"><a href="#先回顾：LLM-推理的两个阶段" class="headerlink" title="先回顾：LLM 推理的两个阶段"></a>先回顾：LLM 推理的两个阶段</h2><p>大模型推理分为两个特征截然不同的阶段：</p>
+<h3 id="Prefill-阶段（预填充）"><a href="#Prefill-阶段（预填充）" class="headerlink" title="Prefill 阶段（预填充）"></a>Prefill 阶段（预填充）</h3><ul>
+<li>一次性处理用户输入的所有 token</li>
+<li><strong>并行计算</strong>，生成全部输入 token 的 KV Cache</li>
+<li>特点：<strong>计算密集型（Compute-bound）</strong>，GPU 算力拉满</li>
+</ul>
+<h3 id="Decode-阶段（解码）"><a href="#Decode-阶段（解码）" class="headerlink" title="Decode 阶段（解码）"></a>Decode 阶段（解码）</h3><ul>
+<li>逐个生成输出 token，每步只算 1 个新 token</li>
+<li><strong>串行执行</strong>，每步都要读取完整的 KV Cache</li>
+<li>特点：<strong>访存密集型（Memory-bound）</strong>，瓶颈在显存带宽</li>
+</ul>
+<pre class="mermaid">flowchart LR
+    subgraph Prefill["Prefill 阶段"]
+        A1[用户输入 N 个 token] --> B1["并行计算<br/>生成 N 个位置的 KV"]
+        B1 --> C1["计算密集<br/>GPU 利用率高"]
+    end
+
+    subgraph Decode["Decode 阶段"]
+        A2[逐个生成 token] --> B2["每步读取完整 KV Cache<br/>只算 1 个新 token"]
+        B2 --> C2["访存密集<br/>GPU 利用率低"]
+    end
+
+    Prefill -->|传递 KV Cache| Decode
+
+    style Prefill fill:#fff3e0
+    style Decode fill:#e3f2fd
+    style C1 fill:#ffa726
+    style C2 fill:#42a5f5,color:#fff</pre>
+
+<h3 id="混合部署的尴尬"><a href="#混合部署的尴尬" class="headerlink" title="混合部署的尴尬"></a>混合部署的尴尬</h3><p>如果把两个阶段混在同一批 GPU 上跑，会出现典型的<strong>互相干扰</strong>问题：</p>
+<ul>
+<li>Prefill 的大 batch 计算一来，Decode 的延迟瞬间飙升（首 token 和出字速度卡顿）</li>
+<li>Decode 占着 GPU 却只干活一点点，Prefill 排队等资源</li>
+</ul>
+<pre class="mermaid">flowchart TD
+    A[混合部署] --> B1["Prefill 抢占 GPU<br/>Decode 延迟抖动"]
+    A --> B2["Decode 占着 GPU<br/>算力大量空闲"]
+    A --> B3["两种负载特征相反<br/>怎么调参都别扭"]
+
+    B1 --> C["TTFT 和 TPOT<br/>无法同时优化"]
+    B2 --> C
+    B3 --> C
+
+    style A fill:#ffebee
+    style C fill:#ef9a9a</pre>
+
+<p><strong>于是业界的答案是：拆开。</strong></p>
+<h2 id="PD-分离架构：让专业的卡干专业的事"><a href="#PD-分离架构：让专业的卡干专业的事" class="headerlink" title="PD 分离架构：让专业的卡干专业的事"></a>PD 分离架构：让专业的卡干专业的事</h2><p>PD 分离（也叫 Prefill-Decode Disaggregation）的核心思想：<strong>用不同的 GPU 节点分别承担 Prefill 和 Decode</strong>。</p>
+<pre class="mermaid">flowchart TD
+    U[用户请求] --> R[路由层 / Scheduler]
+
+    subgraph P["Prefill 节点池"]
+        P1["P 节点 1<br/>高算力配置"]
+        P2["P 节点 2<br/>高算力配置"]
+    end
+
+    subgraph D["Decode 节点池"]
+        D1["D 节点 1<br/>高带宽配置"]
+        D2["D 节点 2<br/>高带宽配置"]
+    end
+
+    R -->|输入 token| P
+    P -->|"传输 KV Cache<br/>(RDMA)"| D
+    D -->|流式输出| U
+
+    style P fill:#fff3e0
+    style D fill:#e3f2fd
+    style P1 fill:#ffa726
+    style P2 fill:#ffa726
+    style D1 fill:#42a5f5,color:#fff
+    style D2 fill:#42a5f5,color:#fff</pre>
+
+<p><strong>代表项目：</strong></p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>来源</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>DistServe</strong></td>
+<td>学界（2024）</td>
+<td>PD 分离的奠基性工作</td>
+</tr>
+<tr>
+<td><strong>Splitwise</strong></td>
+<td>Microsoft</td>
+<td>异构机器混合部署 P/D</td>
+</tr>
+<tr>
+<td><strong>Mooncake</strong></td>
+<td>月之暗面</td>
+<td>以 KV Cache 为中心的分离架构，KVCache 池化</td>
+</tr>
+<tr>
+<td><strong>vLLM / SGLang</strong></td>
+<td>开源社区</td>
+<td>均已支持 PD disaggregation</td>
+</tr>
+</tbody></table>
+<p>收益很明确：</p>
+<ul>
+<li>✅ Prefill 和 Decode 各自独立扩缩容</li>
+<li>✅ TTFT（首 token 延迟）和 TPOT（每 token 延迟）可以分别优化</li>
+<li>✅ 整体吞吐提升 1.5-2 倍以上</li>
+</ul>
+<h2 id="但是：KV-Cache-成了”烫手山芋”"><a href="#但是：KV-Cache-成了”烫手山芋”" class="headerlink" title="但是：KV Cache 成了”烫手山芋”"></a>但是：KV Cache 成了”烫手山芋”</h2><p>PD 分离带来收益的同时，引入了一个新瓶颈：<strong>Prefill 算出来的 KV Cache，必须通过网络搬到 Decode 节点上</strong>。</p>
+<h3 id="KV-Cache-到底有多大？"><a href="#KV-Cache-到底有多大？" class="headerlink" title="KV Cache 到底有多大？"></a>KV Cache 到底有多大？</h3><p>一个请求的 KV Cache 大小：</p>
+<p>$$\text{KV Size} = 2 \times L \times H_{kv} \times d \times S \times b$$</p>
+<p>其中：</p>
+<ul>
+<li>$L$：模型层数</li>
+<li>$H_{kv}$：KV 头数（GQA 场景下远小于注意力头数）</li>
+<li>$d$：每个头的维度</li>
+<li>$S$：序列长度</li>
+<li>$b$：每个元素的字节数（FP16 为 2）</li>
+<li>开头的 $2$：K 和 V 各一份</li>
+</ul>
+<p><strong>以 LLaMA-70B 为例</strong>（80 层、8 个 KV 头、头维度 128、FP16）：</p>
+<p>$$\text{KV Size per token} = 2 \times 80 \times 8 \times 128 \times 2 = 327680 \text{ B} \approx 320 \text{ KB/token}$$</p>
+<p>一个 32K 上下文的请求，KV Cache 高达 <strong>约 10 GB</strong>！</p>
+<h3 id="传输时间估算"><a href="#传输时间估算" class="headerlink" title="传输时间估算"></a>传输时间估算</h3><p>$$T_{\text{transfer}} = \frac{\text{KV Size}}{BW_{\text{network}}}$$</p>
+<table>
+<thead>
+<tr>
+<th>网络带宽</th>
+<th>传输 10GB 耗时</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>25 Gbps（普通以太网）</td>
+<td>~3.3 秒 ❌ 不可接受</td>
+</tr>
+<tr>
+<td>100 Gbps</td>
+<td>~0.8 秒 😐 勉强</td>
+</tr>
+<tr>
+<td>200 Gbps RDMA</td>
+<td>~0.4 秒 🙂</td>
+</tr>
+<tr>
+<td>400 Gbps RDMA</td>
+<td>~0.2 秒 ✅</td>
+</tr>
+</tbody></table>
+<p><strong>结论：KV Cache 的存储与传输，是 PD 架构的头号优化对象。</strong></p>
+<h2 id="PD-架构下的-KV-Cache-优化全景"><a href="#PD-架构下的-KV-Cache-优化全景" class="headerlink" title="PD 架构下的 KV Cache 优化全景"></a>PD 架构下的 KV Cache 优化全景</h2><pre class="mermaid">flowchart TD
+    A[PD 架构 KV Cache 优化] --> B1["① Prefix Cache<br/>能不算就不算"]
+    A --> B2["② 多级缓存分层<br/>能放近就放近"]
+    A --> B3["③ 传输优化<br/>能快搬就快搬"]
+    A --> B4["④ 缓存感知调度<br/>能命中就命中"]
+    A --> B5["⑤ KV 压缩<br/>能变小就变小"]
+
+    B1 --> C["减少重复计算<br/>降低传输量"]
+    B2 --> C
+    B3 --> C
+    B4 --> C
+    B5 --> C
+
+    style A fill:#ff7043,color:#fff
+    style B1 fill:#66bb6a,color:#fff
+    style B2 fill:#42a5f5,color:#fff
+    style B3 fill:#ffa726
+    style B4 fill:#ab47bc,color:#fff
+    style B5 fill:#26c6da
+    style C fill:#e8f5e9</pre>
+
+<p>下面逐个展开，重点是 Prefix Cache。</p>
+<h2 id="优化一：Prefix-Cache（前缀缓存）"><a href="#优化一：Prefix-Cache（前缀缓存）" class="headerlink" title="优化一：Prefix Cache（前缀缓存）"></a>优化一：Prefix Cache（前缀缓存）</h2><h3 id="核心洞察：大量请求的前缀是重复的"><a href="#核心洞察：大量请求的前缀是重复的" class="headerlink" title="核心洞察：大量请求的前缀是重复的"></a>核心洞察：大量请求的前缀是重复的</h3><p>真实业务中，请求的输入前缀重合率高得惊人：</p>
+<pre class="mermaid">flowchart TD
+    A["典型请求结构"] --> B1["System Prompt<br/>几千 token,所有请求一样"]
+    A --> B2["Few-shot 示例<br/>一批请求一样"]
+    A --> B3["RAG 检索文档<br/>热门文档反复出现"]
+    A --> B4["多轮对话历史<br/>本轮包含上一轮全部"]
+    A --> B5["用户新问题<br/>真正独特的部分"]
+
+    B1 --> C["前缀部分可复用<br/>只有尾部需要计算"]
+    B2 --> C
+    B3 --> C
+    B4 --> C
+
+    style A fill:#e3f2fd
+    style B5 fill:#ef9a9a
+    style C fill:#66bb6a,color:#fff</pre>
+
+<p><strong>Prefix Cache 的思想：把已经算过的前缀 KV Cache 存下来，下次相同前缀直接复用，Prefill 只需要计算没命中的尾部。</strong></p>
+<h3 id="工作原理：按块哈希"><a href="#工作原理：按块哈希" class="headerlink" title="工作原理：按块哈希"></a>工作原理：按块哈希</h3><p>KV Cache 不能按”整句文本”缓存（差一个字就全废），而是按 <strong>固定大小的 token 块（block）</strong> 缓存，典型 block size 为 16：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入 token:  [t₁  t₂  ...  t₁₆ | t₁₇ ... t₃₂ | t₃₃ ... t₄₀]</span><br><span class="line">              └── block 0 ──┘   └─ block 1 ─┘  └─ block 2 ─┘</span><br><span class="line">              hash: 0x3f8a      hash: 0xb21c   hash: 0x91de</span><br></pre></td></tr></table></figure>
+
+<p>每个 block 的哈希由其<strong>所有前缀 token + 本块 token</strong> 共同决定：</p>
+<p>$$\text{hash}_i = H(\text{hash}_{i-1},\ t_{(i-1)B+1}, …, t_{iB})$$</p>
+<p>这样保证：<strong>两个请求只要前缀 token 逐个相同，对应 block 的哈希一定相同，KV Cache 完全可复用</strong>（注意：是 token 级精确匹配，语义相近没用）。</p>
+<h3 id="进阶：RadixAttention（基数树索引）"><a href="#进阶：RadixAttention（基数树索引）" class="headerlink" title="进阶：RadixAttention（基数树索引）"></a>进阶：RadixAttention（基数树索引）</h3><p>SGLang 提出的 <strong>RadixAttention</strong> 用<strong>基数树（Radix Tree）</strong>管理所有请求的前缀，天然支持：</p>
+<ul>
+<li>任意长度前缀的共享（不必对齐到整个 prompt）</li>
+<li>自动化的 LRU 淘汰</li>
+<li>分叉与合并（多轮对话、思维树搜索等场景）</li>
+</ul>
+<pre class="mermaid">flowchart TD
+    R["Radix Tree 根节点"] --> N1["System Prompt<br/>共享 KV"]
+    N1 --> N2["用户A: 对话历史<br/>轮次1"]
+    N1 --> N3["用户B: RAG文档X"]
+    N2 --> N4["用户A: 轮次2<br/>复用轮次1 KV"]
+    N3 --> N5["其他请求引用文档X<br/>直接命中"]
+
+    style R fill:#ff7043,color:#fff
+    style N1 fill:#66bb6a,color:#fff
+    style N2 fill:#42a5f5,color:#fff
+    style N3 fill:#42a5f5,color:#fff
+    style N4 fill:#a5d6a7
+    style N5 fill:#a5d6a7</pre>
+
+<h3 id="效果有多猛？"><a href="#效果有多猛？" class="headerlink" title="效果有多猛？"></a>效果有多猛？</h3><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>前缀命中率</th>
+<th>Prefill 计算节省</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>统一 System Prompt 的 Agent</td>
+<td>90%+</td>
+<td>TTFT 降低 60-80%</td>
+</tr>
+<tr>
+<td>多轮对话</td>
+<td>70-90%</td>
+<td>随轮次递增</td>
+</tr>
+<tr>
+<td>RAG 热门文档问答</td>
+<td>50-80%</td>
+<td>视文档热度</td>
+</tr>
+<tr>
+<td>Few-shot 批量评测</td>
+<td>95%+</td>
+<td>几乎只剩尾部计算</td>
+</tr>
+</tbody></table>
+<h3 id="Prefix-Cache-在-PD-架构下的特殊价值"><a href="#Prefix-Cache-在-PD-架构下的特殊价值" class="headerlink" title="Prefix Cache 在 PD 架构下的特殊价值"></a>Prefix Cache 在 PD 架构下的特殊价值</h3><p>在单体架构里，Prefix Cache 只是”省点计算”；但在 PD 分离架构下，它的价值被<strong>翻倍放大</strong>：</p>
+<pre class="mermaid">flowchart LR
+    A[请求命中 Prefix Cache] --> B1["① Prefill 少算<br/>只算尾部 token"]
+    A --> B2["② 需要传输的 KV 变少<br/>只传新增部分"]
+    A --> B3["③ Decode 节点可本地命中<br/>干脆不用传"]
+
+    B1 --> C["算力省了"]
+    B2 --> C
+    B3 --> C
+
+    style A fill:#66bb6a,color:#fff
+    style C fill:#ffa726</pre>
+
+<p><strong>命中前缀的 KV 根本不需要从 P 节点搬到 D 节点</strong>——既省算力，又省带宽，还降延迟，一箭三雕。</p>
+<h2 id="优化二：多级缓存分层存储"><a href="#优化二：多级缓存分层存储" class="headerlink" title="优化二：多级缓存分层存储"></a>优化二：多级缓存分层存储</h2><p>PD 架构下 KV Cache 的”居住地”不再只有 GPU 显存，而是形成层级体系：</p>
+<pre class="mermaid">flowchart TD
+    L1["L1: GPU HBM<br/>最快最贵,容量小<br/>存放当前请求 + 热点前缀"] --> L2["L2: 主机 DRAM<br/>便宜大碗,百GB级<br/>Prefix Cache 主战场"]
+    L2 --> L3["L3: 本地 SSD / 分布式存储<br/>TB级,跨节点共享<br/>全局 KVCache 池"]
+
+    L3 -->|预取/加载| L2
+    L2 -->|加载| L1
+
+    style L1 fill:#ef9a9a
+    style L2 fill:#ffcc80
+    style L3 fill:#a5d6a7</pre>
+
+<p><strong>Mooncake 的做法最具代表性</strong>：把整个集群的空闲内存组成一个 <strong>KVCache 池（Pool）</strong>：</p>
+<ul>
+<li>P 节点算完的 KV，可以直接写入池子，D 节点就近读取</li>
+<li>同一个前缀的 KV 在池中全局可见，任何节点都能命中</li>
+<li>配合 RDMA，DRAM 池的读取速度足以覆盖大部分 Decode 启动需求</li>
+</ul>
+<h2 id="优化三：KV-传输优化"><a href="#优化三：KV-传输优化" class="headerlink" title="优化三：KV 传输优化"></a>优化三：KV 传输优化</h2><p>就算没命中缓存，传输本身也能优化：</p>
+<h3 id="1-RDMA-高速传输"><a href="#1-RDMA-高速传输" class="headerlink" title="1. RDMA 高速传输"></a>1. RDMA 高速传输</h3><p>绕过 CPU 和内核协议栈，GPU/DMA 直接读写远端内存，延迟微秒级。</p>
+<h3 id="2-传输与计算重叠（Overlap）"><a href="#2-传输与计算重叠（Overlap）" class="headerlink" title="2. 传输与计算重叠（Overlap）"></a>2. 传输与计算重叠（Overlap）</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">传统串行:  [Prefill 计算] → [KV 传输] → [Decode 开始]</span><br><span class="line">重叠优化:  [Prefill 计算] → [Decode 开始]</span><br><span class="line">                     [边算边传,逐层传输]</span><br></pre></td></tr></table></figure>
+
+<p>Prefill 每算完一层的 KV 就立刻异步发送，Decode 端先收到先就位，把传输时间藏进计算时间里。</p>
+<h3 id="3-传输量化"><a href="#3-传输量化" class="headerlink" title="3. 传输量化"></a>3. 传输量化</h3><p>传输前把 KV 压成 FP8/INT8，落地后再解压（或直接用低精度参与计算），<strong>带宽需求直接减半甚至四分之一</strong>：</p>
+<p>$$T_{\text{transfer}}^{\text{FP8}} = \frac{1}{2} T_{\text{transfer}}^{\text{FP16}}$$</p>
+<h3 id="4-按需传输"><a href="#4-按需传输" class="headerlink" title="4. 按需传输"></a>4. 按需传输</h3><p>Decode 阶段第一步其实只需要最后几层的 KV 先就位（因为逐层计算），可以做<strong>细粒度、分优先级</strong>的传输调度。</p>
+<h2 id="优化四：缓存感知调度（Cache-Aware-Scheduling）"><a href="#优化四：缓存感知调度（Cache-Aware-Scheduling）" class="headerlink" title="优化四：缓存感知调度（Cache-Aware Scheduling）"></a>优化四：缓存感知调度（Cache-Aware Scheduling）</h2><p>Prefix Cache 能不能命中，<strong>调度器说了算</strong>。如果同一个前缀的请求被随机打散到不同节点，缓存命中率会惨不忍睹。</p>
+<p><strong>策略：把请求路由到”最可能命中前缀”的节点。</strong></p>
+<pre class="mermaid">flowchart TD
+    A[新请求到达] --> B["计算前缀哈希"]
+    B --> C{查全局缓存索引}
+    C -->|节点X有该前缀KV| D["路由到节点X<br/>直接命中"]
+    C -->|都没有| E["按负载均衡选节点<br/>并注册新前缀"]
+    D --> F["命中率最大化"]
+    E --> F
+
+    style A fill:#bbdefb
+    style C fill:#ce93d8
+    style D fill:#66bb6a,color:#fff
+    style F fill:#ffa726</pre>
+
+<p>SGLang 的 cache-aware routing、Mooncake 的全局 KVCache 索引，本质都是在做这件事：<strong>让缓存跟着请求走，让请求奔着缓存去</strong>。</p>
+<h2 id="优化五：KV-本体压缩"><a href="#优化五：KV-本体压缩" class="headerlink" title="优化五：KV 本体压缩"></a>优化五：KV 本体压缩</h2><p>从源头减小 KV Cache 体积，传输和存储压力同步下降：</p>
+<table>
+<thead>
+<tr>
+<th>技术</th>
+<th>原理</th>
+<th>压缩效果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>GQA / MQA</strong></td>
+<td>多个 Q 头共享 KV 头</td>
+<td>KV 减少 4-8 倍</td>
+</tr>
+<tr>
+<td><strong>MLA</strong></td>
+<td>低秩联合压缩 KV</td>
+<td>KV 减少一个数量级</td>
+</tr>
+<tr>
+<td><strong>KV 量化</strong></td>
+<td>FP16 → FP8/INT8/INT4</td>
+<td>2-4 倍</td>
+</tr>
+<tr>
+<td><strong>稀疏/驱逐</strong></td>
+<td>只保留重要 token 的 KV</td>
+<td>视策略而定</td>
+</tr>
+</tbody></table>
+<p>这些是模型层面的优化，与 PD 架构正交但收益叠加——<strong>KV 越小，PD 之间的搬运成本越低，分离架构越划算</strong>。</p>
+<h2 id="组合拳：一次请求的完整旅程"><a href="#组合拳：一次请求的完整旅程" class="headerlink" title="组合拳：一次请求的完整旅程"></a>组合拳：一次请求的完整旅程</h2><p>把上面的优化串起来，看一个命中 Prefix Cache 的请求在 PD 架构中如何流转：</p>
+<pre class="mermaid">flowchart TD
+    A[用户请求] --> B[调度器计算前缀哈希]
+    B --> C{全局索引查找}
+    C -->|"命中: P节点2有前缀KV"| D[路由到 P 节点 2]
+    D --> E["Prefill 只计算尾部新 token"]
+    E --> F{D 节点本地池<br/>是否已有该前缀?}
+    F -->|是| G["零传输<br/>D 节点直接读池"]
+    F -->|否| H["RDMA 只传增量 KV<br/>FP8 压缩 + 逐层重叠"]
+    G --> I[Decode 流式输出]
+    H --> I
+    I --> J["新生成的 KV 写回缓存池<br/>供下一轮对话复用"]
+
+    style B fill:#ce93d8
+    style E fill:#ffa726
+    style G fill:#66bb6a,color:#fff
+    style H fill:#42a5f5,color:#fff
+    style J fill:#a5d6a7</pre>
+
+<h2 id="实际收益参考"><a href="#实际收益参考" class="headerlink" title="实际收益参考"></a>实际收益参考</h2><p>以 Mooncake 公开数据与业界实践为参考：</p>
+<table>
+<thead>
+<tr>
+<th>优化组合</th>
+<th>TTFT 改善</th>
+<th>吞吐改善</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>仅 PD 分离</td>
+<td>-20~30%</td>
+<td>+50~100%</td>
+</tr>
+<tr>
+<td>PD 分离 + Prefix Cache</td>
+<td>-50~80%</td>
+<td>+100~200%</td>
+</tr>
+<tr>
+<td>+ 多级缓存池 + RDMA</td>
+<td>-70%+</td>
+<td>+200%+</td>
+</tr>
+<tr>
+<td>+ 传输量化/重叠</td>
+<td>进一步抹平传输开销</td>
+<td>视带宽而定</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>注：具体数值与模型规模、请求前缀重合度、网络配置强相关，以上为典型区间。</p>
+</blockquote>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>PD 分离架构把 Prefill 和 Decode 拆开，换来了独立扩展和极致优化，但代价是 <strong>KV Cache 必须流动起来</strong>。围绕这个核心矛盾，业界的优化思路可以浓缩成五句话：</p>
+<pre class="mermaid">flowchart TD
+    A[PD 架构 KV Cache 优化] --> B1["能不算就不算<br/>Prefix Cache"]
+    A --> B2["能放近就放近<br/>多级缓存分层"]
+    A --> B3["能快搬就快搬<br/>RDMA + 重叠 + 量化"]
+    A --> B4["能命中就命中<br/>缓存感知调度"]
+    A --> B5["能变小就变小<br/>MLA / 量化 / GQA"]
+
+    B1 --> C["KV Cache 从'副产物'<br/>变成'核心资产'"]
+    B2 --> C
+    B3 --> C
+    B4 --> C
+    B5 --> C
+
+    style A fill:#ff7043,color:#fff
+    style C fill:#66bb6a,color:#fff</pre>
+
+<p><strong>核心要点回顾：</strong></p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>作用</th>
+<th>一句话理解</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>PD 分离</strong></td>
+<td>P/D 独立部署扩展</td>
+<td>让专业的卡干专业的事</td>
+</tr>
+<tr>
+<td><strong>Prefix Cache</strong></td>
+<td>复用重复前缀的 KV</td>
+<td>背过的课文不再重背</td>
+</tr>
+<tr>
+<td><strong>RadixAttention</strong></td>
+<td>基数树管理前缀</td>
+<td>前缀共享的”目录索引”</td>
+</tr>
+<tr>
+<td><strong>多级缓存池</strong></td>
+<td>HBM→DRAM→SSD 分层</td>
+<td>KV 的”物流仓储网络”</td>
+</tr>
+<tr>
+<td><strong>缓存感知调度</strong></td>
+<td>请求奔着缓存去</td>
+<td>货不动，让订单找货</td>
+</tr>
+</tbody></table>
+<p>一句话总结：<strong>在 PD 架构时代，KV Cache 不再是推理的”副产物”，而是整个系统围绕其设计的核心资产</strong>——谁能把 KV Cache 存得好、搬得快、命中得多，谁的推理成本就低得多。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
+<li>Zhong, Y., et al. (2024). “DistServe: Disaggregating Prefill and Decoding for Goodput-optimized Large Language Model Serving”</li>
+<li>Patel, P., et al. (2024). “Splitwise: Efficient Generative LLM Inference Using Phase Splitting”</li>
+<li>Qin, R., et al. (2024). “Mooncake: A KVCache-centric Disaggregated Architecture for LLM Serving”</li>
+<li>Zheng, L., et al. (2024). “SGLang: Efficient Execution of Structured Language Model Programs” (RadixAttention)</li>
+<li>vLLM Documentation: Automatic Prefix Caching</li>
+<li>DeepSeek-V2 Technical Report: Multi-head Latent Attention</li>
+</ol>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>原文作者：<a href="https://blog.zer0e.com">Zer0e</a>
+            <p>原文链接：<a href="https://blog.zer0e.com/2026/08/19/ai-infra-7/">https://blog.zer0e.com/2026/08/19/ai-infra-7/</a>
+            <p>发表日期：<a href="https://blog.zer0e.com/2026/08/19/ai-infra-7/">August 19th 2026, 9:30:00 pm</a>
+            <p>更新日期：<a href="https://blog.zer0e.com/2026/08/19/ai-infra-7/">August 19th 2026, 9:49:56 pm</a>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2026/08/16/ai-infra-6/" title= "去TM的AI其六：什么是投机解码 (Speculative Decoding)">
+                    <div class="prevTitle">去TM的AI其六：什么是投机解码 (Speculative Decoding)</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:zcluslloye@gmail.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/zer0e" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+    
+        
+            
+                <a href="https://t.me/zer0ee" class="iconfont-archer telegram" target="_blank" title=telegram></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+
+    </div>
+    
+	<!-- <div class="copyright">
+		<span id="hexo-power">Hosted by <a href="https://pages.coding.me" target="_blank">Coding Pages</a></span>
+	</div> -->
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+        <br>
+        <a href="https://icp.gov.moe/?keyword=20254096" target="_blank">萌ICP备20254096号</a>
+    </div>
+    <script defer src="https://umami.zer0e.com/script.js" data-website-id="a6e79cc3-9711-4fb5-9530-e07857543bd3"></script>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E5%9B%9E%E9%A1%BE%EF%BC%9ALLM-%E6%8E%A8%E7%90%86%E7%9A%84%E4%B8%A4%E4%B8%AA%E9%98%B6%E6%AE%B5"><span class="toc-number">1.</span> <span class="toc-text">先回顾：LLM 推理的两个阶段</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Prefill-%E9%98%B6%E6%AE%B5%EF%BC%88%E9%A2%84%E5%A1%AB%E5%85%85%EF%BC%89"><span class="toc-number">1.1.</span> <span class="toc-text">Prefill 阶段（预填充）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Decode-%E9%98%B6%E6%AE%B5%EF%BC%88%E8%A7%A3%E7%A0%81%EF%BC%89"><span class="toc-number">1.2.</span> <span class="toc-text">Decode 阶段（解码）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B7%B7%E5%90%88%E9%83%A8%E7%BD%B2%E7%9A%84%E5%B0%B4%E5%B0%AC"><span class="toc-number">1.3.</span> <span class="toc-text">混合部署的尴尬</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PD-%E5%88%86%E7%A6%BB%E6%9E%B6%E6%9E%84%EF%BC%9A%E8%AE%A9%E4%B8%93%E4%B8%9A%E7%9A%84%E5%8D%A1%E5%B9%B2%E4%B8%93%E4%B8%9A%E7%9A%84%E4%BA%8B"><span class="toc-number">2.</span> <span class="toc-text">PD 分离架构：让专业的卡干专业的事</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%86%E6%98%AF%EF%BC%9AKV-Cache-%E6%88%90%E4%BA%86%E2%80%9D%E7%83%AB%E6%89%8B%E5%B1%B1%E8%8A%8B%E2%80%9D"><span class="toc-number">3.</span> <span class="toc-text">但是：KV Cache 成了”烫手山芋”</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#KV-Cache-%E5%88%B0%E5%BA%95%E6%9C%89%E5%A4%9A%E5%A4%A7%EF%BC%9F"><span class="toc-number">3.1.</span> <span class="toc-text">KV Cache 到底有多大？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%A0%E8%BE%93%E6%97%B6%E9%97%B4%E4%BC%B0%E7%AE%97"><span class="toc-number">3.2.</span> <span class="toc-text">传输时间估算</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PD-%E6%9E%B6%E6%9E%84%E4%B8%8B%E7%9A%84-KV-Cache-%E4%BC%98%E5%8C%96%E5%85%A8%E6%99%AF"><span class="toc-number">4.</span> <span class="toc-text">PD 架构下的 KV Cache 优化全景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E4%B8%80%EF%BC%9APrefix-Cache%EF%BC%88%E5%89%8D%E7%BC%80%E7%BC%93%E5%AD%98%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">优化一：Prefix Cache（前缀缓存）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%B4%9E%E5%AF%9F%EF%BC%9A%E5%A4%A7%E9%87%8F%E8%AF%B7%E6%B1%82%E7%9A%84%E5%89%8D%E7%BC%80%E6%98%AF%E9%87%8D%E5%A4%8D%E7%9A%84"><span class="toc-number">5.1.</span> <span class="toc-text">核心洞察：大量请求的前缀是重复的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%EF%BC%9A%E6%8C%89%E5%9D%97%E5%93%88%E5%B8%8C"><span class="toc-number">5.2.</span> <span class="toc-text">工作原理：按块哈希</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9B%E9%98%B6%EF%BC%9ARadixAttention%EF%BC%88%E5%9F%BA%E6%95%B0%E6%A0%91%E7%B4%A2%E5%BC%95%EF%BC%89"><span class="toc-number">5.3.</span> <span class="toc-text">进阶：RadixAttention（基数树索引）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%88%E6%9E%9C%E6%9C%89%E5%A4%9A%E7%8C%9B%EF%BC%9F"><span class="toc-number">5.4.</span> <span class="toc-text">效果有多猛？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Prefix-Cache-%E5%9C%A8-PD-%E6%9E%B6%E6%9E%84%E4%B8%8B%E7%9A%84%E7%89%B9%E6%AE%8A%E4%BB%B7%E5%80%BC"><span class="toc-number">5.5.</span> <span class="toc-text">Prefix Cache 在 PD 架构下的特殊价值</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E4%BA%8C%EF%BC%9A%E5%A4%9A%E7%BA%A7%E7%BC%93%E5%AD%98%E5%88%86%E5%B1%82%E5%AD%98%E5%82%A8"><span class="toc-number">6.</span> <span class="toc-text">优化二：多级缓存分层存储</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E4%B8%89%EF%BC%9AKV-%E4%BC%A0%E8%BE%93%E4%BC%98%E5%8C%96"><span class="toc-number">7.</span> <span class="toc-text">优化三：KV 传输优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-RDMA-%E9%AB%98%E9%80%9F%E4%BC%A0%E8%BE%93"><span class="toc-number">7.1.</span> <span class="toc-text">1. RDMA 高速传输</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%BC%A0%E8%BE%93%E4%B8%8E%E8%AE%A1%E7%AE%97%E9%87%8D%E5%8F%A0%EF%BC%88Overlap%EF%BC%89"><span class="toc-number">7.2.</span> <span class="toc-text">2. 传输与计算重叠（Overlap）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E4%BC%A0%E8%BE%93%E9%87%8F%E5%8C%96"><span class="toc-number">7.3.</span> <span class="toc-text">3. 传输量化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%8C%89%E9%9C%80%E4%BC%A0%E8%BE%93"><span class="toc-number">7.4.</span> <span class="toc-text">4. 按需传输</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E5%9B%9B%EF%BC%9A%E7%BC%93%E5%AD%98%E6%84%9F%E7%9F%A5%E8%B0%83%E5%BA%A6%EF%BC%88Cache-Aware-Scheduling%EF%BC%89"><span class="toc-number">8.</span> <span class="toc-text">优化四：缓存感知调度（Cache-Aware Scheduling）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E4%BA%94%EF%BC%9AKV-%E6%9C%AC%E4%BD%93%E5%8E%8B%E7%BC%A9"><span class="toc-number">9.</span> <span class="toc-text">优化五：KV 本体压缩</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%84%E5%90%88%E6%8B%B3%EF%BC%9A%E4%B8%80%E6%AC%A1%E8%AF%B7%E6%B1%82%E7%9A%84%E5%AE%8C%E6%95%B4%E6%97%85%E7%A8%8B"><span class="toc-number">10.</span> <span class="toc-text">组合拳：一次请求的完整旅程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E6%94%B6%E7%9B%8A%E5%8F%82%E8%80%83"><span class="toc-number">11.</span> <span class="toc-text">实际收益参考</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">12.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-number">13.</span> <span class="toc-text">参考资料</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 125
+        </div>
+        <!-- search  -->
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2026 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/19</span><a class="archive-post-title" href= "/2026/08/19/ai-infra-7/" >去TM的AI其七：PD架构下的KV Cache优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/16</span><a class="archive-post-title" href= "/2026/08/16/ai-infra-6/" >去TM的AI其六：什么是投机解码 (Speculative Decoding)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2026/07/25/ai-infra-5/" >AI其五：如何设计用量限流系统</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/17</span><a class="archive-post-title" href= "/2026/07/17/ai-infra-4/" >去TM的AI其四：什么是MoE架构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/09</span><a class="archive-post-title" href= "/2026/07/09/ai-infra-3/" >去TM的AI其三：什么是多头潜在注意力Multi-Head Latent Attention (MLA)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/05</span><a class="archive-post-title" href= "/2026/07/05/ai-infra-2/" >去TM的AI其二：什么是多头注意力Multi-Head Attention</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2026/06/28/ai-infra-1/" >去TM的AI其一：何为QKV和KVCache</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/07</span><a class="archive-post-title" href= "/2026/06/07/devops13/" >【架构之路13】节点与api-server网络不通后发生了什么</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/10</span><a class="archive-post-title" href= "/2026/05/10/202604-ai-think-2/" >AI时代下的一点思考2</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/18</span><a class="archive-post-title" href= "/2026/04/18/202604-ai-think/" >AI时代下的一点思考1</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/07</span><a class="archive-post-title" href= "/2026/03/07/202603-mi-after-sales/" >记一次小米售后</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2025 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span><a class="archive-post-title" href= "/2025/12/13/2025-end/" >2025年末碎碎念</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span><a class="archive-post-title" href= "/2025/09/03/2025-birthday/" >写于2025年生日前</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/15</span><a class="archive-post-title" href= "/2025/03/15/seckill-system-design/" >秒杀系统设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/02</span><a class="archive-post-title" href= "/2025/03/02/2025-migrate-vpc/" >某客户云上迁移实践</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2024 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/31</span><a class="archive-post-title" href= "/2024/12/31/2024-summary/" >2024年度总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/31</span><a class="archive-post-title" href= "/2024/10/31/game-email-architecture/" >游戏邮件系统设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2024/10/14/2024-october/" >10月随笔</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/31</span><a class="archive-post-title" href= "/2024/08/31/2024-end-of-august/" >写于8月最后一天</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/15</span><a class="archive-post-title" href= "/2024/08/15/2024-08-15-replay/" >2024面试复盘13</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/14</span><a class="archive-post-title" href= "/2024/08/14/2024-08-14-replay/" >2024面试复盘12</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2024/08/12/2024-08-12-replay/" >2024面试复盘11</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/05</span><a class="archive-post-title" href= "/2024/08/05/2024-08-05-replay/" >2024面试复盘10</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/02</span><a class="archive-post-title" href= "/2024/08/02/2024-08-02-replay/" >2024面试复盘9</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2024/08/01/2024-08-01-replay/" >2024面试复盘8</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2024/07/30/2024-07-30-replay/" >2024面试复盘7</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/27</span><a class="archive-post-title" href= "/2024/07/27/devops12/" >【架构之路12】es-k8s搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2024/07/26/devops11/" >【架构之路11】sa-token框架上手体验</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2024/07/25/devops10/" >【架构之路10】sentinel限流上手</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2024/07/24/devops9/" >【架构之路9】flink-cdc学习与使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2024/07/23/devops8/" >【架构之路8】apisix-ingress-controller搭建与使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/22</span><a class="archive-post-title" href= "/2024/07/22/devops7/" >【架构之路7】tidb集群搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/22</span><a class="archive-post-title" href= "/2024/07/22/2024-07-22-replay/" >2024面试复盘6</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/19</span><a class="archive-post-title" href= "/2024/07/19/devops6/" >【架构之路6】k8s-LoadBalancer搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/17</span><a class="archive-post-title" href= "/2024/07/17/2024-07-17-replay/" >2024面试复盘5</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2024/07/16/devops5/" >【架构之路5】搭建redis集群</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/16</span><a class="archive-post-title" href= "/2024/07/16/2024-07-16-replay/" >2024面试复盘4</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2024/07/15/2024-07-15-replay/" >2024面试复盘3</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/12</span><a class="archive-post-title" href= "/2024/07/12/devops4/" >【架构之路4】k8s对接ceph-rbd</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span><a class="archive-post-title" href= "/2024/07/11/devops3/" >【架构之路3】k8s对接cephfs</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/11</span><a class="archive-post-title" href= "/2024/07/11/devops2/" >【架构之路2】ceph集群搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2024/07/10/devops1/" >【架构之路1】k8s集群搭建</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2024/07/10/devops0/" >从0.5开始的运维架构之路0</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2024/06/24/2024-06-24-replay/" >2024面试复盘2</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/23</span><a class="archive-post-title" href= "/2024/06/23/2024-06-23-replay/" >2024面试复盘1</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/11</span><a class="archive-post-title" href= "/2024/06/11/2024-resign/" >写于6月离职之后</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2024/01/01/2023-summary/" >2023年度总结</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/31</span><a class="archive-post-title" href= "/2022/12/31/2022-2023/" >2022年度总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2022/04/08/devtools/" >devtools协议分析与自动化录制实现</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/01</span><a class="archive-post-title" href= "/2022/01/01/2022-first/" >由于代码架构设计不佳而引发的异常消失</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/08</span><a class="archive-post-title" href= "/2021/06/08/zbot/" >zbot架构畅谈</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/05</span><a class="archive-post-title" href= "/2021/04/05/bsgamesdk-re/" >对bsgamesdk的签名逆向分析</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span><a class="archive-post-title" href= "/2020/12/13/autoConfiguration/" >浅谈Spring Boot自动配置</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/01</span><a class="archive-post-title" href= "/2020/11/01/transaction_isolation/" >回顾数据库事务隔离级别</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/09</span><a class="archive-post-title" href= "/2020/10/09/snowflake/" >浅谈雪花算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/composite_pattern/" >设计模式之组合模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/design_patterns/" >谈谈设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/17</span><a class="archive-post-title" href= "/2020/09/17/flyweight_pattern/" >设计模式之享元模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/14</span><a class="archive-post-title" href= "/2020/09/14/builder_pattern/" >设计模式之构建模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2020/09/13/arraylist_resize/" >ArrayList扩容之后内存地址会发生改变吗？</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2020/09/13/jmm/" >浅谈Java内存模型</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2020/09/08/visitor_pattern/" >设计模式之访问者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2020/09/08/template_method_pattern/" >设计模式之模板方法模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/memento_pattern/" >设计模式之备忘录模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/state_pattern/" >设计模式之状态模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2020/09/05/interpreter_pattern/" >设计模式之解释器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2020/09/05/chain_of_responsibility_pattern/" >设计模式之责任链模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2020/09/04/bridge_patterns/" >设计模式之桥接模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2020/09/02/prototype_pattern/" >设计模式之原型模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/29</span><a class="archive-post-title" href= "/2020/08/29/lambda/" >由lambda表达式引发的思考</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/27</span><a class="archive-post-title" href= "/2020/08/27/iterator_pattern/" >设计模式之迭代器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/27</span><a class="archive-post-title" href= "/2020/08/27/strategy_pattern/" >设计模式之策略模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/22</span><a class="archive-post-title" href= "/2020/08/22/adapter_pattern/" >设计模式之适配器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/19</span><a class="archive-post-title" href= "/2020/08/19/sql_concurrent/" >谈一道数据库更新的并发问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span><a class="archive-post-title" href= "/2020/08/17/decorator_pattern/" >设计模式之装饰器模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/17</span><a class="archive-post-title" href= "/2020/08/17/command_pattern/" >设计模式之命令模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/16</span><a class="archive-post-title" href= "/2020/08/16/facade_pattern/" >设计模式之外观模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/14</span><a class="archive-post-title" href= "/2020/08/14/lock_class/" >谈谈锁的种类</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/13</span><a class="archive-post-title" href= "/2020/08/13/abstract_factory_pattern/" >设计模式之抽象工厂模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2020/08/12/mediator_pattern/" >设计模式之中介者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/12</span><a class="archive-post-title" href= "/2020/08/12/factory_pattern/" >设计模式之工厂模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2020/08/10/spring_aop/" >浅谈Spring AOP</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/10</span><a class="archive-post-title" href= "/2020/08/10/proxy_pattern/" >设计模式之代理模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/08</span><a class="archive-post-title" href= "/2020/08/08/observer/" >设计模式之观察者模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/07</span><a class="archive-post-title" href= "/2020/08/07/singleton/" >设计模式之单例模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/06</span><a class="archive-post-title" href= "/2020/08/06/spring_ioc/" >谈谈Spring IoC</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2020/07/24/java_thread_pool/" >浅谈Java线程池</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/20</span><a class="archive-post-title" href= "/2020/07/20/dp3/" >浅谈动态规划Ⅲ</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/04</span><a class="archive-post-title" href= "/2020/07/04/database_master_slave/" >浅谈数据库主从复制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2020/06/24/load_balancing_algorithm/" >常见的负载均衡算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2020/06/15/load_balancing/" >浅谈负载均衡</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/14</span><a class="archive-post-title" href= "/2020/06/14/high_concurrency/" >浅谈高并发引起的问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/dp2/" >浅谈动态规划Ⅱ</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span><a class="archive-post-title" href= "/2020/05/13/topk/" >TopK问题与快速选择算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2020/04/29/binary_search/" >几种二分查找的模板与理解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/05</span><a class="archive-post-title" href= "/2020/04/05/dp1/" >浅谈动态规划</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2020/03/30/tree-traversal2/" >二叉树的广度优先(层次)遍历</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2020/03/30/tree-traversal/" >二叉树的前中后序遍历</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/24</span><a class="archive-post-title" href= "/2020/03/24/celery/" >初探celery任务队列</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/22</span><a class="archive-post-title" href= "/2020/03/22/java-reflection/" >理解Java反射</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/11</span><a class="archive-post-title" href= "/2020/03/11/python-sync/" >浅谈python异步编程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/04</span><a class="archive-post-title" href= "/2020/03/04/python-copy/" >浅谈python中的引用与拷贝</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/10</span><a class="archive-post-title" href= "/2020/02/10/spring-annotation/" >Springboot常用注解</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/05</span><a class="archive-post-title" href= "/2020/01/05/dns-cache-pollution/" >DNS投毒分析</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2019 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href= "/2019/11/12/2019-11-12/" >谈一谈最近</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2019/04/01/ngrok/" >使用ngrok实现内网远程桌面</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/12</span><a class="archive-post-title" href= "/2018/11/12/hctf2018wp/" >HCTF2018 web部分Writeup</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/02</span><a class="archive-post-title" href= "/2018/11/02/js-prototype/" >浅谈JavaScript中的原型链</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2018/10/10/xssbot1/" >从零开始完成xssbot</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/12</span><a class="archive-post-title" href= "/2018/07/12/csp/" >浅谈CSP内容安全策略</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/07</span><a class="archive-post-title" href= "/2018/06/07/mergesort/" >经典算法之归并排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/02</span><a class="archive-post-title" href= "/2018/06/02/quicksort/" >经典算法之快速排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/28</span><a class="archive-post-title" href= "/2018/05/28/linux-shell/" >Linux下反弹shell的几种方式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/11</span><a class="archive-post-title" href= "/2018/05/11/selectsort/" >经典算法之选择排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2018/04/24/docker/" >docker常用命令汇总</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/11</span><a class="archive-post-title" href= "/2018/04/11/bubblesort/" >经典算法之冒泡排序</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span><a class="archive-post-title" href= "/2018/03/30/php-weak1/" >PHP弱类型总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/29</span><a class="archive-post-title" href= "/2018/03/29/second-sqli/" >记一次有趣的二次注入</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/23</span><a class="archive-post-title" href= "/2018/03/23/polynomial/" >单向链表的学习</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2018/03/18/hgame-misc/" >misc入门总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/14</span><a class="archive-post-title" href= "/2018/03/14/shuffle/" >常见的洗牌算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/12</span><a class="archive-post-title" href= "/2018/03/12/hgame-web/" >CTF入门(坑)总结——web篇</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span><a class="archive-post-title" href= "/2018/03/10/maze/" >使用递归算法解决迷宫问题</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span><a class="archive-post-title" href= "/2018/03/10/resolve-number/" >实现整数的所有划分数</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/10</span><a class="archive-post-title" href= "/2018/03/10/talk-about-blog/" >谈一谈博客</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="随笔"><span class="iconfont-archer">&#xe606;</span>随笔</span>
+    
+        <span class="sidebar-tag-name" data-tags="编程"><span class="iconfont-archer">&#xe606;</span>编程</span>
+    
+        <span class="sidebar-tag-name" data-tags="随想"><span class="iconfont-archer">&#xe606;</span>随想</span>
+    
+        <span class="sidebar-tag-name" data-tags="Python"><span class="iconfont-archer">&#xe606;</span>Python</span>
+    
+        <span class="sidebar-tag-name" data-tags="架构"><span class="iconfont-archer">&#xe606;</span>架构</span>
+    
+        <span class="sidebar-tag-name" data-tags="面经"><span class="iconfont-archer">&#xe606;</span>面经</span>
+    
+        <span class="sidebar-tag-name" data-tags="生活琐事"><span class="iconfont-archer">&#xe606;</span>生活琐事</span>
+    
+        <span class="sidebar-tag-name" data-tags="思考"><span class="iconfont-archer">&#xe606;</span>思考</span>
+    
+        <span class="sidebar-tag-name" data-tags="AI"><span class="iconfont-archer">&#xe606;</span>AI</span>
+    
+        <span class="sidebar-tag-name" data-tags="设计模式"><span class="iconfont-archer">&#xe606;</span>设计模式</span>
+    
+        <span class="sidebar-tag-name" data-tags="技术"><span class="iconfont-archer">&#xe606;</span>技术</span>
+    
+        <span class="sidebar-tag-name" data-tags="Java"><span class="iconfont-archer">&#xe606;</span>Java</span>
+    
+        <span class="sidebar-tag-name" data-tags="Spring"><span class="iconfont-archer">&#xe606;</span>Spring</span>
+    
+        <span class="sidebar-tag-name" data-tags="算法"><span class="iconfont-archer">&#xe606;</span>算法</span>
+    
+        <span class="sidebar-tag-name" data-tags="Android"><span class="iconfont-archer">&#xe606;</span>Android</span>
+    
+        <span class="sidebar-tag-name" data-tags="web"><span class="iconfont-archer">&#xe606;</span>web</span>
+    
+        <span class="sidebar-tag-name" data-tags="数据库"><span class="iconfont-archer">&#xe606;</span>数据库</span>
+    
+        <span class="sidebar-tag-name" data-tags="运维"><span class="iconfont-archer">&#xe606;</span>运维</span>
+    
+        <span class="sidebar-tag-name" data-tags="从0.5开始的运维架构之路"><span class="iconfont-archer">&#xe606;</span>从0.5开始的运维架构之路</span>
+    
+        <span class="sidebar-tag-name" data-tags="自动化测试"><span class="iconfont-archer">&#xe606;</span>自动化测试</span>
+    
+        <span class="sidebar-tag-name" data-tags="linux"><span class="iconfont-archer">&#xe606;</span>linux</span>
+    
+        <span class="sidebar-tag-name" data-tags="misc"><span class="iconfont-archer">&#xe606;</span>misc</span>
+    
+        <span class="sidebar-tag-name" data-tags="CTF"><span class="iconfont-archer">&#xe606;</span>CTF</span>
+    
+        <span class="sidebar-tag-name" data-tags="Mysql"><span class="iconfont-archer">&#xe606;</span>Mysql</span>
+    
+        <span class="sidebar-tag-name" data-tags="分布式"><span class="iconfont-archer">&#xe606;</span>分布式</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Zer0e"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
